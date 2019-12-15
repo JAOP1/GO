@@ -39,42 +39,23 @@ struct DominatedCells
 class BoardGame
 {
 public:
-    BoardGame(Graph& G, bool linear_algorithm = false)
+    BoardGame(Graph& G)
         : Board(G)
         , pieces(G.num_vertices())
-        , update_by_linear_algorithm(linear_algorithm)
         , groups(G.num_vertices())
     {}
 
     char player_status() const { return players[current_player]; }
 
-    std::vector<char> show_current_state() const
-    {
-        std::vector<char> type_cell(pieces.size());
-        std::transform(pieces.begin(),
-                       pieces.end(),
-                       type_cell.begin(),
-                       [](const stats_node& x)->char { return x.type; });
-
-        return type_cell;
-    }
-
+    std::vector<char> show_current_state() const;
+    
     vertex parent_node(vertex node) const { return groups.find_root(node); }
 
-    std::vector<vertex> available_cells() const
-    {
-        std::vector<vertex> result;
-        for (vertex v = 0; v < Board.num_vertices(); ++v)
-        {
-            if (pieces[v].type == 'N' && is_valid_move(v))
-                result.push_back(v);
-        }
-        return result;
-    }
-
+    std::vector<vertex> available_cells() const;
+    
     int reward(char player) const;
 
-    bool is_complete() const;
+    bool is_complete() const; //Falta...
 
     bool is_valid_move(vertex v) const;
 
@@ -100,82 +81,30 @@ public:
     // Esa se debe actualizar en CADA jugada
 
 private:
+
+    //Complement functions by main functions.
     void Put_piece(vertex node);
 
-    std::vector<int> dead_vertices(vertex node) const;
+    std::vector<int> dead_vertices(vertex node); 
+
+    // Y empty cells on the group X.
+    DominatedCells count_dominated_region(vertex v, std::vector<bool>& is_visited_global) const;
+  
+    void update_liberties(vertex node, char type);
+
+    std::vector<int> kill_group(vertex node);
+
+    
+    bool is_dead(vertex node) const
+    {
+        auto parent = groups.find_root(node);
+        return !liberties(parent);
+    }
 
     int liberties(vertex node) const
     {
         vertex root = groups.find_root(node);
-
-        if (update_by_linear_algorithm)
-            return pieces[root].liberties;
-
         return pieces[root].libertiesNodes.size();
-    }
-
-    bool is_dead(vertex node) const
-    {
-        if (!liberties(node))
-            return true;
-
-        return false;
-    }
-
-    // Y empty cells on the group X.
-    // cambia el nombre de la función
-    DominatedCells DFS(vertex v, std::vector<bool>& is_visited_global) const
-    {
-        std::vector<bool> is_visited(Board.num_vertices(), false);
-        std::vector<vertex> walls;
-        std::stack<vertex> frontier;
-        frontier.push(v);
-        is_visited[v] = true;
-        is_visited_global[v] = true;
-        int count_empty_cells = 1;
-
-        while (!frontier.empty())
-        {
-            vertex top = frontier.top();
-            frontier.pop();
-
-            for (auto v : Board.neighbors(top))
-            {
-                if (pieces[v].type != 'N' && !is_visited[v])
-                    walls.push_back(v);
-
-                else if (!is_visited[v])
-                {
-                    count_empty_cells++;
-                    frontier.push(v);
-                }
-                is_visited[v] = true;
-                is_visited_global[v] = true;
-            }
-        }
-
-        char group = 'N';
-
-        for (auto v : walls)
-        {
-            if (is_frontier(v, is_visited))
-            {
-                group = pieces[v].type;
-                break;
-            }
-        }
-
-        for (auto v : walls)
-        {
-            if (is_frontier(v, is_visited) && group != pieces[v].type)
-            {
-                group = 'N';
-                count_empty_cells = 0;
-                break;
-            }
-        }
-
-        return {count_empty_cells, group};
     }
 
     bool is_frontier(vertex v, const std::vector<bool>& visited) const
@@ -189,27 +118,44 @@ private:
         return false;
     }
 
-    void update_liberties(vertex node, char type);
 
-    // Lineal respecto a los nodos.
-    void update_liberties_linear();
 
-    // Lineal respecto a los nodos.
-    std::vector<int> kill_group(vertex node);
-
-    bool update_by_linear_algorithm;
+    //Variables 
     std::vector<player> players = {'B', 'W'};
     int current_player = 0;
     std::vector<stats_node> pieces;
     disjoint_sets groups;
-    int count_black;
-    int count_white;
+   
 };
 
 // Public functions
 // -----------------------------------------------------------------------------------
 
-std::vector<int> BoardGame::make_action(vertex v)
+std::vector<char> BoardGame::show_current_state() const
+    {
+        std::vector<char> type_cell(pieces.size());
+        std::transform(pieces.begin(),
+                       pieces.end(),
+                       type_cell.begin(),
+                       [](const stats_node& x)->char { return x.type; });
+
+        return type_cell;
+    }
+
+std::vector<vertex> BoardGame::available_cells() const
+    {
+        std::vector<vertex> cells;
+        for (vertex v = 0; v < Board.num_vertices(); ++v)
+        {
+            if (pieces[v].type == 'N' && is_valid_move(v))
+                cells.push_back(v);
+        }
+        return cells;
+    }
+
+
+
+std::vector<int> BoardGame::make_action(vertex v)  
 {
     Put_piece(v);
     std::vector<int> result = dead_vertices(v);
@@ -224,75 +170,81 @@ void BoardGame::undo_action(vertex v)
 
 int BoardGame::reward(char player) const
 {
-    if (player == 'B')
-        return count_black;
-    return count_white;
+    std::vector<bool> visited(Board.num_vertices() , false);
+    int dominated_by_black = 0;
+    int dominated_by_white = 0;
+
+    for(vertex v = 0 ; v < Board.num_vertices() ; ++v)
+    {
+        if(!visited[v] && pieces[v].type == 'N')
+        {
+            DominatedCells result = count_dominated_region(v , visited);
+
+            if(result.player == 'B')
+            {
+                dominated_by_black += result.num_dominated;
+                continue;
+            }
+            dominated_by_white += result.num_dominated;
+        }
+    }
+
+    if(player == 'B')
+        return dominated_by_black;
+
+    return dominated_by_white;
 }
 
 
 
 bool BoardGame::is_complete() const
 {
-    std::vector<bool> visited(Board.num_vertices(), false);
-    bool complete = true;
-
-    for (vertex v = 0; v < Board.num_vertices(); ++v)
-    {
-        if (visited[v])
-            continue;
-        
-        if (pieces[v].type != 'N')
-        {
-            DominatedCells result = DFS(v, visited);
-
-            if (result.player == 'N')
-                complete = false;
-            else if (result.player == 'B')
-                count_black = result.num_dominated; // TODO: que se actualice cada que haces movidas
-            else
-                count_white = result.num_dominated;
-        }
-    }
-    
-    return complete;
+    //incomplete
+    return false;
 }
 
-// Solo funciona cuando usamos set.... (Tengo que implementar la otra variante
-// D:)
+
+/*
+Un movimiento es valido, si es posible colocar y no se suicida.
+*/
 bool BoardGame::is_valid_move(vertex v) const
 {
+    //Esta posicion ya está ocupada.
     if (pieces[v].type != 'N')
         return false;
 
     auto type = players[current_player];
-    std::set<vertex> empty_nodes;
-    for (auto neighbor : Board.neighbors(v))
-    {
-        if (pieces[neighbor].type == 'N')
-            empty_nodes.insert(neighbor);
-    }
-
-    vertex parent;
+    std::set<vertex> empty_cells;
     int min_liberties = std::numeric_limits<int>::max();
 
     for (auto neighbor : Board.neighbors(v))
     {
-        if (pieces[neighbor].type == type &&
-            !groups.are_in_same_connected_component(v, neighbor))
+        //Revisar posiciones sin ficha.
+        if (pieces[neighbor].type == 'N')
+            empty_cells.insert(neighbor);
+
+        else
         {
-            parent = groups.find_root(neighbor);
-            empty_nodes.insert(pieces[parent].libertiesNodes.begin(),
-                               pieces[parent].libertiesNodes.end());
-        }
-        else if (pieces[neighbor].type != type && pieces[neighbor].type != 'N')
-        {
-            min_liberties = std::min(min_liberties, liberties(neighbor));
+            //Ver si es posible quitar un grupo del otro jugador.
+            if(pieces[neighbor].type != type)
+                min_liberties = std::min(min_liberties , liberties(neighbor));
+
+            //Unir grupos del mismo tipo, para contar celdas vacias.
+            else if(!groups.are_in_same_connected_component(v,neighbor))
+            {
+                vertex parent = groups.find_root(neighbor);
+                empty_cells.insert(pieces[parent].libertiesNodes.begin(),
+                            pieces[parent].libertiesNodes.end()); 
+            }
         }
     }
 
     min_liberties--;
-    empty_nodes.erase(v);
-    if (!empty_nodes.empty() || min_liberties == 0)
+    empty_cells.erase(v);
+    //Si al colocar la ficha nueva, tiene más grados de libertad
+    // o algun grupo pierde todos sus grados de libertad. 
+    //En ese caso significa que se estaría suicidando. 
+    if (!empty_cells.empty() || min_liberties == 0)
         return true;
 
     return false;
@@ -316,70 +268,37 @@ vertex BoardGame::random_action() const
 
 void BoardGame::update_liberties(vertex node, char type)
 {
-    std::set<vertex> empty_nodes;
+
     for (auto v : Board.neighbors(node))
     {
-        if (pieces[v].type == 'N')
-            empty_nodes.insert(v);
-    }
-
-    vertex parent;
-    for (auto v : Board.neighbors(node))
-    {
-        if (pieces[v].type == type &&
-            !groups.are_in_same_connected_component(v, node))
+        //Quiero agregar las casillas vacias a mi grupo de libertades.
+        if(pieces[v].type == 'N')
+            pieces[node].libertiesNodes.insert(v);
+        else
         {
-
-            parent = groups.find_root(node);
-            groups.merge(v, node);
-            vertex parent1 = groups.find_root(v);
-
-            pieces[parent1]
-              .libertiesNodes.insert(pieces[parent].libertiesNodes.begin(),
-                                     pieces[parent].libertiesNodes.end());
-        }
-        else if (pieces[v].type != type && pieces[v].type != 'N')
-        {
-            parent = groups.find_root(v);
-            pieces[parent].libertiesNodes.erase(node);
-        }
-    }
-
-    parent = groups.find_root(node);
-    pieces[parent].libertiesNodes.erase(node);
-    pieces[parent].libertiesNodes.insert(empty_nodes.begin(), empty_nodes.end());
-}
-
-void BoardGame::update_liberties_linear()
-{
-
-    for (int i = 0; i < Board.num_vertices(); ++i)
-        pieces[i].liberties = 0;
-
-    vertex parent;
-    for (int i = 0; i < Board.num_vertices(); ++i)
-    {
-
-        if (pieces[i].type == 'N')
-        {
-            std::set<vertex> is_visited;
-            int current_size = 0;
-            for (auto v : Board.neighbors(i))
+            //Los grupos de fichas opuestas, borrar ese grado de libertad
+            if(pieces[v].type != type)
             {
-                if (pieces[v].type != 'N')
-                {
-                    parent = groups.find_root(v);
-                    is_visited.insert(parent);
-                    if (is_visited.size() != current_size)
-                    {
-                        current_size++;
-                        pieces[parent].liberties++;
-                    }
-                }
+                auto parent = groups.find_root(v);
+                pieces[parent].libertiesNodes.erase(node);
             }
+            //Unir con los del mismo tipo de fichas.
+            else if(!groups.are_in_same_connected_component(v,node))
+            {
+                auto old_parent = groups.find_root(v);
+                groups.merge(node, v);
+                
+                pieces[node].libertiesNodes.insert(pieces[old_parent].libertiesNodes.begin(),
+                                                   pieces[old_parent].libertiesNodes.end());
+            }   
         }
     }
+
+    //El nuevo nodo agregado es el padre de todo.
+    //Tenemos que eliminarlo porque antes era una casilla vacia.
+    pieces[node].libertiesNodes.erase(node);
 }
+
 
 std::vector<int> BoardGame::kill_group(vertex node)
 {
@@ -390,46 +309,43 @@ std::vector<int> BoardGame::kill_group(vertex node)
     for (int i = 0; i < Board.num_vertices(); ++i)
         groups.find_root(i);
 
-    int i = 0;
-    std::vector<bool> is_visited(Board.num_vertices(), false);
+    vertex node_ = 0;
 
     for (auto v : groups.parents())
     {
         if (v == root)
         {
-            for (auto neighbor : Board.neighbors(i))
+            //Agrega la pieza desplazada del tablero 
+            //al grupo de fichas del adversario como grado de libertad.
+            for (auto neighbor : Board.neighbors(node_))
             {
-                if (pieces[i].type != pieces[neighbor].type &&
-                    pieces[neighbor].type != 'N' && !is_visited[neighbor])
+                if (pieces[node_].type != pieces[neighbor].type &&
+                    pieces[neighbor].type != 'N' )
                 {
-                    is_visited[neighbor] = true;
                     vertex current = groups.find_root(neighbor);
-
-                    if (update_by_linear_algorithm)
-                        pieces[current].liberties++;
-                    else
-                        pieces[current].libertiesNodes.insert(i);
+                    if(pieces[current].libertiesNodes.find(node_) == pieces[current].libertiesNodes.end())
+                        pieces[current].libertiesNodes.insert(node_);
                 }
             }
 
-            groups.reset_parent(i);
-            pieces[i].reset();
+            groups.reset_parent(node_);
+            pieces[node_].reset();
 
-            array_nodes.push_back(i);
+            array_nodes.push_back(node_);
         }
-        i++;
+        node_++;
     }
 
     return array_nodes;
 }
 
-std::vector<int> BoardGame::dead_vertices(vertex node)
+std::vector<int> BoardGame::dead_vertices(vertex node)  
 {
     std::vector<int> array_nodes;
     for (vertex v : Board.neighbors(node))
     {
-        if (is_dead(v) && pieces[v].type != 'N' &&
-            !groups.are_in_same_connected_component(v, node))
+        //Revisar esta parte, que está haciendo cosas extrañas.
+        if (pieces[v].type != 'N' && pieces[v].type != pieces[node].type && is_dead(v) )
         {
             std::vector<int> new_nodes = kill_group(v);
             array_nodes.insert(array_nodes.end(),
@@ -447,20 +363,66 @@ void BoardGame::Put_piece(vertex node)
     auto type = players[current_player];
     pieces[node].type = type;
 
-    if (update_by_linear_algorithm)
-    {
-        for (auto v : Board.neighbors(node))
-        {
-            if (pieces[v].type == type &&
-                !groups.are_in_same_connected_component(v, node))
-                groups.merge(v, node);
-        }
-
-        update_liberties_linear();
-    }
-
-    else
-        update_liberties(node, type);
+    update_liberties(node, type);
 
     current_player ^= 1;
+}
+
+
+DominatedCells BoardGame::count_dominated_region(vertex node, std::vector<bool>& is_visited_global) const
+{
+    std::vector<bool> is_visited(Board.num_vertices(), false);
+    std::vector<vertex> walls;
+    std::stack<vertex> frontier;
+
+    frontier.push(node);
+    int count_empty_cells = 0;
+
+    while (!frontier.empty())
+    {
+        vertex top = frontier.top();
+        frontier.pop();
+
+        is_visited[top] = true;
+        is_visited_global[top] = true;
+    
+        if (pieces[top].type != 'N' )
+        {
+            walls.push_back(top);
+            continue;
+        }
+        
+        count_empty_cells++;
+
+        for (auto neighbor : Board.neighbors(top))
+        {
+            if(!is_visited[neighbor])
+                frontier.push(neighbor);
+        }
+
+    }
+
+    char group = 'N';
+    //Revisa quien es el jugador que domina esa zona.
+    for (auto v : walls)
+    {
+        if (is_frontier(v, is_visited))
+        {
+            group = pieces[v].type;
+            break;
+        }
+    }
+
+    //Revisa si todas las fichas que rodean esa parte son del mismo tipo.
+    for (auto v : walls)
+    {
+        if (is_frontier(v, is_visited) && group != pieces[v].type)
+        {
+            group = 'N';
+            count_empty_cells = 0;
+            break;
+        }
+    }
+    
+    return {count_empty_cells, group};
 }

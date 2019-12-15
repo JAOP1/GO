@@ -2,7 +2,6 @@
 
 #include "BoardGame.hpp"
 #include "GraphGUI.hpp"
-#include "Include/MinMaxSearch.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
@@ -175,8 +174,9 @@ void GUI::ClientOnMouseButtonPress(sf::Mouse::Button btn)
 
         if (v != INVALID_VERTEX)
         {
-            Go.make_action(v);
-            is_first_player = !is_first_player;
+            //Regresa true si pudo realizar la acción.
+            if(Go.make_action(v))
+                is_first_player = !is_first_player;
         }
     }
 }

@@ -29,11 +29,21 @@ public:
         return t;
     }
 
+    void reset(size_type n_vertices)
+    {
+        P.clear();
+        P.resize(n_vertices);
+        std::iota(P.begin(), P.end(), 0L);
+        m_num_components = n_vertices;
+    }
+
     void reset()
     {
         std::iota(P.begin(), P.end(), 0);
         m_num_components = size();
     }
+
+    void reset_parent(int x) { P[x] = x;}
 
     void merge(index_type a, index_type b)
     {
@@ -49,18 +59,12 @@ public:
         return find_root(a) == find_root(b);
     }
 
-    void reset(size_type n_vertices)
-    {
-        P.clear();
-        P.resize(n_vertices);
-        std::iota(P.begin(), P.end(), 0L);
-    }
 
     size_type num_components() const { return m_num_components; }
 
     index_type size() const { return P.size(); }
 
-    std::vector<index_type> parents() { return P; }
+  //  std::vector<index_type> parents() { return P; }
     std::vector<index_type>& parents() const { return P; }
 
     void parent(index_type node) { P[node] = node; }
