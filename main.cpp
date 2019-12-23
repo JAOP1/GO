@@ -16,8 +16,8 @@ int main()
     BoardGame Tablero(G); // Create rules set.
     BoardGraphGUI Graph1(Tablero); // Create graph graphic.
     GUI APP(Graph1, 700, 700); // Listener and main window loop.
-    // MinMaxSearch MMS(15,'B');
-    MCTS MonteCarlo(100, 1000, 'B');
+    //MinMaxSearch MMS(15,'B');
+    MCTS MonteCarlo(50, 250, 'B');
     APP.Run_VS_AI(MonteCarlo, true);
     // APP.Run_VS_AI(MMS,true); //False when the AI is the second player,
     // otherwise, it is first. APP.Run(); //If you want play against someone else.

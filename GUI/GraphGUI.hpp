@@ -82,7 +82,7 @@ public:
     }
 
     void draw(sf::RenderWindow& window);
-    void make_action(vertex v);
+    bool make_action(vertex v);
 
     vertex edge_start = INVALID_VERTEX;
     // Rules set.
@@ -160,7 +160,8 @@ void BoardGraphGUI::draw(sf::RenderWindow& window)
     }
 }
 
-void BoardGraphGUI::make_action(vertex v)
+//Para garantizar que pudo ejecutar la acción.
+bool BoardGraphGUI::make_action(vertex v)
 {
     char player = BoardGraph.player_status();
     sf::Color color = sf::Color::Black;
@@ -177,5 +178,8 @@ void BoardGraphGUI::make_action(vertex v)
         std::vector<int> nodes_killed = BoardGraph.make_action(v);
         for (int vertice : nodes_killed)
             nodes[vertice].circle.setFillColor(sf::Color::Cyan);
+        
+        return true;
     }
+    return false;
 }
