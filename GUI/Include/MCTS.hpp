@@ -28,7 +28,7 @@ private:
     class Node
     {
     public:
-        Node(const  BoardGame& game_state, Action action, Node* Parent = nullptr)
+        Node(const BoardGame& game_state, Action action, Node* Parent = nullptr)
             : parent_(Parent), state_(game_state), applied_action_(action)
         {}
 
@@ -99,7 +99,7 @@ private:
 
     Node& Select(Node& node);
 
-    double get_reward_from_one_simulation(int num_steps,  BoardGame state);
+    double get_reward_from_one_simulation(int num_steps, BoardGame state);
 };
 
 Action MCTS::search(const BoardGame& current_board)
@@ -109,17 +109,17 @@ Action MCTS::search(const BoardGame& current_board)
     for (int i = 0; i < times_to_repeat; ++i)
     {
         Node& leaf = Select(root);
-        //std::cout << "Ha finalizado etapa de seleccion" << std::endl;
+        // std::cout << "Ha finalizado etapa de seleccion" << std::endl;
         Expand(leaf);
-        //std::cout << "Ha finalizado etapa de expandir" << std::endl;
+        // std::cout << "Ha finalizado etapa de expandir" << std::endl;
 
         for (auto& child : leaf.children())
         {
 
             double simulation_reward = Simulation(child);
-            //std::cout << "Ha finalizado etapa de simulacion" << std::endl;
+            // std::cout << "Ha finalizado etapa de simulacion" << std::endl;
             Backpropagation(child, simulation_reward);
-            //std::cout << "Ha finalizado etapa de propagacion" << std::endl;
+            // std::cout << "Ha finalizado etapa de propagacion" << std::endl;
 
             //-------------------- nuevo -------------------------------------
 
@@ -134,7 +134,8 @@ Action MCTS::search(const BoardGame& current_board)
             //----------------------------------------------------------------
         }
 
-        //std::cout << "Tableros en memoria: " << global_information.size() << std::endl;
+        // std::cout << "Tableros en memoria: " << global_information.size() <<
+        // std::endl;
     }
 
     Node best_choice = child_highest_confidence(root);
@@ -170,7 +171,7 @@ void MCTS::Expand(Node& node)
     BoardGame state = node.state();
     std::vector<vertex> actions_set = state.available_cells();
 
-    //std::cout << "Conjunto de acciones " << actions_set.size() << std::endl;
+    // std::cout << "Conjunto de acciones " << actions_set.size() << std::endl;
 
     for (auto v : actions_set)
         node.add_child(v);
@@ -213,7 +214,7 @@ MCTS::Node& MCTS::child_highest_confidence(Node& node)
     return *child_highest_confidence_;
 }
 
-double MCTS::get_reward_from_one_simulation(int num_steps,  BoardGame state)
+double MCTS::get_reward_from_one_simulation(int num_steps, BoardGame state)
 {
     for (int current_step = 0; current_step < num_steps && !state.is_complete();
          ++current_step)
@@ -236,6 +237,6 @@ double MCTS::get_reward_from_one_simulation(int num_steps,  BoardGame state)
         }
         //--------------------------------------------------------------
     }
-    //std::cout<< "Ha finalizado el proceso de conseguir recompensa"<<std::endl;
+    // std::cout<< "Ha finalizado el proceso de conseguir recompensa"<<std::endl;
     return state.reward(player_);
 }

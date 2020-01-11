@@ -174,8 +174,8 @@ void GUI::ClientOnMouseButtonPress(sf::Mouse::Button btn)
 
         if (v != INVALID_VERTEX)
         {
-            //Regresa true si pudo realizar la acción.
-            if(Go.make_action(v))
+            // Regresa true si pudo realizar la acción.
+            if (Go.make_action(v))
                 is_first_player = !is_first_player;
         }
     }
