@@ -11,12 +11,9 @@ public:
     using size_type = std::int64_t;
     using index_type = std::int64_t;
 
-    disjoint_sets(index_type n) : P(n), nodes_in_group(n) ,m_num_components(n)
+    disjoint_sets(index_type n) : P(n), nodes_in_group(n,1) ,m_num_components(n)
     {
         std::iota(P.begin(), P.end(), 0L);
-        for(int  i = 0 ;  i< n ; ++i)
-            nodes_in_group[i]=1;
-
     }
 
     index_type find_root(index_type t) const
