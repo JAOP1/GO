@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Include/DisjointSets.hpp"
+#include "Include/Extra/DisjointSets.hpp"
 #include "Include/Extra/Graph.hpp"
 #include <cstdlib>
 #include <limits>

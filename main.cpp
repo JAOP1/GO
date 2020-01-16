@@ -3,8 +3,8 @@
 #include "GUI/Client.hpp"
 #include "GUI/GraphGUI.hpp"
 #include "GUI/Include/Extra/Graph.hpp"
-#include "GUI/Include/MCTS.hpp"
-#include "GUI/Include/MinMaxSearch.hpp"
+#include "GUI/Include/Search_Algorithms/MCTS.hpp"
+#include "GUI/Include/Search_Algorithms/MinMaxSearch.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
