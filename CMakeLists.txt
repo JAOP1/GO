@@ -3,10 +3,14 @@ cmake_minimum_required(VERSION 3.2)
 project(GUI_GO)
 enable_language(C CXX)
 
+find_package(Torch REQUIRED)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 option(BUILD_VISUALIZER "Build visualizer (requires SFML)" ON)
+
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/GUI/
@@ -30,6 +34,6 @@ if (${BUILD_VISUALIZER})
 
     add_executable(visualizer main.cpp )
     
-    target_link_libraries(visualizer sfml-window sfml-graphics sfml-system)
+    target_link_libraries(visualizer sfml-window sfml-graphics sfml-system "${TORCH_LIBRARIES}")
     
 endif()
