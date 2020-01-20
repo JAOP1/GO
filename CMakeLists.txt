@@ -7,7 +7,7 @@ find_package(Torch REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 option(BUILD_VISUALIZER "Build visualizer (requires SFML)" ON)
 
@@ -15,7 +15,8 @@ option(BUILD_VISUALIZER "Build visualizer (requires SFML)" ON)
 include_directories(
     ${PROJECT_SOURCE_DIR}/GUI/
     ${PROJECT_SOURCE_DIR}/GUI/Include
-    ${PROJECT_SOURCE_DIR}/GUI/Include/Extra)
+    ${PROJECT_SOURCE_DIR}/GUI/Include/Extra
+    ${PROJECT_SOURCE_DIR}/GUI/Include/Search_Algorithms)
 
 
 
@@ -26,6 +27,7 @@ if (${BUILD_VISUALIZER})
     include_directories(GUI/)
     include_directories(GUI/Include)
     include_directories(GUI/Include/Extra)
+    include_directories(GUI/Include/Search_Algorithms)
 
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/font.ttf ${CMAKE_CURRENT_BINARY_DIR}/font.ttf COPYONLY)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fondo.jpg ${CMAKE_CURRENT_BINARY_DIR}/fondo.jpg COPYONLY)
