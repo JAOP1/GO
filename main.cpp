@@ -20,6 +20,7 @@ int main()
     MCTS MonteCarlo(50, 250, 'B');
     APP.Run_VS_AI(MonteCarlo, true);
     // APP.Run_VS_AI(MMS,true); //False when the AI is the second player,
+   // APP.Run();
     // otherwise, it is first. APP.Run(); //If you want play against someone else.
 
     return 0;
