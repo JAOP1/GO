@@ -1,6 +1,6 @@
 # GO generalized game engine.
-The target is develop a game engine wich works in different boardgames. 
-This boardgames are represented by graphs.
+The target is develop a game engine wich works in different Go boardgames. 
+The board are represented by graph.
 
 ## Requirements.
   * LibTorch. (you can download [here!](https://pytorch.org/))
