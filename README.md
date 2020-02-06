@@ -2,11 +2,11 @@
 The target is develop a game engine wich works in different boardgames. 
 This boardgames are represented by graphs.
 
-##Requirements.
+## Requirements.
   * LibTorch. (you can download [here!](https://pytorch.org/))
   * SFML.
 
-##Using
+## Using
 
   We need to create a new directory in the same project directory.
   ```
