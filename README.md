@@ -11,7 +11,7 @@ This boardgames are represented by graphs.
   We need to create a new directory in the same project directory.
   ```
   mkdir build/
-  cd buil/
+  cd build/
   ```
   After then, we continue with the process in the cmakefile.
 
