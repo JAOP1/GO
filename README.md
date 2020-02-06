@@ -3,26 +3,26 @@ The target is develop a game engine wich works in different boardgames.
 This boardgames are represented by graphs.
 
 #Requirements.
-*LibTorch. (you can download [here!](https://pytorch.org/)
-*SFML.
+  *LibTorch. (you can download [here!](https://pytorch.org/)
+  *SFML.
 
 ##Using
 
-We need to create a new directory in the same project directory.
-```
-mkdir build/
-cd buil/
-```
-After then, we continue with the process in the cmakefile.
+  We need to create a new directory in the same project directory.
+  ```
+  mkdir build/
+  cd buil/
+  ```
+  After then, we continue with the process in the cmakefile.
 
-```
-cmake ..
-make
-```
+  ```
+  cmake ..
+  make
+  ```
 
-And finally, we only execute.
-```
-./visualizer
-```
+  And finally, we only execute.
+  ```
+  ./visualizer
+  ```
 
 
