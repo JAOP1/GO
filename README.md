@@ -8,7 +8,7 @@ The board are represented by graph.
 
 ## Using
 
-  We need to create a new directory in the same project directory.
+  We need to create a new directory in the same project.
   ```
   mkdir build/
   cd build/
