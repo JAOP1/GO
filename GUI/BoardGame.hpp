@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Include/DisjointSets.hpp"
+#include "Include/Extra/DisjointSets.hpp"
 #include "Include/Extra/Graph.hpp"
+#include "Include/Extra/hash_utilities.hpp"
 #include <cstdlib>
 #include <limits>
 #include <set>
@@ -9,13 +10,14 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <functional>
 
 using size_type = std::int64_t;
 using index_type = std::int64_t;
 using vertex = std::int64_t;
 using player = char;
 
-struct stats_node
+struct board_node
 {
 
     void reset()
@@ -118,13 +120,15 @@ private:
         return false;
     }
 
-
+    bool is_alive_group(vertex v) const ;
 
     //Variables 
     std::vector<player> players = {'B', 'W'};
-    int current_player = 0;
-    std::vector<stats_node> pieces;
+    int current_player = 0; 
+    std::vector<bool> resigned_player = {false,false}; //Si pasó un jugador.
+    std::vector<board_node> pieces; //Piezas en el tablero.
     disjoint_sets groups;
+    
    
 };
 
@@ -137,7 +141,7 @@ std::vector<char> BoardGame::show_current_state() const
         std::transform(pieces.begin(),
                        pieces.end(),
                        type_cell.begin(),
-                       [](const stats_node& x)->char { return x.type; });
+                       [](const board_node& x)->char { return x.type; });
 
         return type_cell;
     }
@@ -150,6 +154,9 @@ std::vector<vertex> BoardGame::available_cells() const
             if (pieces[v].type == 'N' && is_valid_move(v))
                 cells.push_back(v);
         }
+
+        //Accion de resignar la aniadiremos a las celdas disponibles.
+        //cells.push_back(-1);
         return cells;
     }
 
@@ -157,10 +164,21 @@ std::vector<vertex> BoardGame::available_cells() const
 
 std::vector<int> BoardGame::make_action(vertex v)  
 {
-    Put_piece(v);
-    std::vector<int> result = dead_vertices(v);
+    //Cuando un jugador pasa.
+    if(v == -1)
+    {
+        resigned_player[current_player]  = true;
+        current_player ^= 1;
+        return {}; 
+    }
 
-    return result;
+    resigned_player[0] = false;
+    resigned_player[1] = false;
+    Put_piece(v);
+    current_player ^= 1;
+    return  dead_vertices(v);
+
+    
 }
 
 void BoardGame::undo_action(vertex v) 
@@ -199,8 +217,7 @@ int BoardGame::reward(char player) const
 
 bool BoardGame::is_complete() const
 {
-    //incomplete
-    return false;
+    return (resigned_player[0] && resigned_player[1]) ;
 }
 
 
@@ -209,13 +226,20 @@ Un movimiento es valido, si es posible colocar y no se suicida.
 */
 bool BoardGame::is_valid_move(vertex v) const
 {
+    if(v == -1)
+        return true;
     //Esta posicion ya está ocupada.
     if (pieces[v].type != 'N')
         return false;
 
+    //Revisar si no es un grupo seguro.
+    if(is_alive_group(v))
+        return false;
+
     auto type = players[current_player];
     std::set<vertex> empty_cells;
-    int min_liberties = std::numeric_limits<int>::max();
+    std::set<vertex> parents;
+    int min_liberties_opponent = std::numeric_limits<int>::max();
 
     for (auto neighbor : Board.neighbors(v))
     {
@@ -225,26 +249,27 @@ bool BoardGame::is_valid_move(vertex v) const
 
         else
         {
+            vertex parent = groups.find_root(neighbor);
             //Ver si es posible quitar un grupo del otro jugador.
             if(pieces[neighbor].type != type)
-                min_liberties = std::min(min_liberties , liberties(neighbor));
+                min_liberties_opponent = std::min(min_liberties_opponent , liberties(neighbor));
 
             //Unir grupos del mismo tipo, para contar celdas vacias.
-            else if(!groups.are_in_same_connected_component(v,neighbor))
+            else if(parents.find(parent) == parents.end() )//!groups.are_in_same_connected_component(v,neighbor))
             {
-                vertex parent = groups.find_root(neighbor);
                 empty_cells.insert(pieces[parent].libertiesNodes.begin(),
-                            pieces[parent].libertiesNodes.end()); 
+                            pieces[parent].libertiesNodes.end());
+                parents.insert(parent);         
             }
         }
     }
 
-    min_liberties--;
+    min_liberties_opponent--;
     empty_cells.erase(v);
     //Si al colocar la ficha nueva, tiene más grados de libertad
     // o algun grupo pierde todos sus grados de libertad. 
     //En ese caso significa que se estaría suicidando. 
-    if (!empty_cells.empty() || min_liberties == 0)
+    if (!empty_cells.empty() || min_liberties_opponent == 0 )
         return true;
 
     return false;
@@ -258,6 +283,7 @@ vertex BoardGame::random_action() const
 
     if (actions_set.size() == 0)
         return -1;
+
     int index = rand() % actions_set.size();
     // std::cout<<index<<std::endl;
     return actions_set[index];
@@ -313,6 +339,7 @@ std::vector<int> BoardGame::kill_group(vertex node)
 
     for (auto v : groups.parents())
     {
+
         if (v == root)
         {
             //Agrega la pieza desplazada del tablero 
@@ -323,8 +350,7 @@ std::vector<int> BoardGame::kill_group(vertex node)
                     pieces[neighbor].type != 'N' )
                 {
                     vertex current = groups.find_root(neighbor);
-                    if(pieces[current].libertiesNodes.find(node_) == pieces[current].libertiesNodes.end())
-                        pieces[current].libertiesNodes.insert(node_);
+                    pieces[current].libertiesNodes.insert(node_);
                 }
             }
 
@@ -365,7 +391,7 @@ void BoardGame::Put_piece(vertex node)
 
     update_liberties(node, type);
 
-    current_player ^= 1;
+    
 }
 
 
@@ -425,4 +451,51 @@ DominatedCells BoardGame::count_dominated_region(vertex node, std::vector<bool>&
     }
     
     return {count_empty_cells, group};
+}
+
+bool BoardGame::is_alive_group(vertex v) const
+{
+    
+    std::function<bool (vertex)> is_eye = [&](vertex v)
+    {
+        auto neighbors = Board.neighbors(v);
+        vertex label_ = groups.find_root(neighbors[0]);
+
+        for(auto neighbor :  neighbors)
+        {
+            //Nos interesan los ojos de nuestro color.
+            if(pieces[neighbor].type != players[current_player])
+            {
+                return false;
+            }
+
+            // Aqui indica si corresponden el mismo conjunto de piezas al mismo grupo.
+            vertex label_group = groups.find_root(neighbor); 
+            if(label_group != label_)
+                return false;
+            
+        }
+
+        return true;
+    };
+
+
+    if(!is_eye(v))
+        return false;
+    
+    //Revisar posibles candidatos de segundo ojo.
+    auto neighbors = Board.neighbors(v);
+    vertex label_ = groups.find_root(neighbors[0]);
+    std::set<vertex>::iterator it = pieces[label_].libertiesNodes.begin();
+
+    for(it ; it != pieces[label_].libertiesNodes.end() ; ++it)
+    {
+        vertex cell = *it;
+        if(cell == v)
+            continue;
+
+        if(is_eye(cell))
+            return true;
+    }
+    return false;
 }

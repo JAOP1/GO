@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../BoardGame.hpp"
-#include "Extra/Utilities.hpp"
+#include "../Extra/hash_utilities.hpp"
 #include <cmath>
 #include <limits>
 #include <stack>
@@ -215,13 +215,10 @@ MCTS::Node& MCTS::child_highest_confidence(Node& node)
 
 double MCTS::get_reward_from_one_simulation(int num_steps,  BoardGame state)
 {
-    for (int current_step = 0; current_step < num_steps && !state.is_complete();
-         ++current_step)
+    for(int  i = 0 ; i < 60 && !state.is_complete() ; ++i)
     {
         Action cell = state.random_action();
-
-        // No action available, so the cell would be -1.
-        if (cell == -1)
+        if(cell == -1)
             break;
 
         state.make_action(cell);

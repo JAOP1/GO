@@ -171,11 +171,14 @@ bool BoardGraphGUI::make_action(vertex v)
     if (BoardGraph.is_valid_move(v))
     {
 
-        std::cout << "Accion realizada para el jugador " << player << std::endl;
+        std::vector<int> nodes_killed = BoardGraph.make_action(v);
+        
+        if(v == -1)
+            return true;
+            
         nodes[v].circle.setFillColor(color);
 
         // Update nodes wich are out of board.
-        std::vector<int> nodes_killed = BoardGraph.make_action(v);
         for (int vertice : nodes_killed)
             nodes[vertice].circle.setFillColor(sf::Color::Cyan);
         

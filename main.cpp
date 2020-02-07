@@ -3,8 +3,8 @@
 #include "GUI/Client.hpp"
 #include "GUI/GraphGUI.hpp"
 #include "GUI/Include/Extra/Graph.hpp"
-#include "GUI/Include/MCTS.hpp"
-#include "GUI/Include/MinMaxSearch.hpp"
+#include "GUI/Include/Search_Algorithms/MCTS.hpp"
+#include "GUI/Include/Search_Algorithms/MinMaxSearch.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
@@ -20,6 +20,7 @@ int main()
     MCTS MonteCarlo(50, 250, 'B');
     APP.Run_VS_AI(MonteCarlo, true);
     // APP.Run_VS_AI(MMS,true); //False when the AI is the second player,
+   // APP.Run();
     // otherwise, it is first. APP.Run(); //If you want play against someone else.
 
     return 0;

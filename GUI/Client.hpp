@@ -45,11 +45,16 @@ public:
         // run the program as long as the window is open
         while (window.isOpen())
         {
-
+            
             if (is_first_player && !is_building)
             {
-                auto action = AI_Algorithm.search(Go.BoardGraph);
+                vertex action = -1;
+                int size_action_set = Go.BoardGraph.available_cells().size();
+                if(size_action_set != 0)
+                    action = AI_Algorithm.search(Go.BoardGraph);
+
                 Go.make_action(action);
+                std::cout<<"Algoritmo pensó en esta accion "<<action<<std::endl;
                 is_first_player = !is_first_player;
                 // Go.BoardGraph.show_array();
             }
@@ -140,6 +145,13 @@ void GUI::ClientOnKeyPress(sf::Keyboard::Key key)
         std::cout << "Ha finalizado la construccion del grafo." << std::endl;
         is_building = false;
         Go.Update_board();
+    }
+    //Caso cuando pasa jugador.
+    else if(!is_building && key == sf::Keyboard::Space)
+    {
+        std::cout<<"Pasa jugador actual."<<std::endl;
+        Go.make_action(-1);
+        is_first_player = !is_first_player;
     }
 }
 

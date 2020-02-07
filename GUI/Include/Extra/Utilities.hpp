@@ -6,6 +6,7 @@
 #include <cmath>
 #include <unordered_map>
 #include <vector>
+#include <random>
 
 // Regresa num de nodos por fila y su distancia
 std::vector<int> EdgeSizeNodes(int num_nodes, int widht, int height)
@@ -23,6 +24,8 @@ std::vector<int> EdgeSizeNodes(int num_nodes, int widht, int height)
     return arreglo;
 }
 
+
+//Utilizamos esta funcion en GUI/Graph con el objetivo de saber si hay colisiones.
 double distance(const sf::Vector2i& A, const sf::Vector2i& B)
 {
     double X = std::pow(A.x - B.x, 2);
@@ -31,31 +34,37 @@ double distance(const sf::Vector2i& A, const sf::Vector2i& B)
     return std::sqrt(X + Y);
 }
 
-template <class T>
-struct polynomial_hash
+/*
+using board_state = std::vector<int>
+
+struct Result_Game
 {
-    using ull = unsigned long long;
-    using ll = long long;
-
-    ull operator()(std::vector<T> const& pieces) const
-    {
-        ll x = 31;
-        ll p = 1000000007;
-        ll result = 0;
-
-        for (ll v = 0; v < pieces.size(); ++v)
-        {
-            ll color = 0;
-            if (pieces[v] == 'B')
-                color = 2;
-            else if (pieces[v] == 'W')
-                color = 1;
-
-            result *= x;
-            result += color;
-            reduce_mod(result, p);
-        }
-
-        return result;
-    }
+    Result_Game(std::vector<>):{}
 };
+
+
+template< class E, class T>
+double evaluate(E& Agent1, T& Agent2 )
+{   
+    double Agent1_won = 0;
+    double Agent2_won = 0;
+    
+    for(int round  = 0 ;  round < num_rounds; ++round)
+    {
+        reward = simulated_game(Agent1, Agent2 , false); //First engine, Second engine and save history.
+    }
+
+
+    for round in range(Parameters.ROUNDS):
+        game, reward = combat_game(Agent1, Agent2, save_history=False)
+
+        if reward > 0.4:
+            Agent1_won += 1
+        
+        elif reward <0.4:
+            Agent2_won +=1
+            
+    return Agent1_won / (Agent1_won + Agent2_won)
+}
+
+*/
