@@ -83,6 +83,7 @@ private:
     int times_to_repeat;
     char player_;
     bool do_memoization_; // nuevo
+    int tree_size = 0;
 
     using state_t = std::vector<char>;
     using memoizer = std::unordered_map<state_t, double, polynomial_hash<char>>;
@@ -108,6 +109,8 @@ Action MCTS::search(const BoardGame& current_board)
 
     for (int i = 0; i < times_to_repeat; ++i)
     {
+        std::cout<<"Step "<<i<<" of "<<times_to_repeat<<std::endl;
+        std::cout<<"Size tree "<<tree_size<<std::endl;
         Node& leaf = Select(root);
         //std::cout << "Ha finalizado etapa de seleccion" << std::endl;
         Expand(leaf);
@@ -136,7 +139,7 @@ Action MCTS::search(const BoardGame& current_board)
 
         //std::cout << "Tableros en memoria: " << global_information.size() << std::endl;
     }
-
+    tree_size = 0;
     Node best_choice = child_highest_confidence(root);
     // std::cout<<"Encuentra el que da mayor recompensa"<<std::endl;
     return best_choice.action();
@@ -169,7 +172,7 @@ void MCTS::Expand(Node& node)
 {
     BoardGame state = node.state();
     std::vector<vertex> actions_set = state.available_cells();
-
+    tree_size += actions_set.size();
     //std::cout << "Conjunto de acciones " << actions_set.size() << std::endl;
 
     for (auto v : actions_set)
