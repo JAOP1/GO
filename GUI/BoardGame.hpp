@@ -11,11 +11,15 @@
 #include <tuple>
 #include <vector>
 #include <functional>
+#include <random>
 
 using size_type = std::int64_t;
 using index_type = std::int64_t;
 using vertex = std::int64_t;
 using player = char;
+
+std::default_random_engine generator;
+std::uniform_real_distribution<double> distribution(0.0,1.0);
 
 struct board_node
 {
@@ -29,6 +33,7 @@ struct board_node
 
     std::set<vertex> libertiesNodes;
     int liberties = 0;
+    int eyes_by_group = 0;
     char type = 'N';
 };
 
@@ -53,7 +58,7 @@ public:
     
     vertex parent_node(vertex node) const { return groups.find_root(node); }
 
-    std::vector<vertex> available_cells() const;
+    std::vector<vertex> get_available_sample_cells( double portion) const;
     
     int reward(char player) const;
 
@@ -122,7 +127,8 @@ private:
 
     bool is_alive_group(vertex v) const ;
 
-    //Variables 
+
+    //Variables of game 
     std::vector<player> players = {'B', 'W'};
     int current_player = 0; 
     std::vector<bool> resigned_player = {false,false}; //Si pasó un jugador.
@@ -146,12 +152,13 @@ std::vector<char> BoardGame::show_current_state() const
         return type_cell;
     }
 
-std::vector<vertex> BoardGame::available_cells() const
+std::vector<vertex> BoardGame::get_available_sample_cells(double portion ) const 
     {
+        
         std::vector<vertex> cells;
         for (vertex v = 0; v < Board.num_vertices(); ++v)
         {
-            if (pieces[v].type == 'N' && is_valid_move(v))
+            if (pieces[v].type == 'N' && is_valid_move(v) && distribution(generator) <= portion)
                 cells.push_back(v);
         }
 
@@ -278,7 +285,7 @@ bool BoardGame::is_valid_move(vertex v) const
 // If not available action in the current board.
 vertex BoardGame::random_action() const
 {
-    auto actions_set = available_cells();
+    auto actions_set = get_available_sample_cells(1.0);
     // std::cout<<actions_set.size()<<std::endl;
 
     if (actions_set.size() == 0)
