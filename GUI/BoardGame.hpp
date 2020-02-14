@@ -28,12 +28,13 @@ struct board_node
     {
         liberties = 0;
         libertiesNodes.clear();
+        is_alive = false;
         type = 'N';
     }
 
     std::set<vertex> libertiesNodes;
     int liberties = 0;
-    int eyes_by_group = 0;
+    bool is_alive = false;
     char type = 'N';
 };
 
@@ -51,6 +52,24 @@ public:
         , pieces(G.num_vertices())
         , groups(G.num_vertices())
     {}
+
+    void debug_function() const
+    {
+        for(auto v : Board.vertices())
+        {
+            if(pieces[v].type != 'N')
+            {
+                vertex nodo = groups.find_root(v);
+                std::cout<<"sjdj"<<std::endl;
+                if(pieces[nodo].is_alive)
+                    std::cout<<"Grupo "<<nodo<<" vivo"<<std::endl;
+            }
+        }
+
+        for(auto l : show_current_state())
+            std::cout<<l<<" ";
+        std::cout.put('\n');
+    }
 
     char player_status() const { return players[current_player]; }
 
@@ -125,7 +144,9 @@ private:
         return false;
     }
 
-    bool is_alive_group(vertex v) const ;
+    
+    void check_alive_groups();
+    void find_alive_groups(std::vector<char>& pieces_color_) const;
 
 
     //Variables of game 
@@ -182,8 +203,11 @@ std::vector<int> BoardGame::make_action(vertex v)
     resigned_player[0] = false;
     resigned_player[1] = false;
     Put_piece(v);
+    auto muertos  = dead_vertices(v);
+    check_alive_groups();
     current_player ^= 1;
-    return  dead_vertices(v);
+
+    return muertos; 
 
     
 }
@@ -233,14 +257,25 @@ Un movimiento es valido, si es posible colocar y no se suicida.
 */
 bool BoardGame::is_valid_move(vertex v) const
 {
+    std::function<bool (vertex, char)> is_eye_for_player = [&](vertex v , char color)
+    {
+        auto neighbors = Board.neighbors(v);
+
+        for(auto neighbor :  neighbors)
+        {
+            if(pieces[neighbor].type != color || !pieces[neighbor].is_alive)
+                return false;
+        }
+
+        return true;
+    };
+
+    //Significa que pasa el jugador.
     if(v == -1)
         return true;
-    //Esta posicion ya está ocupada.
-    if (pieces[v].type != 'N')
-        return false;
 
-    //Revisar si no es un grupo seguro.
-    if(is_alive_group(v))
+    //Esta posicion ya está ocupada.
+    if (pieces[v].type != 'N' || is_eye_for_player(v, players[current_player]))
         return false;
 
     auto type = players[current_player];
@@ -398,6 +433,7 @@ void BoardGame::Put_piece(vertex node)
 
     update_liberties(node, type);
 
+
     
 }
 
@@ -460,49 +496,83 @@ DominatedCells BoardGame::count_dominated_region(vertex node, std::vector<bool>&
     return {count_empty_cells, group};
 }
 
-bool BoardGame::is_alive_group(vertex v) const
+
+void BoardGame::find_alive_groups(std::vector<char>& pieces_color) const
 {
     
-    std::function<bool (vertex)> is_eye = [&](vertex v)
+    std::function<bool (vertex, std::vector<char>&)> is_fake_eye = [&](vertex v , std::vector<char>& pieces_color_)
     {
         auto neighbors = Board.neighbors(v);
-        vertex label_ = groups.find_root(neighbors[0]);
+        char  color = pieces_color_[neighbors[0]];
+        if(color == 'N')
+            return false;
 
         for(auto neighbor :  neighbors)
         {
-            //Nos interesan los ojos de nuestro color.
-            if(pieces[neighbor].type != players[current_player])
-            {
+            if(pieces_color_[neighbor] != color)
                 return false;
-            }
-
-            // Aqui indica si corresponden el mismo conjunto de piezas al mismo grupo.
-            vertex label_group = groups.find_root(neighbor); 
-            if(label_group != label_)
-                return false;
-            
         }
 
         return true;
     };
 
-
-    if(!is_eye(v))
-        return false;
-    
-    //Revisar posibles candidatos de segundo ojo.
-    auto neighbors = Board.neighbors(v);
-    vertex label_ = groups.find_root(neighbors[0]);
-    std::set<vertex>::iterator it = pieces[label_].libertiesNodes.begin();
-
-    for(it ; it != pieces[label_].libertiesNodes.end() ; ++it)
+    for(auto v : Board.vertices())
     {
-        vertex cell = *it;
-        if(cell == v)
+        if(pieces_color[v] == 'N')
             continue;
 
-        if(is_eye(cell))
-            return true;
+        vertex label_ = groups.find_root(v);
+        std::set<vertex>::iterator it = pieces[label_].libertiesNodes.begin();
+        int eyes_counter = 0;
+        //Contar número de ojos de ese grupo (no importa que sean falsos).
+        for(it ; it != pieces[label_].libertiesNodes.end() ; ++it)
+        {
+            vertex cell = *it;
+
+            if(is_fake_eye(cell, pieces_color))
+                eyes_counter++;
+        }
+
+        //Borrar grupos con un solo ojo.
+        if(eyes_counter < 2)
+        {
+            for(auto i :  Board.vertices())
+            {
+                vertex parent = groups.find_root(i);
+                if(parent == label_)
+                    pieces_color[i] = 'N';   
+            }
+            find_alive_groups(pieces_color);
+            break;
+        }
     }
-    return false;
+
+}
+
+void BoardGame::check_alive_groups() 
+{
+
+    std::vector<char> current_state_ = show_current_state();
+    /*
+    std::cout<<std::endl;
+    for(auto i : current_state_)
+        std::cout<<i<<" ";
+    std::cout.put('\n');
+*/
+    find_alive_groups(current_state_);
+    for(vertex  i = 0; i < current_state_.size() ; ++i)
+    {
+        if(current_state_[i] != 'N')
+        {
+            vertex label_ = groups.find_root(i);
+            pieces[label_].is_alive=true;
+            std::cout<<"El grupo "<<label_<<" esta vivo"<<std::endl;
+        }
+    }
+    /*
+    for(auto i : current_state_)
+        std::cout<<i<<" ";
+    std::cout.put('\n');
+    */
+
 }

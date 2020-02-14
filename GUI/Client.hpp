@@ -63,6 +63,7 @@ public:
                 {
                     // check all the window's events that were triggered since the
                     // last iteration of the loop
+
                     ClientListener();
                 }
                 is_finished = Go.BoardGraph.is_complete();
@@ -148,11 +149,19 @@ void GUI::ClientOnKeyPress(sf::Keyboard::Key key)
         Go.Update_board();
     }
     //Caso cuando pasa jugador.
-    else if(!is_building && key == sf::Keyboard::Space)
+    else if(!is_building)
     {
-        std::cout<<"Pasa jugador actual."<<std::endl;
-        Go.make_action(-1);
-        is_first_player = !is_first_player;
+        if( key == sf::Keyboard::Space)
+        {
+            std::cout<<"Pasa jugador actual."<<std::endl;
+            Go.make_action(-1);
+            is_first_player = !is_first_player;
+        }
+        else if( key == sf::Keyboard::Num1)
+        {
+            //Utilizaré esta tecla para debug.
+            Go.BoardGraph.debug_function();
+        }
     }
 }
 
