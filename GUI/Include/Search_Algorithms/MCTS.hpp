@@ -15,11 +15,12 @@ using Action = int;
 class MCTS
 {
 public:
-    MCTS(int num_simulation, int num_times, char player, bool do_memoization = true)
+    MCTS(int num_simulation, int num_times, char player,bool do_memoization = true , double pruning_portion = 350 )
         : simulation_num(num_simulation)
         , times_to_repeat(num_times)
         , player_(player)
         , do_memoization_(do_memoization) // nuevo
+        , pruning_portion_(pruning_portion)
     {}
 
     Action search(const BoardGame& current_board);
@@ -78,16 +79,23 @@ private:
         double value_ = 0.0;
         std::vector<Node> children_;
     };
-
+    //Parametros
     int simulation_num;
     int times_to_repeat;
-    char player_;
     bool do_memoization_; // nuevo
+    char player_;
+    double pruning_portion_;
 
+    double tree_size = 0;
     using state_t = std::vector<char>;
     using memoizer = std::unordered_map<state_t, double, polynomial_hash<char>>;
-
     memoizer global_information; // nuevo
+
+    double get_pruning_portion() const
+    {
+        double percentage = tree_size / pruning_portion_;
+        return 1.0 - percentage;
+    }
 
     Node& child_highest_confidence(Node& node);
 
@@ -108,6 +116,10 @@ Action MCTS::search(const BoardGame& current_board)
 
     for (int i = 0; i < times_to_repeat; ++i)
     {
+
+        std::cout<<"Step "<<i <<" of "<<times_to_repeat<<std::endl;
+        std::cout<<"Current size of tree "<<tree_size<<std::endl;
+        
         Node& leaf = Select(root);
         //std::cout << "Ha finalizado etapa de seleccion" << std::endl;
         Expand(leaf);
@@ -137,6 +149,7 @@ Action MCTS::search(const BoardGame& current_board)
         //std::cout << "Tableros en memoria: " << global_information.size() << std::endl;
     }
 
+    tree_size = 0;
     Node best_choice = child_highest_confidence(root);
     // std::cout<<"Encuentra el que da mayor recompensa"<<std::endl;
     return best_choice.action();
@@ -168,9 +181,11 @@ void MCTS::Backpropagation(Node& leaf, const double reward)
 void MCTS::Expand(Node& node)
 {
     BoardGame state = node.state();
-    std::vector<vertex> actions_set = state.available_cells();
+    //std::vector<vertex> actions_set = state.get_available_sample_cells(get_pruning_portion());
+    std::vector<vertex> actions_set = state.get_available_sample_cells(1.0);
 
     //std::cout << "Conjunto de acciones " << actions_set.size() << std::endl;
+    tree_size += actions_set.size();
 
     for (auto v : actions_set)
         node.add_child(v);

@@ -81,7 +81,7 @@ public:
         is_building = false;
     }
 
-    void draw(sf::RenderWindow& window);
+    void draw(sf::RenderWindow& window , bool is_finished);
     bool make_action(vertex v);
 
     vertex edge_start = INVALID_VERTEX;
@@ -106,18 +106,30 @@ bool operator==(const sf::Vector2f A, const sf::Vector2f B)
     return A.x == B.x && A.y == B.y;
 }
 
-void BoardGraphGUI::draw(sf::RenderWindow& window)
+void BoardGraphGUI::draw(sf::RenderWindow& window , bool is_finished)
 {
     sf::Vector2i MousePosition = sf::Mouse::getPosition(window);
 
     // Show the player.
     if (!is_building)
     {
-        std::string player = (BoardGraph.player_status() == 'B' ? "Black"
-                                                                : "White");
-        text.setString("Player: " + player);
+
+        if(!is_finished){
+            std::string player = (BoardGraph.player_status() == 'B' ? "Black"
+                                                                   : "White");
+            text.setString("Player: " + player);
+        }else
+        {
+            int black_reward = BoardGraph.reward('B');
+            int white_reward = BoardGraph.reward('W');
+
+            std::string player = (black_reward > white_reward ? "Black":"White");
+            text.setString(player + " won.");
+        }
+        
         window.draw(text);
     }
+    
 
     if (edge_start != INVALID_VERTEX)
     {
