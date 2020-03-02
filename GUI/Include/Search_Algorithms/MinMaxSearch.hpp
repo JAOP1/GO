@@ -23,7 +23,7 @@ public:
         int max_reward = std::numeric_limits<int>::max();
         Action best_action = -1;
 
-        for (auto v : board.available_cells())
+        for (auto v : board.get_available_sample_cells(1.0))
         {
             // board.make_action(v);
             auto reward = get_reward(board, v, 1, -1, alpha, beta);
@@ -53,7 +53,7 @@ private:
 
         int reward = std::numeric_limits<int>::max(); // Ahorita reviso esto
                                                       // mejor...
-        for (auto v : board.available_cells())
+        for (auto v : board.get_available_sample_cells(1.0))
         {
             // board.make_action(v);
             auto current_reward =

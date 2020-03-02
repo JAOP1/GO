@@ -41,39 +41,41 @@ public:
     void Run_VS_AI(search_algorithm AI_Algorithm, bool player_turn)
     {
         is_first_player = player_turn;
-
+        bool is_finished = false;
         // run the program as long as the window is open
         while (window.isOpen())
         {
-            
-            if (is_first_player && !is_building)
-            {
-                vertex action = -1;
-                int size_action_set = Go.BoardGraph.available_cells().size();
-                if(size_action_set != 0)
-                    action = AI_Algorithm.search(Go.BoardGraph);
 
-                Go.make_action(action);
-                std::cout<<"Algoritmo pensó en esta accion "<<action<<std::endl;
-                is_first_player = !is_first_player;
-                // Go.BoardGraph.show_array();
-            }
-            else
-            {
-
-                // check all the window's events that were triggered since the
-                // last iteration of the loop
-                sf::Event event;
-                while (window.pollEvent(event))
+            if(!is_finished){
+                if (is_first_player && !is_building)
                 {
-                    ClientOnEvent(event);
+                    vertex action = -1;
+                    int size_action_set = Go.BoardGraph.get_available_sample_cells(1.0).size();
+                    if(size_action_set != 0)
+                        action = AI_Algorithm.search(Go.BoardGraph);
+
+                    Go.make_action(action);
+                    std::cout<<"Algoritmo pensó en esta accion "<<action<<std::endl;
+                    is_first_player = !is_first_player;
+                    // Go.BoardGraph.show_array();
                 }
+                else
+                {
+                    // check all the window's events that were triggered since the
+                    // last iteration of the loop
+
+                    ClientListener();
+                }
+                is_finished = Go.BoardGraph.is_complete();
             }
 
-            Draw();
+            ClientListener();
+            Draw(is_finished);
         }
     }
 
+
+    void ClientListener();
     void ClientOnKeyPress(sf::Keyboard::Key key);
     void ClientOnMouseButtonPress(sf::Mouse::Button btn);
     void ClientOnMouseButtonRelease(sf::Mouse::Button btn);
@@ -88,13 +90,13 @@ private:
     bool is_building = true;
     bool is_cursor = false;
 
-    void Draw()
+    void Draw(bool is_finished = false)
     {
         // clear the window with black color
         window.clear(sf::Color::Black);
 
         window.draw(Background);
-        Go.draw(window);
+        Go.draw(window, is_finished);
 
         // end the current frame
         window.display();
@@ -147,11 +149,19 @@ void GUI::ClientOnKeyPress(sf::Keyboard::Key key)
         Go.Update_board();
     }
     //Caso cuando pasa jugador.
-    else if(!is_building && key == sf::Keyboard::Space)
+    else if(!is_building)
     {
-        std::cout<<"Pasa jugador actual."<<std::endl;
-        Go.make_action(-1);
-        is_first_player = !is_first_player;
+        if( key == sf::Keyboard::Space)
+        {
+            std::cout<<"Pasa jugador actual."<<std::endl;
+            Go.make_action(-1);
+            is_first_player = !is_first_player;
+        }
+        else if( key == sf::Keyboard::Num1)
+        {
+            //Utilizaré esta tecla para debug.
+            Go.BoardGraph.debug_function();
+        }
     }
 }
 
@@ -210,5 +220,15 @@ void GUI::ClientOnMouseButtonRelease(sf::Mouse::Button btn)
 
         Go.setEdgeStart(INVALID_VERTEX);
         Go.setSelectedNode(INVALID_VERTEX);
+    }
+}
+
+
+void GUI::ClientListener()
+{
+    sf::Event event;
+    while (window.pollEvent(event))
+    {
+        ClientOnEvent(event);
     }
 }
