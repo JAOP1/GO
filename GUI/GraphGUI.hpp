@@ -81,7 +81,7 @@ public:
         is_building = false;
     }
 
-    void draw(sf::RenderWindow& window , bool is_finished);
+    void draw(sf::RenderWindow& window, bool is_finished);
     bool make_action(vertex v);
 
     vertex edge_start = INVALID_VERTEX;
@@ -106,7 +106,7 @@ bool operator==(const sf::Vector2f A, const sf::Vector2f B)
     return A.x == B.x && A.y == B.y;
 }
 
-void BoardGraphGUI::draw(sf::RenderWindow& window , bool is_finished)
+void BoardGraphGUI::draw(sf::RenderWindow& window, bool is_finished)
 {
     sf::Vector2i MousePosition = sf::Mouse::getPosition(window);
 
@@ -114,22 +114,24 @@ void BoardGraphGUI::draw(sf::RenderWindow& window , bool is_finished)
     if (!is_building)
     {
 
-        if(!is_finished){
+        if (!is_finished)
+        {
             std::string player = (BoardGraph.player_status() == 'B' ? "Black"
-                                                                   : "White");
+                                                                    : "White");
             text.setString("Player: " + player);
-        }else
+        }
+        else
         {
             int black_reward = BoardGraph.reward('B');
             int white_reward = BoardGraph.reward('W');
 
-            std::string player = (black_reward > white_reward ? "Black":"White");
+            std::string player = (black_reward > white_reward ? "Black"
+                                                              : "White");
             text.setString(player + " won.");
         }
-        
+
         window.draw(text);
     }
-    
 
     if (edge_start != INVALID_VERTEX)
     {
@@ -172,7 +174,7 @@ void BoardGraphGUI::draw(sf::RenderWindow& window , bool is_finished)
     }
 }
 
-//Para garantizar que pudo ejecutar la acción.
+// Para garantizar que pudo ejecutar la acción.
 bool BoardGraphGUI::make_action(vertex v)
 {
     char player = BoardGraph.player_status();
@@ -184,16 +186,16 @@ bool BoardGraphGUI::make_action(vertex v)
     {
 
         std::vector<int> nodes_killed = BoardGraph.make_action(v);
-        
-        if(v == -1)
+
+        if (v == -1)
             return true;
-            
+
         nodes[v].circle.setFillColor(color);
 
         // Update nodes wich are out of board.
         for (int vertice : nodes_killed)
             nodes[vertice].circle.setFillColor(sf::Color::Cyan);
-        
+
         return true;
     }
     return false;
