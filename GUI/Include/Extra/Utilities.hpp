@@ -4,9 +4,9 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <cmath>
+#include <random>
 #include <unordered_map>
 #include <vector>
-#include <random>
 
 // Regresa num de nodos por fila y su distancia
 std::vector<int> EdgeSizeNodes(int num_nodes, int widht, int height)
@@ -24,8 +24,8 @@ std::vector<int> EdgeSizeNodes(int num_nodes, int widht, int height)
     return arreglo;
 }
 
-
-//Utilizamos esta funcion en GUI/Graph con el objetivo de saber si hay colisiones.
+// Utilizamos esta funcion en GUI/Graph con el objetivo de saber si hay
+// colisiones.
 double distance(const sf::Vector2i& A, const sf::Vector2i& B)
 {
     double X = std::pow(A.x - B.x, 2);
@@ -45,13 +45,14 @@ struct Result_Game
 
 template< class E, class T>
 double evaluate(E& Agent1, T& Agent2 )
-{   
+{
     double Agent1_won = 0;
     double Agent2_won = 0;
-    
+
     for(int round  = 0 ;  round < num_rounds; ++round)
     {
-        reward = simulated_game(Agent1, Agent2 , false); //First engine, Second engine and save history.
+        reward = simulated_game(Agent1, Agent2 , false); //First engine, Second
+engine and save history.
     }
 
 
@@ -60,11 +61,11 @@ double evaluate(E& Agent1, T& Agent2 )
 
         if reward > 0.4:
             Agent1_won += 1
-        
+
         elif reward <0.4:
             Agent2_won +=1
-            
-    return Agent1_won / (Agent1_won + Agent2_won)
+
+    return Agent1_won/(Agent1_won + Agent2_won)
 }
 
 */
