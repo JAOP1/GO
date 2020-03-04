@@ -99,10 +99,6 @@ public:
 
     Graph Board;
 
-    // Agregagar siguiente linea:
-    // Graph Territory
-    // Esa se debe actualizar en CADA jugada
-
 private:
     // Complement functions by main functions.
     void Put_piece(vertex node);
@@ -149,6 +145,8 @@ private:
     std::vector<bool> resigned_player = {false, false}; // Si pasó un jugador.
     std::vector<board_node> pieces; // Piezas en el tablero.
     disjoint_sets groups;
+    double points_by_white = 0.5;
+    double points_by_black = 0.0;
 };
 
 // Public functions
@@ -195,6 +193,13 @@ std::vector<int> BoardGame::make_action(vertex v)
     resigned_player[1] = false;
     Put_piece(v);
     auto muertos = dead_vertices(v);
+
+    //Actualizar la puntuación del jugador de acuerdo a lo capturado.
+    if(players[current_player] == 'B')
+        points_by_black += muertos.size();
+    else
+        points_by_white += muertos.size();
+
     check_alive_groups();
     current_player ^= 1;
 
@@ -226,11 +231,12 @@ int BoardGame::reward(char player) const
             dominated_by_white += result.num_dominated;
         }
     }
+    //La región que domina el jugador y las piezas capturadas del adversario es la recompensa.
 
     if (player == 'B')
-        return dominated_by_black;
+        return dominated_by_black + points_by_black;
 
-    return dominated_by_white;
+    return dominated_by_white + points_by_white;
 }
 
 bool BoardGame::is_complete() const
@@ -246,19 +252,17 @@ bool BoardGame::is_valid_move(vertex v) const
     std::function<bool(vertex, char)> is_eye_for_player = [&](vertex v,
                                                               char color) {
         auto neighbors = Board.neighbors(v);
-        int count = 0;
 
         for (auto neighbor : neighbors)
         {
+            vertex label_ = groups.find_root(neighbor);
             //Revisar si las casillas adyacentes son del mismo color
-            if (pieces[neighbor].type != color )
+            if (pieces[neighbor].type != color || !pieces[label_].is_alive)
                 return false;
 
-            if( pieces[neighbor].is_alive)
-                count++;
         }
 
-        return count == Board.degree(v);
+        return true;
     };
 
     // Significa que pasa el jugador.

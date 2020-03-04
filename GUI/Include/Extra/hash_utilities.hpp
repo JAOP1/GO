@@ -1,7 +1,7 @@
-#pragma once 
-#include <random>
+#pragma once
 #include "NumberTheory.hpp"
-//Utilizamos esta estructura para hacer una funcion de hash para un vector.
+#include <random>
+// Utilizamos esta estructura para hacer una funcion de hash para un vector.
 template <class T>
 struct polynomial_hash
 {
@@ -31,26 +31,24 @@ struct polynomial_hash
     }
 };
 
-
-//Utilizamos para comprobar de forma rápida si hay Ko en el archivo BoardGame.
+// Utilizamos para comprobar de forma rápida si hay Ko en el archivo BoardGame.
 class Zebrist_Hash
 {
-    public: 
-        explicit Zebrist_Hash(int lenght) : hash_array(lenght),gen(std::random_device{}())
-        {
-            for(int  i = 0 ; i < lenght; ++i)
-                hash_array[i]  = gen();
-        }
+public:
+    explicit Zebrist_Hash(int lenght)
+        : hash_array(lenght), gen(std::random_device{}())
+    {
+        for (int i = 0; i < lenght; ++i)
+            hash_array[i] = gen();
+    }
 
-        std::uint64_t get_hash_value(int pos) const { return hash_array[pos];}
+    std::uint64_t get_hash_value(int pos) const { return hash_array[pos]; }
 
-        void create_hash_value()
-        {
-            hash_array.push_back(gen());
-        }
+    void create_hash_value() { hash_array.push_back(gen()); }
 
-        int size() const {return hash_array.size();}
-    private: 
-        std::mt19937_64 gen;
-        std::vector<std::uint64_t> hash_array;
+    int size() const { return hash_array.size(); }
+
+private:
+    std::mt19937_64 gen;
+    std::vector<std::uint64_t> hash_array;
 };

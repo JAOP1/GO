@@ -117,12 +117,12 @@ private:
 Action MCTS::search(const BoardGame& current_board)
 {
     Node root(current_board, -1, nullptr);
-
+    
     for (int i = 0; i < times_to_repeat; ++i)
     {
 
-        std::cout << "Step " << i << " of " << times_to_repeat << std::endl;
-        std::cout << "Current size of tree " << tree_size << std::endl;
+        //std::cout << "Step " << i << " of " << times_to_repeat << std::endl;
+        //std::cout << "Current size of tree " << tree_size << std::endl;
 
         Node& leaf = Select(root);
         // std::cout << "Ha finalizado etapa de seleccion" << std::endl;

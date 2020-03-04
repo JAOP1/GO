@@ -9,8 +9,10 @@
 class GUI
 {
 public:
-    GUI(BoardGraphGUI& board, int width, int height)
-        : Go(board), window(sf::VideoMode(width, height), "Go Board")
+    GUI(BoardGraphGUI& board, int width, int height , bool is_building_ = false)
+        :   Go(board),
+            window(sf::VideoMode(width, height), "Go Board"),
+            is_building(is_building_) //Esto aun no funciona. (pronto...)
     {
 
         if (!m_texture.loadFromFile("fondo.jpg"))

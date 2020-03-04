@@ -15,7 +15,7 @@ using Action = int;
 class MCTS_2
 {
 public:
-    MCTS(int num_simulation,
+    MCTS_2(int num_simulation,
          int num_times,
          char player,
          bool do_memoization = true,
@@ -114,15 +114,15 @@ private:
     double get_reward_from_one_simulation(int num_steps, BoardGame state);
 };
 
-Action MCTS::search(const BoardGame& current_board)
+Action MCTS_2::search(const BoardGame& current_board)
 {
     Node root(current_board, -1, nullptr);
 
     for (int i = 0; i < times_to_repeat; ++i)
     {
 
-        std::cout << "Step " << i << " of " << times_to_repeat << std::endl;
-        std::cout << "Current size of tree " << tree_size << std::endl;
+        //std::cout << "Step " << i << " of " << times_to_repeat << std::endl;
+        //std::cout << "Current size of tree " << tree_size << std::endl;
 
         Node& leaf = Select(root);
         // std::cout << "Ha finalizado etapa de seleccion" << std::endl;
@@ -160,7 +160,7 @@ Action MCTS::search(const BoardGame& current_board)
     return best_choice.action();
 }
 
-double MCTS::Simulation(Node& node)
+double MCTS_2::Simulation(Node& node)
 {
     double reward = 0.0;
 
@@ -172,7 +172,7 @@ double MCTS::Simulation(Node& node)
     return reward/simulation_num;
 }
 
-void MCTS::Backpropagation(Node& leaf, const double reward)
+void MCTS_2::Backpropagation(Node& leaf, const double reward)
 {
     Node* node = &leaf;
     while (!node->is_root())
@@ -183,7 +183,7 @@ void MCTS::Backpropagation(Node& leaf, const double reward)
     node->update_stats(reward);
 }
 
-void MCTS::Expand(Node& node)
+void MCTS_2::Expand(Node& node)
 {
     BoardGame state = node.state();
     // std::vector<vertex> actions_set =
@@ -197,7 +197,7 @@ void MCTS::Expand(Node& node)
         node.add_child(v);
 }
 
-MCTS::Node& MCTS::Select(Node& node)
+MCTS_2::Node& MCTS_2::Select(Node& node)
 {
     Node* current = &node;
 
@@ -209,7 +209,7 @@ MCTS::Node& MCTS::Select(Node& node)
     return *current;
 }
 
-MCTS::Node& MCTS::child_highest_confidence(Node& node)
+MCTS_2::Node& MCTS_2::child_highest_confidence(Node& node)
 {
     double confidence = std::numeric_limits<double>::min();
     Node* child_highest_confidence_ = nullptr;
@@ -234,7 +234,7 @@ MCTS::Node& MCTS::child_highest_confidence(Node& node)
     return *child_highest_confidence_;
 }
 
-double MCTS::get_reward_from_one_simulation(int num_steps, BoardGame state)
+double MCTS_2::get_reward_from_one_simulation(int num_steps, BoardGame state)
 {
     for (int i = 0; i < 60 && !state.is_complete(); ++i)
     {
