@@ -181,7 +181,6 @@ bool BoardGraphGUI::make_action(vertex v)
     sf::Color color = sf::Color::Black;
     if (player == 'W')
         color = sf::Color::White;
-
     if (BoardGraph.is_valid_move(v))
     {
 

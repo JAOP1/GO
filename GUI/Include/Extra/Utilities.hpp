@@ -34,38 +34,3 @@ double distance(const sf::Vector2i& A, const sf::Vector2i& B)
     return std::sqrt(X + Y);
 }
 
-/*
-using board_state = std::vector<int>
-
-struct Result_Game
-{
-    Result_Game(std::vector<>):{}
-};
-
-
-template< class E, class T>
-double evaluate(E& Agent1, T& Agent2 )
-{
-    double Agent1_won = 0;
-    double Agent2_won = 0;
-
-    for(int round  = 0 ;  round < num_rounds; ++round)
-    {
-        reward = simulated_game(Agent1, Agent2 , false); //First engine, Second
-engine and save history.
-    }
-
-
-    for round in range(Parameters.ROUNDS):
-        game, reward = combat_game(Agent1, Agent2, save_history=False)
-
-        if reward > 0.4:
-            Agent1_won += 1
-
-        elif reward <0.4:
-            Agent2_won +=1
-
-    return Agent1_won/(Agent1_won + Agent2_won)
-}
-
-*/

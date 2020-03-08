@@ -67,6 +67,7 @@ double evaluate_accuracy(  search_algorithm1& player1,  search_algorithm2& playe
 int main()
 {
 
+    /*
     //Declarar grafo
     Graph G(16);
     G.add_edges(
@@ -97,15 +98,16 @@ int main()
             {15,11}
         }
     );
+    */
 
-
+    Graph G(0);
     BoardGame Tablero(G); // Create rules set.
-    MCTS MonteCarloMax(25,100, 'B');
-    MCTS_2 MonterCarlo(25,100,'W');
+    MCTS MonteCarloMax(50,150, 'B');
+    MCTS_2 MonteCarlo(50,150,'B');
     // MinMaxSearch MMS(15,'B');
 
-    bool visualize = false;
-    bool compare_algorithms = true;
+    bool visualize = true;
+    bool compare_algorithms = false;
     //bool is_created_graph = true;
 
     //Si queremos visualizar las acciones y jugar.
@@ -113,18 +115,19 @@ int main()
     {
         BoardGraphGUI Graph1(Tablero); // Create graph graphic.
         GUI APP(Graph1 , 700, 700); // Listener and main window loop.
-        APP.Run_VS_AI(MonteCarloMax, true); //Play against algorithm. 
-        //APP.Run(); //Play against someone else.
+        //APP.Run_VS_AI(MonteCarlo, true); //Play against algorithm. 
+        APP.Run(); //Play against someone else.
     }
 
     if(compare_algorithms)
     {
-        auto win_rate_first_algorithm = evaluate_accuracy(MonteCarloMax, MonterCarlo , Tablero , 30);
+        auto win_rate_first_algorithm = evaluate_accuracy(MonteCarloMax, MonteCarlo , Tablero , 30);
         
         //Save result in a extern file.
         std::ofstream myfile;
         myfile.open ("results.txt");
         myfile <<"The MCTS and MCTS2 params: \n"<< "Num simulation: "<< 25 << "\n Num repetitions: "<<100<<std::endl;
+        myfile <<"Total games played: 30"<<std::endl;
         myfile << "Final result "<< win_rate_first_algorithm << " by first algorithm.\n";
         myfile.close();
         std::cout<< "Final result "<< win_rate_first_algorithm << " by first algorithm."<<std::endl;

@@ -42,6 +42,15 @@ public:
             hash_array[i] = gen();
     }
 
+    void update(int size)
+    {
+        hash_array.clear();
+        hash_array.resize(size);
+
+        for (int i = 0; i < size; ++i)
+            hash_array[i] = gen();
+    }
+
     std::uint64_t get_hash_value(int pos) const { return hash_array[pos]; }
 
     void create_hash_value() { hash_array.push_back(gen()); }

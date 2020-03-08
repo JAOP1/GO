@@ -48,24 +48,39 @@ class BoardGame
 {
 public:
     BoardGame(Graph& G)
-        : Board(G), pieces(G.num_vertices()), groups(G.num_vertices())
+        :   Board(G),
+            pieces(G.num_vertices()), 
+            groups(G.num_vertices()),
+            last_states(2,0),
+            hashing(G.num_vertices())
     {}
 
     void debug_function() const
     {
+        //Grupos con vida.
+        std::set<vertex> parents;
         for (auto v : Board.vertices())
         {
             if (pieces[v].type != 'N')
             {
                 vertex nodo = groups.find_root(v);
-                if (pieces[nodo].is_alive)
+                if (parents.find(nodo) == parents.end() && pieces[nodo].is_alive)
                     std::cout << "Grupo " << nodo << " vivo" << std::endl;
+                
+                parents.insert(nodo);
             }
         }
 
+        //Muestra el estado actual del juego.
         for (auto l : show_current_state())
             std::cout << l << " ";
         std::cout.put('\n');
+
+        //Mostrar los hash de posiciones del juego.
+        std::cout<<"Hash del primer estado del juego: "<<last_states[0]<<std::endl;
+        std::cout<<"Hash del segundo estado del juego: "<<last_states[1]<<std::endl;
+
+        std::cout<<"Tamanio de arreglo de hashes: "<<hashing.size()<<std::endl;
     }
 
     char player_status() const { return players[current_player]; }
@@ -93,8 +108,8 @@ public:
 
         pieces.clear();
         pieces.resize(Board.num_vertices());
-
         groups.reset(Board.num_vertices());
+        hashing.update(Board.num_vertices());
     }
 
     Graph Board;
@@ -125,6 +140,9 @@ private:
         return pieces[root].libertiesNodes.size();
     }
 
+    bool is_ko(std::vector<vertex>& array_nodes , vertex v) const;
+
+
     bool is_frontier(vertex v, const std::vector<bool>& visited) const
     {
         for (auto v : Board.neighbors(v))
@@ -147,6 +165,9 @@ private:
     disjoint_sets groups;
     double points_by_white = 0.5;
     double points_by_black = 0.0;
+
+    Zebrist_Hash hashing;
+    std::vector<std::uint64_t> last_states;
 };
 
 // Public functions
@@ -175,7 +196,7 @@ std::vector<vertex> BoardGame::get_available_sample_cells(double portion) const
     }
 
     // Accion de resignar la aniadiremos a las celdas disponibles.
-    // cells.push_back(-1);
+    cells.push_back(-1);
     return cells;
 }
 
@@ -193,7 +214,16 @@ std::vector<int> BoardGame::make_action(vertex v)
     resigned_player[1] = false;
     Put_piece(v);
     auto muertos = dead_vertices(v);
-
+    
+    //Actualizar estados para revisar el ko.
+    last_states[0] = last_states[1];
+    std::uint64_t new_hash_state = last_states[1] ^ hashing.get_hash_value(v) ;
+    for(auto u : muertos)
+    {
+        new_hash_state ^= hashing.get_hash_value(u);
+    }
+    last_states[1] = new_hash_state;
+    
     //Actualizar la puntuación del jugador de acuerdo a lo capturado.
     if(players[current_player] == 'B')
         points_by_black += muertos.size();
@@ -202,7 +232,7 @@ std::vector<int> BoardGame::make_action(vertex v)
 
     check_alive_groups();
     current_player ^= 1;
-
+    
     return muertos;
 }
 
@@ -234,9 +264,9 @@ int BoardGame::reward(char player) const
     //La región que domina el jugador y las piezas capturadas del adversario es la recompensa.
 
     if (player == 'B')
-        return dominated_by_black + points_by_black;
+        return dominated_by_black ;//+ points_by_black;
 
-    return dominated_by_white + points_by_white;
+    return dominated_by_white ;//+ points_by_white;
 }
 
 bool BoardGame::is_complete() const
@@ -269,13 +299,14 @@ bool BoardGame::is_valid_move(vertex v) const
     if (v == -1)
         return true;
 
-    // Esta posicion ya está ocupada o es un ojo.
+    // Esta posicion ya está ocupada o es un ojo (propio).
     if (pieces[v].type != 'N' || is_eye_for_player(v, players[current_player]))
         return false;
 
     auto type = players[current_player];
     std::set<vertex> empty_cells;
     std::set<vertex> parents;
+    std::vector<vertex> groups_one_piece;
     int min_liberties_opponent = std::numeric_limits<int>::max();
 
     for (auto neighbor : Board.neighbors(v))
@@ -289,9 +320,14 @@ bool BoardGame::is_valid_move(vertex v) const
             vertex parent = groups.find_root(neighbor);
             // Ver si es posible quitar un grupo del otro jugador.
             if (pieces[neighbor].type != type)
+            {
                 min_liberties_opponent = std::min(min_liberties_opponent,
                                                   liberties(neighbor));
 
+                //Son los objetos que pueden ser KO.
+                if(groups.get_num_elements_in_component(parent) == 1)
+                    groups_one_piece.push_back(neighbor);
+            }
             // Unir grupos del mismo tipo, para contar celdas vacias.
             else if (parents.find(parent) ==
                      parents.end()) //! groups.are_in_same_connected_component(v,neighbor))
@@ -308,6 +344,9 @@ bool BoardGame::is_valid_move(vertex v) const
     // Si al colocar la ficha nueva, tiene más grados de libertad
     // o algun grupo pierde todos sus grados de libertad.
     // En ese caso significa que se estaría suicidando.
+    if(is_ko(groups_one_piece , v))
+        return false;
+    
     if (!empty_cells.empty() || min_liberties_opponent == 0)
         return true;
 
@@ -409,7 +448,7 @@ std::vector<int> BoardGame::dead_vertices(vertex node)
     std::vector<int> array_nodes;
     for (vertex v : Board.neighbors(node))
     {
-        // Revisar esta parte, que está haciendo cosas extrañas.
+
         if (pieces[v].type != 'N' && pieces[v].type != pieces[node].type &&
             is_dead(v))
         {
@@ -561,4 +600,18 @@ void BoardGame::check_alive_groups()
         }
     }
     
+}
+
+bool BoardGame::is_ko(std::vector<vertex>& array_nodes , vertex v ) const
+{
+    std::uint64_t val2 = hashing.get_hash_value(v);
+    std::uint64_t result = last_states[1] ^ val2;
+    for(auto u :  array_nodes){
+        std::uint64_t val1 = hashing.get_hash_value(u);
+
+        if((result ^ val1) == last_states[0])
+            return true;
+    }
+
+    return false; 
 }

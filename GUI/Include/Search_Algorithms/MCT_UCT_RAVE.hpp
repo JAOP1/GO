@@ -6,16 +6,17 @@
 #include <limits>
 #include <stack>
 #include <unordered_map>
+#include <map>
 #include <vector>
 
 using Action = int;
 
 //----------------------------------------------------------------------------------
 
-class MCTS
+class MC_RAVE
 {
 public:
-    MCTS(int num_simulation,
+    MC_RAVE(int num_simulation,
          int num_times,
          char player,
          bool do_memoization = true,
@@ -48,15 +49,15 @@ private:
 
         void update_stats(double average_reward)
         {
-            num_visits_++;
-            value_ = std::max(value_, average_reward);
+            N++;
+            Q = std::max(Q, average_reward);
         }
 
         double confidence_of_node() const
         {
-            auto N = (is_root() ? 0 : parent_->num_visits());
-            double C = 2.0;
-            return value_ + C*std::sqrt(std::log1p(N)/num_visits_);
+            //b en este caso es b = 1.
+            double beta = N_ / ( N + N_ + (4.0 * N  * N_ ));
+            return (1.0 - beta) * Q + beta * Q_;
         }
 
         BoardGame state() { return state_; }
@@ -79,8 +80,10 @@ private:
         Node* parent_{nullptr};
         BoardGame state_;
         Action applied_action_ = -1; // Null action
-        int num_visits_ = 0;
-        double value_ = 0.0;
+        int N = 0;
+        int N_ = 0;
+        double Q = 0.0;
+        double Q_ = 0.0;
         std::vector<Node> children_;
     };
     // Parametros
@@ -114,7 +117,7 @@ private:
     double get_reward_from_one_simulation(int num_steps, BoardGame state);
 };
 
-Action MCTS::search(const BoardGame& current_board)
+Action MC_RAVE::search(const BoardGame& current_board)
 {
     Node root(current_board, -1, nullptr);
 
@@ -160,7 +163,7 @@ Action MCTS::search(const BoardGame& current_board)
     return best_choice.action();
 }
 
-double MCTS::Simulation(Node& node)
+double MC_RAVE::Simulation(Node& node)
 {
     double reward = 0.0;
 
@@ -172,7 +175,7 @@ double MCTS::Simulation(Node& node)
     return reward/simulation_num;
 }
 
-void MCTS::Backpropagation(Node& leaf, const double reward)
+void MC_RAVE::Backpropagation(Node& leaf, const double reward)
 {
     Node* node = &leaf;
     while (!node->is_root())
@@ -183,7 +186,7 @@ void MCTS::Backpropagation(Node& leaf, const double reward)
     node->update_stats(reward);
 }
 
-void MCTS::Expand(Node& node)
+void MC_RAVE::Expand(Node& node)
 {
     BoardGame state = node.state();
     // std::vector<vertex> actions_set =
@@ -197,7 +200,7 @@ void MCTS::Expand(Node& node)
         node.add_child(v);
 }
 
-MCTS::Node& MCTS::Select(Node& node)
+MC_RAVE::Node& MC_RAVE::Select(Node& node)
 {
     Node* current = &node;
 
@@ -209,7 +212,7 @@ MCTS::Node& MCTS::Select(Node& node)
     return *current;
 }
 
-MCTS::Node& MCTS::child_highest_confidence(Node& node)
+MC_RAVE::Node& MC_RAVE::child_highest_confidence(Node& node)
 {
     double confidence = std::numeric_limits<double>::min();
     Node* child_highest_confidence_ = nullptr;
@@ -234,7 +237,7 @@ MCTS::Node& MCTS::child_highest_confidence(Node& node)
     return *child_highest_confidence_;
 }
 
-double MCTS::get_reward_from_one_simulation(int num_steps, BoardGame state)
+double MC_RAVE::get_reward_from_one_simulation(int num_steps, BoardGame state)
 {
     for (int i = 0; i < 60 && !state.is_complete(); ++i)
     {

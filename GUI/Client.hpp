@@ -9,7 +9,7 @@
 class GUI
 {
 public:
-    GUI(BoardGraphGUI& board, int width, int height , bool is_building_ = false)
+    GUI(BoardGraphGUI& board, int width, int height , bool is_building_ = true)
         :   Go(board),
             window(sf::VideoMode(width, height), "Go Board"),
             is_building(is_building_) //Esto aun no funciona. (pronto...)
@@ -201,6 +201,7 @@ void GUI::ClientOnMouseButtonPress(sf::Mouse::Button btn)
         if (v != INVALID_VERTEX)
         {
             // Regresa true si pudo realizar la acción.
+            std::cout<< "Usuario dio click "<<v<<std::endl;
             if (Go.make_action(v))
                 is_first_player = !is_first_player;
         }

@@ -46,10 +46,10 @@ private:
             children_.emplace_back(game_state_, action_, this);
         }
 
-        void update_stats(double average_reward)
+        void update_stats(double average_reward, int total_visits)
         {
-            num_visits_++;
-            value_ = value_ + (average_reward - value_)/num_visits_;
+            num_visits_+=total_visits;
+            value_ = std::max(value_ , average_reward) ;
         }
 
         double confidence_of_node() const
@@ -105,7 +105,7 @@ private:
 
     double Simulation(Node& node);
 
-    void Backpropagation(Node& leaf, const double reward);
+    void Backpropagation(Node& leaf, const double reward, const int num_visits);
 
     void Expand(Node& node);
 
@@ -121,20 +121,24 @@ Action MCTS_2::search(const BoardGame& current_board)
     for (int i = 0; i < times_to_repeat; ++i)
     {
 
-        //std::cout << "Step " << i << " of " << times_to_repeat << std::endl;
-        //std::cout << "Current size of tree " << tree_size << std::endl;
+        std::cout << "Step " << i << " of " << times_to_repeat << std::endl;
+        std::cout << "Current size of tree " << tree_size << std::endl;
 
         Node& leaf = Select(root);
         // std::cout << "Ha finalizado etapa de seleccion" << std::endl;
         Expand(leaf);
         // std::cout << "Ha finalizado etapa de expandir" << std::endl;
-
+        double average_reward_by_children = 0.0;
+        int total_children = 0;
         for (auto& child : leaf.children())
         {
 
             double simulation_reward = Simulation(child);
+            child.update_stats(simulation_reward,1);
+
+            average_reward_by_children += simulation_reward;
+            total_children++;
             // std::cout << "Ha finalizado etapa de simulacion" << std::endl;
-            Backpropagation(child, simulation_reward);
             // std::cout << "Ha finalizado etapa de propagacion" << std::endl;
 
             //-------------------- nuevo -------------------------------------
@@ -149,6 +153,9 @@ Action MCTS_2::search(const BoardGame& current_board)
 
             //----------------------------------------------------------------
         }
+        average_reward_by_children /= total_children;
+
+        Backpropagation(leaf, average_reward_by_children , total_children);
 
         // std::cout << "Tableros en memoria: " << global_information.size() <<
         // std::endl;
@@ -172,15 +179,15 @@ double MCTS_2::Simulation(Node& node)
     return reward/simulation_num;
 }
 
-void MCTS_2::Backpropagation(Node& leaf, const double reward)
+void MCTS_2::Backpropagation(Node& leaf, const double reward, const int num_visits)
 {
     Node* node = &leaf;
     while (!node->is_root())
     {
-        node->update_stats(reward);
+        node->update_stats(reward, num_visits);
         node = node->parent();
     }
-    node->update_stats(reward);
+    node->update_stats(reward,num_visits);
 }
 
 void MCTS_2::Expand(Node& node)
