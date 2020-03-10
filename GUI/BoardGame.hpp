@@ -264,9 +264,9 @@ int BoardGame::reward(char player) const
     //La región que domina el jugador y las piezas capturadas del adversario es la recompensa.
 
     if (player == 'B')
-        return dominated_by_black ;//+ points_by_black;
+        return (dominated_by_white + points_by_white < dominated_by_black + points_by_black? 1 : -1);
 
-    return dominated_by_white ;//+ points_by_white;
+    return (dominated_by_black + points_by_black < dominated_by_white + points_by_white? 1:-1);
 }
 
 bool BoardGame::is_complete() const

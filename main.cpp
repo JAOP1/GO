@@ -6,6 +6,7 @@
 #include "GUI/Include/Search_Algorithms/MCTS.hpp"
 #include "GUI/Include/Search_Algorithms/MinMaxSearch.hpp"
 #include "GUI/Include/Search_Algorithms/MCTS_2.hpp"
+#include "GUI/Include/Search_Algorithms/mcts.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <fstream>
@@ -28,7 +29,7 @@ bool is_winner( search_algorithm1& player1, search_algorithm2& player2 , BoardGa
             auto action_set = board.get_available_sample_cells(1.0);
 
             //Caso de que no haya una accion para hacer.
-            if(action_set.size() == 0)
+            if(action_set.size() == 1 && action_set[0] == -1)
             {
                 board.make_action(-1);
                 continue;
@@ -67,7 +68,7 @@ double evaluate_accuracy(  search_algorithm1& player1,  search_algorithm2& playe
 int main()
 {
 
-    /*
+/*    
     //Declarar grafo
     Graph G(16);
     G.add_edges(
@@ -98,12 +99,14 @@ int main()
             {15,11}
         }
     );
+    
     */
-
     Graph G(0);
     BoardGame Tablero(G); // Create rules set.
-    MCTS MonteCarloMax(50,150, 'B');
-    MCTS_2 MonteCarlo(50,150,'B');
+    MCTS MonteCarlo(25,100, 'B');
+    //El mcts y MCTS_2 no dan mejores resultados que MMCTS.
+    //MCTS_2 MonteCarlo(25,100,'W');
+    //mcts montecarlo(25,100,'W');
     // MinMaxSearch MMS(15,'B');
 
     bool visualize = true;
@@ -115,10 +118,11 @@ int main()
     {
         BoardGraphGUI Graph1(Tablero); // Create graph graphic.
         GUI APP(Graph1 , 700, 700); // Listener and main window loop.
-        //APP.Run_VS_AI(MonteCarlo, true); //Play against algorithm. 
-        APP.Run(); //Play against someone else.
+        APP.Run_VS_AI(MonteCarlo, true); //Play against algorithm. 
+        //APP.Run(); //Play against someone else.
     }
 
+/*
     if(compare_algorithms)
     {
         auto win_rate_first_algorithm = evaluate_accuracy(MonteCarloMax, MonteCarlo , Tablero , 30);
@@ -133,6 +137,6 @@ int main()
         std::cout<< "Final result "<< win_rate_first_algorithm << " by first algorithm."<<std::endl;
         
     }
-
+*/
     return 0;
 }

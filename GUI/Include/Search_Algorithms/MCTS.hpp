@@ -49,7 +49,7 @@ private:
         void update_stats(double average_reward, int total_visits)
         {
             num_visits_+= total_visits;
-            value_ = std::max(value_, average_reward);
+            value_ +=  average_reward;
         }
 
         double confidence_of_node() const
@@ -101,7 +101,7 @@ private:
         return 1.0 - percentage;
     }
 
-    Node& child_highest_confidence(Node& node);
+    Node& child_highest_confidence(Node& node, int max_min_val);
 
     double Simulation(Node& node);
 
@@ -117,24 +117,25 @@ private:
 Action MCTS::search(const BoardGame& current_board)
 {
     Node root(current_board, -1, nullptr);
-    
+    std::cout<<"Buscando la mejor acción para el jugador: "<<current_board.player_status()<<std::endl;
+    std::cout<<'[';
     for (int i = 0; i < times_to_repeat; ++i)
     {
-
-        std::cout << "Step " << i << " of " << times_to_repeat << std::endl;
-        std::cout << "Current size of tree " << tree_size << std::endl;
+        std::cout<<'*';
+        
 
         Node& leaf = Select(root);
         // std::cout << "Ha finalizado etapa de seleccion" << std::endl;
         Expand(leaf);
         // std::cout << "Ha finalizado etapa de expandir" << std::endl;
-        double greedy_result = std::numeric_limits<double>::min();
+        double average_reward = 0 ;
         int total_children = 0 ;
+
         for (auto& child : leaf.children())
         {
 
             double simulation_reward = Simulation(child);
-            greedy_result = std::max(greedy_result , simulation_reward);
+            average_reward += simulation_reward;
             total_children++;
 
             child.update_stats(simulation_reward , 1);
@@ -153,14 +154,15 @@ Action MCTS::search(const BoardGame& current_board)
 
             //----------------------------------------------------------------
         }
-        Backpropagation(leaf, greedy_result , total_children);
+        if(total_children != 0)
+            Backpropagation(leaf, average_reward/total_children , total_children);
 
         // std::cout << "Tableros en memoria: " << global_information.size() <<
         // std::endl;
     }
-
+    std::cout<<']'<<std::endl;
     tree_size = 0;
-    Node best_choice = child_highest_confidence(root);
+    Node best_choice = child_highest_confidence(root,1);
     // std::cout<<"Encuentra el que da mayor recompensa"<<std::endl;
     return best_choice.action();
 }
@@ -195,7 +197,7 @@ void MCTS::Expand(Node& node)
     // state.get_available_sample_cells(get_pruning_portion());
     std::vector<vertex> actions_set = state.get_available_sample_cells(1.0);
 
-    // std::cout << "Conjunto de acciones " << actions_set.size() << std::endl;
+    //std::cout << "Conjunto de acciones " << actions_set.size() << std::endl;
     tree_size += actions_set.size();
 
     for (auto v : actions_set)
@@ -205,26 +207,28 @@ void MCTS::Expand(Node& node)
 MCTS::Node& MCTS::Select(Node& node)
 {
     Node* current = &node;
+    int max_min = 1;
 
     while (!current->is_leaf())
     {
-        current = &child_highest_confidence(*current);
+        current = &child_highest_confidence(*current , max_min); 
+        max_min *= -1;
     }
 
     return *current;
 }
 
-MCTS::Node& MCTS::child_highest_confidence(Node& node)
+MCTS::Node& MCTS::child_highest_confidence(Node& node , int max_min_val)
 {
-    double confidence = std::numeric_limits<double>::min();
+    double confidence =  std::numeric_limits<double>::lowest();
     Node* child_highest_confidence_ = nullptr;
 
     for (auto& child : node.children())
     {
-        if (confidence < child.confidence_of_node())
+        if (confidence < child.confidence_of_node() * max_min_val)
         {
             child_highest_confidence_ = &child;
-            confidence = child.confidence_of_node();
+            confidence = child.confidence_of_node() * max_min_val;
         }
     }
 
@@ -244,8 +248,8 @@ double MCTS::get_reward_from_one_simulation(int num_steps, BoardGame state)
     for (int i = 0; i < 60 && !state.is_complete(); ++i)
     {
         Action cell = state.random_action();
-        if (cell == -1)
-            break;
+        //if (cell == -1)
+        //    break;
 
         state.make_action(cell);
 
