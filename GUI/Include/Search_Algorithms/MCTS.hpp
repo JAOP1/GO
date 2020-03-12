@@ -121,7 +121,7 @@ Action MCTS::search(const BoardGame& current_board)
     std::cout<<'[';
     for (int i = 0; i < times_to_repeat; ++i)
     {
-        std::cout<<'*';
+        std::cout<<'*'<<std::flush;
         
 
         Node& leaf = Select(root);

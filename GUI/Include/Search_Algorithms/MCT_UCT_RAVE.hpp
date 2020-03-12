@@ -12,11 +12,19 @@
 using Action = int;
 
 //----------------------------------------------------------------------------------
+struct RAVE_Information
+{
+    RAVE_Information(int N, int Q): num_visit_(N) , value_(Q){}
 
-class MC_RAVE
+    double num_visit_ = 0.0;
+    double value_ = 0.0;
+};
+
+
+class MCT_UCT_RAVE
 {
 public:
-    MC_RAVE(int num_simulation,
+    MCT_UCT_RAVE(int num_simulation,
          int num_times,
          char player,
          bool do_memoization = true,
@@ -117,7 +125,7 @@ private:
     double get_reward_from_one_simulation(int num_steps, BoardGame state);
 };
 
-Action MC_RAVE::search(const BoardGame& current_board)
+Action MCT_UCT_RAVE::search(const BoardGame& current_board)
 {
     Node root(current_board, -1, nullptr);
 
@@ -163,7 +171,7 @@ Action MC_RAVE::search(const BoardGame& current_board)
     return best_choice.action();
 }
 
-double MC_RAVE::Simulation(Node& node)
+double MCT_UCT_RAVE::Simulation(Node& node)
 {
     double reward = 0.0;
 
@@ -175,7 +183,7 @@ double MC_RAVE::Simulation(Node& node)
     return reward/simulation_num;
 }
 
-void MC_RAVE::Backpropagation(Node& leaf, const double reward)
+void MCT_UCT_RAVE::Backpropagation(Node& leaf, const double reward)
 {
     Node* node = &leaf;
     while (!node->is_root())
@@ -186,7 +194,7 @@ void MC_RAVE::Backpropagation(Node& leaf, const double reward)
     node->update_stats(reward);
 }
 
-void MC_RAVE::Expand(Node& node)
+void MCT_UCT_RAVE::Expand(Node& node)
 {
     BoardGame state = node.state();
     // std::vector<vertex> actions_set =
@@ -200,7 +208,7 @@ void MC_RAVE::Expand(Node& node)
         node.add_child(v);
 }
 
-MC_RAVE::Node& MC_RAVE::Select(Node& node)
+MCT_UCT_RAVE::Node& MCT_UCT_RAVE::Select(Node& node)
 {
     Node* current = &node;
 
@@ -212,7 +220,7 @@ MC_RAVE::Node& MC_RAVE::Select(Node& node)
     return *current;
 }
 
-MC_RAVE::Node& MC_RAVE::child_highest_confidence(Node& node)
+MCT_UCT_RAVE::Node& MCT_UCT_RAVE::child_highest_confidence(Node& node)
 {
     double confidence = std::numeric_limits<double>::min();
     Node* child_highest_confidence_ = nullptr;
@@ -237,7 +245,7 @@ MC_RAVE::Node& MC_RAVE::child_highest_confidence(Node& node)
     return *child_highest_confidence_;
 }
 
-double MC_RAVE::get_reward_from_one_simulation(int num_steps, BoardGame state)
+double MCT_UCT_RAVE::get_reward_from_one_simulation(int num_steps, BoardGame state)
 {
     for (int i = 0; i < 60 && !state.is_complete(); ++i)
     {
