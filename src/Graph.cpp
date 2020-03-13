@@ -2,7 +2,7 @@
 
 namespace graphs
 {
-//Specific graph structures.
+// Specific graph structures.
 using Vertex = Graph::Vertex;
 
 Graph Grid(int n, int m)
@@ -14,7 +14,7 @@ Graph Grid(int n, int m)
         for (int j = 0; j < m; ++j)
         {
             Vertex v = i*(m + 1) + j;
-            G.add_edge(v, v + 1 );
+            G.add_edge(v, v + 1);
             G.add_edge(v, v + m + 1);
         }
     }
@@ -34,7 +34,6 @@ Graph Grid(int n, int m)
     return G;
 }
 
-
 Graph Complete(int n)
 {
     Graph G(n);
@@ -50,4 +49,4 @@ Graph Complete(int n)
     return G;
 }
 
-}
+} // namespace graphs

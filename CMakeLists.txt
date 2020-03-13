@@ -22,6 +22,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/GUI/Include
     ${PROJECT_SOURCE_DIR}/GUI/Include/Extra
     ${PROJECT_SOURCE_DIR}/GUI/Include/Search_Algorithms
+    ${PROJECT_SOURCE_DIR}/GUI/Files
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/tests)
 
@@ -41,8 +42,8 @@ if (${BUILD_VISUALIZER})
     include_directories(GUI/Include/Extra)
     include_directories(GUI/Include/Search_Algorithms)
 
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/font.ttf ${CMAKE_CURRENT_BINARY_DIR}/font.ttf COPYONLY)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fondo.jpg ${CMAKE_CURRENT_BINARY_DIR}/fondo.jpg COPYONLY)
+    configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/font.ttf ${CMAKE_CURRENT_BINARY_DIR}/font.ttf COPYONLY)
+    configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/fondo.jpg ${CMAKE_CURRENT_BINARY_DIR}/fondo.jpg COPYONLY)
     
     #file(GLOB SOURCES "src/*.cpp")
 

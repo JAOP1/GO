@@ -72,18 +72,15 @@ TEST(Graph, Weights)
     ASSERT_EQ(G.edge_value(3, 2), 12);
 }
 
-
-
 TEST(Graph, CompleteGraph)
 {
     int n = 5;
     Graph G = graphs::Complete(n);
-   
+
     ASSERT_EQ(G.num_vertices(), n);
     ASSERT_EQ(G.num_edges(), n*(n - 1)/2);
     for (auto v : G.vertices())
     {
         ASSERT_EQ(G.degree(v), n - 1);
-    }}
-
-
+    }
+}

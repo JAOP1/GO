@@ -246,14 +246,11 @@ private:
     bool m_neighbors_sorted{false};
 };
 
-
-
 namespace graphs
 {
-//Specific graph structures.
+// Specific graph structures.
 
 Graph Grid(int n, int m);
 
-
 Graph Complete(int n);
-}
+} // namespace graphs
