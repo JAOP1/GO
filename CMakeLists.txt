@@ -22,13 +22,16 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/GUI/Include
     ${PROJECT_SOURCE_DIR}/GUI/Include/Extra
     ${PROJECT_SOURCE_DIR}/GUI/Include/Search_Algorithms
+    ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/tests)
 
-
+file(GLOB SOURCES "src/*.cpp")
 
 # --------------------------------------------------------------------------------
 #                            Build! (Change as needed)
 # --------------------------------------------------------------------------------
+
+add_library(graph ${SOURCES})
 
 if (${BUILD_VISUALIZER})
     add_definitions(-DUSE_SFML)
@@ -44,8 +47,8 @@ if (${BUILD_VISUALIZER})
     #file(GLOB SOURCES "src/*.cpp")
 
     add_executable(visualizer main.cpp )
-    
-    target_link_libraries(visualizer sfml-window sfml-graphics sfml-system "${TORCH_LIBRARIES}")
+    add_dependencies(visualizer graph)
+    target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system "${TORCH_LIBRARIES}")
     
 endif()
 
@@ -66,7 +69,7 @@ if(${BUILD_TESTS})
         add_executable(${TEST_MAIN} ${TESTFILES})
 	endif()
     
-    target_link_libraries(${TEST_MAIN} ${GTEST_LIBRARIES} Threads::Threads)
+    target_link_libraries(${TEST_MAIN} ${GTEST_LIBRARIES} graph Threads::Threads)
     add_custom_target(gtest COMMAND "${PROJECT_BINARY_DIR}/${TEST_MAIN}" DEPENDS ${TEST_MAIN})
 
     # Add a standard make target 'test' that runs the tests under CTest (only as an alt. to gtest).
