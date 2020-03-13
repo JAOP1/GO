@@ -77,7 +77,7 @@ TEST(Graph, Weights)
 TEST(Graph, CompleteGraph)
 {
     int n = 5;
-    Graph G = graphs::Complete(n + 1);
+    Graph G = graphs::Complete(n);
    
     ASSERT_EQ(G.num_vertices(), n);
     ASSERT_EQ(G.num_edges(), n*(n - 1)/2);

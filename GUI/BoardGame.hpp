@@ -47,11 +47,12 @@ struct DominatedCells
 class BoardGame
 {
 public:
-    BoardGame(Graph& G)
+    BoardGame(Graph& G , double komi = 0.5)
         :   Board(G),
             pieces(G.num_vertices()), 
             groups(G.num_vertices()),
             last_states(2,0),
+            points_by_white(komi),
             hashing(G.num_vertices())
     {}
 
@@ -163,7 +164,7 @@ private:
     std::vector<bool> resigned_player = {false, false}; // Si pasó un jugador.
     std::vector<board_node> pieces; // Piezas en el tablero.
     disjoint_sets groups;
-    double points_by_white = 0.5;
+    double points_by_white = 0.0;
     double points_by_black = 0.0;
 
     Zebrist_Hash hashing;

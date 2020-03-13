@@ -1,5 +1,4 @@
 #pragma once
-
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -248,6 +247,7 @@ private:
 };
 
 
+
 namespace graphs
 {
 //Specific graph structures.
@@ -297,6 +297,5 @@ Graph Complete(int n)
 
     return G;
 }
-
 
 }
