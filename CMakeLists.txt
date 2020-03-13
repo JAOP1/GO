@@ -27,20 +27,16 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/tests)
 
 file(GLOB SOURCES "src/*.cpp")
+add_library(graph ${SOURCES})
 
 # --------------------------------------------------------------------------------
 #                            Build! (Change as needed)
 # --------------------------------------------------------------------------------
 
-add_library(graph ${SOURCES})
 
 if (${BUILD_VISUALIZER})
     add_definitions(-DUSE_SFML)
     
-    include_directories(GUI/)
-    include_directories(GUI/Include)
-    include_directories(GUI/Include/Extra)
-    include_directories(GUI/Include/Search_Algorithms)
 
     configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/font.ttf ${CMAKE_CURRENT_BINARY_DIR}/font.ttf COPYONLY)
     configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/fondo.jpg ${CMAKE_CURRENT_BINARY_DIR}/fondo.jpg COPYONLY)

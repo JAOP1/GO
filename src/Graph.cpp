@@ -5,6 +5,7 @@ namespace graphs
 // Specific graph structures.
 using Vertex = Graph::Vertex;
 
+//The size is n-rows + 1 and m-columns + 1.
 Graph Grid(int n, int m)
 {
     Graph G((n + 1)*(m + 1));

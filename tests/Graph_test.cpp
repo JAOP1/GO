@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-TEST(Graph, Creation)
+TEST(Graph_Test, Creation)
 {
     Graph G(5);
     ASSERT_EQ(G.num_vertices(), 5);
@@ -12,7 +12,7 @@ TEST(Graph, Creation)
         ASSERT_EQ(G.degree(v), 0);
 }
 
-TEST(Graph, Degree)
+TEST(Graph_Test, Degree)
 {
     Graph G(5);
     for (auto v : G.vertices())
@@ -28,7 +28,7 @@ TEST(Graph, Degree)
     ASSERT_EQ(G.degree(3), 1);
 }
 
-TEST(Graph, AddEdge)
+TEST(Graph_Test, AddEdge)
 {
     Graph G(3);
     G.add_edge_no_repeat(0, 1);
@@ -44,7 +44,7 @@ TEST(Graph, AddEdge)
     ASSERT_EQ(G.num_edges(), 2);
 }
 
-TEST(Graph, Vertices)
+TEST(Graph_Test, Vertices)
 {
     Graph G(10);
     int i = 0;
@@ -55,7 +55,7 @@ TEST(Graph, Vertices)
     }
 }
 
-TEST(Graph, Weights)
+TEST(Graph_Test, Weights)
 {
     Graph G(4);
     G.add_edge(0, 1, 10);
@@ -72,7 +72,7 @@ TEST(Graph, Weights)
     ASSERT_EQ(G.edge_value(3, 2), 12);
 }
 
-TEST(Graph, CompleteGraph)
+TEST(Graph_Test, CompleteGraph)
 {
     int n = 5;
     Graph G = graphs::Complete(n);

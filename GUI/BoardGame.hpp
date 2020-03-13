@@ -55,6 +55,8 @@ public:
     {}
 
     void debug_function() const;
+
+    board_node get_current_node_state(vertex v) const;
     
     char player_status() const { return players[current_player]; }
 

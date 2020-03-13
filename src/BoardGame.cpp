@@ -39,7 +39,10 @@ void BoardGame::debug_function() const
                 << std::endl;
 }
 
-
+ board_node BoardGame::get_current_node_state(vertex v) const
+ {
+     return pieces[v];
+ }
 
 
 
