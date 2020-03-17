@@ -12,6 +12,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 option(BUILD_VISUALIZER "Build visualizer (requires SFML)" ON)
 option(BUILD_TESTS "Build unit tests (requires gtest)" ON)
 
+# CLI11 settings
+add_library(CLI11::CLI11 IMPORTED INTERFACE)
+target_include_directories(CLI11::CLI11 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_compile_features(CLI11::CLI11 INTERFACE cxx_std_11)
 
 # --------------------------------------------------------------------------------
 #                         Locate files (no change needed).
@@ -45,7 +49,7 @@ if (${BUILD_VISUALIZER})
 
     add_executable(visualizer main.cpp )
     add_dependencies(visualizer graph)
-    target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system "${TORCH_LIBRARIES}")
+    target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11 "${TORCH_LIBRARIES}")
     
 endif()
 

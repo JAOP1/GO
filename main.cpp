@@ -4,13 +4,11 @@
 #include "GUI/GraphGUI.hpp"
 #include "GUI/Include/Extra/Graph.hpp"
 #include "GUI/Include/Search_Algorithms/MCTS.hpp"
-#include "GUI/Include/Search_Algorithms/MCTS_2.hpp"
-#include "GUI/Include/Search_Algorithms/MinMaxSearch.hpp"
-#include "GUI/Include/Search_Algorithms/mcts.hpp"
 #include <SFML/Graphics.hpp>
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include "CLI11.hpp"
 
 template <class search_algorithm1, class search_algorithm2>
 bool is_winner(search_algorithm1& player1,
@@ -70,79 +68,64 @@ double evaluate_accuracy(search_algorithm1& player1,
     return win_rate;
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    //Esto es para proobar Ggg.
+    CLI::App app{"---- Go generalized ---- \n the target is create a smart search wich gives a great performance in differents graphs. "};
 
-    /*
-        //Declarar grafo
-        Graph G(16);
-        G.add_edges(
-            {
-                {0,1},
-                {1,2},
-                {2,3},
-                {4,0},
-                {4,5},
-                {5,1},
-                {5,6},
-                {6,2},
-                {7,3},
-                {7,6},
-                {8,4},
-                {8,9},
-                {9,5},
-                {9,10},
-                {10,6},
-                {10,11},
-                {11,7},
-                {12,8},
-                {12,13},
-                {13,9},
-                {13,14},
-                {14,10},
-                {14,15},
-                {15,11}
-            }
-        );
+    // Define options
+    bool visualize = true; //If you visualize the board then you aren't interested in compare algorithms.
+    bool against_player = false;
+    bool compare_algorithms = false;
+    app.add_option("-v", visualize, "Launch the GUI.");
+    app.add_option("-p" , against_player , "Play against the algorithm.");
 
-        */
+    CLI11_PARSE(app, argc, argv);
+
+    std::cout<<"Input Parameters: "<<std::endl;
+    std::cout <<"Visualize: "<< visualize<<std::endl;
+    std::cout<<"Against player: "<< against_player<<std::endl;
+
+
     Graph G(0);
     BoardGame Tablero(G); // Create rules set.
-    MCTS MonteCarlo(25, 100, 'B');
-    // El mcts y MCTS_2 no dan mejores resultados que MMCTS.
-    // MCTS_2 MonteCarlo(25,100,'W');
-    // mcts montecarlo(25,100,'W');
-    // MinMaxSearch MMS(15,'B');
+    MCTS Black_player(25, 100, 'B');
+    MCTS White_player(25,100,'W');
 
-    bool visualize = true;
-    bool compare_algorithms = false;
-    // bool is_created_graph = true;
+
+
 
     // Si queremos visualizar las acciones y jugar.
     if (visualize)
     {
         BoardGraphGUI Graph1(Tablero); // Create graph graphic.
         GUI APP(Graph1, 700, 700); // Listener and main window loop.
-        APP.Run_VS_AI(MonteCarlo, true); // Play against algorithm.
-        // APP.Run(); //Play against someone else.
+
+        if(!against_player)
+            APP.Run_VS_AI(Black_player, true); // Play against algorithm.
+        else
+            APP.Run(); //Play against someone else.
     }
 
-    /*
-        if(compare_algorithms)
-        {
-            auto win_rate_first_algorithm = evaluate_accuracy(MonteCarloMax,
-       MonteCarlo , Tablero , 30);
+    else
+    {
+        auto win_rate_first_algorithm = evaluate_accuracy(Black_player,
+                                                          White_player, Tablero , 30);
 
-            //Save result in a extern file.
-            std::ofstream myfile;
-            myfile.open ("results.txt");
-            myfile <<"The MCTS and MCTS2 params: \n"<< "Num simulation: "<< 25
-       << "\n Num repetitions: "<<100<<std::endl; myfile <<"Total games played:
-       30"<<std::endl; myfile << "Final result "<< win_rate_first_algorithm << "
-       by first algorithm.\n"; myfile.close(); std::cout<< "Final result "<<
-       win_rate_first_algorithm << " by first algorithm."<<std::endl;
+        std::cout<<"The first win in a rate of "<<win_rate_first_algorithm<<std::endl;
 
-        }
-    */
+        /*
+        //Save result in a extern file.
+        std::ofstream myfile;
+        myfile.open ("results.txt");
+        myfile <<"The MCTS and MCTS2 params: \n"<< "Num simulation: "<< 25
+               << "\n Num repetitions: "<<100<<std::endl; myfile <<"Total games played:
+        30"<<std::endl; myfile << "Final result "<< win_rate_first_algorithm << "
+        by first algorithm.\n"; myfile.close(); std::cout<< "Final result "<<
+        win_rate_first_algorithm << " by first algorithm."<<std::endl;
+         */
+    }
+
+
     return 0;
 }
