@@ -1,11 +1,15 @@
 #!/bin/bash
 sudo pacman -S --needed sfml git cmake gtest clang gcc
-rm -rf GO
+cd ..
+pwd1=`pwd`
+
+#You can replace the link by the suitable if you have GPU.
 wget https://download.pytorch.org/libtorch/nightly/cpu/libtorch-shared-with-deps-latest.zip
 unzip libtorch-shared-with-deps-latest.zip
-git clone https://github.com/JAOP1/GO
-cd GO/
+
+cd GO-master/
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_PREFIX_PATH=$pwd1/libtorch ..
 make
+./visualizer -v true -p true
