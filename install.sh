@@ -13,7 +13,7 @@ then
     echo The current operative system is Manjaro.
     sudo pacman -S --needed sfml git cmake gtest clang gcc
 
-elif [$is_ubuntu -gt 0 ]
+elif [ $is_ubuntu -gt 0 ]
 then 
     echo The current operative system is Ubuntu.
     #It works in Ubuntu1710. 

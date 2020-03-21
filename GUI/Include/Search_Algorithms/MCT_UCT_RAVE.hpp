@@ -6,105 +6,124 @@
 #include <limits>
 #include <stack>
 #include <unordered_map>
-#include <map>
 #include <vector>
 
 using Action = int;
 
 //----------------------------------------------------------------------------------
-struct RAVE_Information
+struct RAVE_Map
 {
-    RAVE_Information(int N, int Q): num_visit_(N) , value_(Q){}
 
-    double num_visit_ = 0.0;
-    double value_ = 0.0;
+    void clear()
+    {
+        N.clear();
+        N_.clear();
+        Q_.clear();
+        Q.clear();
+    }
+    std::unordered_map<vertex,int> N;
+    std::unordered_map<vertex,int> N_;
+    std::unordered_map<vertex,double> Q;
+    std::unordered_map<vertex,double> Q_;
 };
 
 
-class MCT_UCT_RAVE
+
+
+class MC_RAVE
 {
 public:
-    MCT_UCT_RAVE(int num_simulation,
+    MC_RAVE(int num_simulation,
          int num_times,
          char player,
-         bool do_memoization = true,
          double pruning_portion = 350)
         : simulation_num(num_simulation)
         , times_to_repeat(num_times)
         , player_(player)
-        , do_memoization_(do_memoization) // nuevo
         , pruning_portion_(pruning_portion)
     {}
 
     Action search(const BoardGame& current_board);
 
 private:
-    class Node
+    class RAVE_Node
     {
     public:
-        Node(const BoardGame& game_state, Action action, Node* Parent = nullptr)
-            : parent_(Parent), state_(game_state), applied_action_(action)
+        explicit RAVE_Node(const BoardGame& game_state, Action action,RAVE_Node* Parent = nullptr) :
+            parent_(Parent),
+            state_(game_state),
+            applied_action_(action)
         {}
 
-        ~Node() = default;
+        explicit RAVE_Node( const BoardGame& game_state ,  Action action, RAVE_Map& stats , RAVE_Node* Parent = nullptr) :
+            parent_(Parent),
+            state_(game_state),
+            applied_action_(action),
+            N_(stats.N_[action]),
+            N(stats.N[action]),
+            Q(stats.Q[action] / stats.N[action]),
+            Q_(stats.Q_[action])
+        {}
 
-        void add_child(Action action_)
+        ~RAVE_Node() = default;
+
+        void add_child(Action action_, RAVE_Map& stats)
         {
             auto game_state_ = state_;
             game_state_.make_action(action_);
-            children_.emplace_back(game_state_, action_, this);
+            children_.emplace_back(game_state_, action_, stats, this);
         }
 
-        void update_stats(double average_reward)
+        void update_stats(double average_reward, int total_visits)
         {
-            N++;
-            Q = std::max(Q, average_reward);
+            N += total_visits;
+            Q += average_reward;
         }
 
         double confidence_of_node() const
         {
-            //b en este caso es b = 1.
-            double beta = N_ / ( N + N_ + (4.0 * N  * N_ ));
-            return (1.0 - beta) * Q + beta * Q_;
+            auto b = 1.0;
+            double B = N_ / (N  + N_ + 4.0 * N * N_ * std::pow(1.0,2));
+
+            return (1.0 - B) * Q + B * Q_;
         }
 
         BoardGame state() { return state_; }
 
-        int num_visits() const { return num_visits_; }
+        int num_visits() const { return N; }
 
         Action action() const { return applied_action_; }
 
-        Node* parent() const { return parent_; }
+        RAVE_Node* parent() const { return parent_; }
 
         bool is_root() const { return parent_ == nullptr; }
 
         bool is_leaf() const { return children_.empty(); }
 
-        std::vector<Node>& children() { return children_; }
+        std::vector<RAVE_Node>& children() { return children_; }
 
         std::vector<char> show_board() { return state_.show_current_state(); }
 
     private:
-        Node* parent_{nullptr};
+        RAVE_Node* parent_{nullptr};
         BoardGame state_;
         Action applied_action_ = -1; // Null action
         int N = 0;
         int N_ = 0;
-        double Q = 0.0;
         double Q_ = 0.0;
-        std::vector<Node> children_;
+        double Q = 0.0;
+
+        std::vector<RAVE_Node> children_;
     };
     // Parametros
     int simulation_num;
     int times_to_repeat;
-    bool do_memoization_; // nuevo
+    RAVE_Map simulation_stats;
     char player_;
     double pruning_portion_;
 
     double tree_size = 0;
     using state_t = std::vector<char>;
-    using memoizer = std::unordered_map<state_t, double, polynomial_hash<char>>;
-    memoizer global_information; // nuevo
 
     double get_pruning_portion() const
     {
@@ -112,125 +131,132 @@ private:
         return 1.0 - percentage;
     }
 
-    Node& child_highest_confidence(Node& node);
+    RAVE_Node& child_highest_confidence(RAVE_Node& node, int max_min_val);
 
-    double Simulation(Node& node);
+    RAVE_Node& Select(RAVE_Node& node);
 
-    void Backpropagation(Node& leaf, const double reward);
+    void Backpropagation(RAVE_Node& leaf, const double reward, const int num_visits);
 
-    void Expand(Node& node);
+    void Expand_by_RAVE(RAVE_Node& node);
 
-    Node& Select(Node& node);
+    double Simulations_by_RAVE(RAVE_Node& node);
 
-    double get_reward_from_one_simulation(int num_steps, BoardGame state);
+    std::vector<Action> simulation_recording(int num_steps, BoardGame state);
+
+
 };
 
-Action MCT_UCT_RAVE::search(const BoardGame& current_board)
+
+
+Action MC_RAVE::search(const BoardGame& current_board)
 {
-    Node root(current_board, -1, nullptr);
+    RAVE_Node root(current_board, -1, nullptr);
+
+    std::cout << "Buscando la mejor acción para el jugador: "
+              << current_board.player_status() << std::endl;
+    std::cout << '[';
 
     for (int i = 0; i < times_to_repeat; ++i)
     {
+        std::cout << '*' << std::flush;
 
-        std::cout << "Step " << i << " of " << times_to_repeat << std::endl;
-        std::cout << "Current size of tree " << tree_size << std::endl;
+        RAVE_Node& leaf = Select(root);
 
-        Node& leaf = Select(root);
-        // std::cout << "Ha finalizado etapa de seleccion" << std::endl;
-        Expand(leaf);
-        // std::cout << "Ha finalizado etapa de expandir" << std::endl;
+        auto reward = Simulations_by_RAVE(leaf);
 
-        for (auto& child : leaf.children())
-        {
+        Expand_by_RAVE(leaf);
 
-            double simulation_reward = Simulation(child);
-            // std::cout << "Ha finalizado etapa de simulacion" << std::endl;
-            Backpropagation(child, simulation_reward);
-            // std::cout << "Ha finalizado etapa de propagacion" << std::endl;
+        Backpropagation(leaf,reward , leaf.children().size());
 
-            //-------------------- nuevo -------------------------------------
+        simulation_stats.clear();
 
-            auto vstate = child.show_board();
-            if (do_memoization_)
-            {
-                auto iter = global_information.find(vstate);
-                if (iter == global_information.end())
-                    global_information.insert({vstate, simulation_reward});
-            }
-
-            //----------------------------------------------------------------
-        }
-
-        // std::cout << "Tableros en memoria: " << global_information.size() <<
-        // std::endl;
     }
-
+    std::cout << ']' << std::endl;
     tree_size = 0;
-    Node best_choice = child_highest_confidence(root);
-    // std::cout<<"Encuentra el que da mayor recompensa"<<std::endl;
+    RAVE_Node best_choice = child_highest_confidence(root, 1);
+
     return best_choice.action();
 }
 
-double MCT_UCT_RAVE::Simulation(Node& node)
+//Aun falta hacer algunas modificaciones a esta función y listo :D
+double MC_RAVE::Simulations_by_RAVE(MC_RAVE::RAVE_Node &node)
 {
     double reward = 0.0;
-
+    double tmp_reward;
     for (int i = 0; i < simulation_num; ++i)
     {
-        reward += get_reward_from_one_simulation(60, node.state());
+        auto actions =  simulation_recording(60, node.state());
+        tmp_reward =  actions.back();
+        reward += tmp_reward;
+        simulation_stats.Q[actions[0]] = tmp_reward;
+        simulation_stats.N[actions[0]]++;
+
+        for(int  i = 1 ;  i < actions.size()-1 ; ++i)
+        {
+            simulation_stats.Q_[actions[i]] = tmp_reward;
+            simulation_stats.N_[actions[i]]++;
+        }
+
     }
 
     return reward/simulation_num;
 }
 
-void MCT_UCT_RAVE::Backpropagation(Node& leaf, const double reward)
+void MC_RAVE::Backpropagation(RAVE_Node& leaf, const double reward, const int num_visits)
 {
-    Node* node = &leaf;
+    RAVE_Node* node = &leaf;
     while (!node->is_root())
     {
-        node->update_stats(reward);
+        node->update_stats(reward, num_visits);
         node = node->parent();
     }
-    node->update_stats(reward);
+    node->update_stats(reward, num_visits);
 }
 
-void MCT_UCT_RAVE::Expand(Node& node)
+void MC_RAVE::Expand_by_RAVE(MC_RAVE::RAVE_Node &node)
 {
     BoardGame state = node.state();
-    // std::vector<vertex> actions_set =
-    // state.get_available_sample_cells(get_pruning_portion());
     std::vector<vertex> actions_set = state.get_available_sample_cells(1.0);
 
-    // std::cout << "Conjunto de acciones " << actions_set.size() << std::endl;
+
     tree_size += actions_set.size();
 
     for (auto v : actions_set)
-        node.add_child(v);
+    {
+
+        node.add_child(v, simulation_stats);
+    }
+
 }
 
-MCT_UCT_RAVE::Node& MCT_UCT_RAVE::Select(Node& node)
+MC_RAVE::RAVE_Node& MC_RAVE::Select(RAVE_Node& node)
 {
-    Node* current = &node;
+    RAVE_Node* current = &node;
+    int max_min = 1;
 
     while (!current->is_leaf())
     {
-        current = &child_highest_confidence(*current);
+        current = &child_highest_confidence(*current, max_min);
+        max_min *= -1;
     }
 
     return *current;
 }
 
-MCT_UCT_RAVE::Node& MCT_UCT_RAVE::child_highest_confidence(Node& node)
+MC_RAVE::RAVE_Node& MC_RAVE::child_highest_confidence(RAVE_Node& node, int max_min_val)
 {
-    double confidence = std::numeric_limits<double>::min();
-    Node* child_highest_confidence_ = nullptr;
+    double confidence = std::numeric_limits<double>::lowest();
+    double tmp_confidence;
+    RAVE_Node* child_highest_confidence_ = nullptr;
+
 
     for (auto& child : node.children())
     {
-        if (confidence < child.confidence_of_node())
+        tmp_confidence = child.confidence_of_node() * max_min_val;
+        if (confidence < tmp_confidence)
         {
             child_highest_confidence_ = &child;
-            confidence = child.confidence_of_node();
+            confidence = tmp_confidence;
         }
     }
 
@@ -245,26 +271,18 @@ MCT_UCT_RAVE::Node& MCT_UCT_RAVE::child_highest_confidence(Node& node)
     return *child_highest_confidence_;
 }
 
-double MCT_UCT_RAVE::get_reward_from_one_simulation(int num_steps, BoardGame state)
+//El ultimo es la recompensa.
+std::vector<Action> MC_RAVE::simulation_recording(int num_steps, BoardGame state)
 {
+    std::vector<Action> made_actions;
     for (int i = 0; i < 60 && !state.is_complete(); ++i)
     {
         Action cell = state.random_action();
-        if (cell == -1)
-            break;
+        made_actions.push_back(cell);
 
         state.make_action(cell);
-
-        //------------------------ nuevo --------------------------------
-        auto vstate = state.show_current_state();
-        if (do_memoization_)
-        {
-            auto iter = global_information.find(vstate);
-            if (iter != global_information.end())
-                return iter->second;
-        }
-        //--------------------------------------------------------------
     }
-    // std::cout<< "Ha finalizado el proceso de conseguir recompensa"<<std::endl;
-    return state.reward(player_);
+    made_actions.push_back(state.reward(player_));
+
+    return made_actions;
 }
