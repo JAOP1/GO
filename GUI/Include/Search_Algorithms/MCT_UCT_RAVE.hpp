@@ -1,5 +1,5 @@
 #pragma once
-
+#include "tqdm.h"
 #include "../BoardGame.hpp"
 #include "../Extra/hash_utilities.hpp"
 #include <cmath>
@@ -151,14 +151,12 @@ private:
 Action MC_RAVE::search(const BoardGame& current_board)
 {
     RAVE_Node root(current_board, -1, nullptr);
+    tqdm bar;
 
-    std::cout << "Buscando la mejor acción para el jugador: "
-              << current_board.player_status() << std::endl;
-    std::cout << '[';
 
     for (int i = 0; i < times_to_repeat; ++i)
     {
-        std::cout << '*' << std::flush;
+        bar.progress(i , times_to_repeat);
 
         RAVE_Node& leaf = Select(root);
 
@@ -171,7 +169,7 @@ Action MC_RAVE::search(const BoardGame& current_board)
         simulation_stats.clear();
 
     }
-    std::cout << ']' << std::endl;
+    bar.finish();
     tree_size = 0;
     RAVE_Node best_choice = child_highest_confidence(root, 1);
 
@@ -251,12 +249,10 @@ MC_RAVE::RAVE_Node& MC_RAVE::child_highest_confidence(RAVE_Node& node, int max_m
     double tmp_confidence;
     RAVE_Node* child_highest_confidence_ = nullptr;
 
-    std::cout<<"The confidence is: "<<confidence<<std::endl;
 
     for (auto& child : node.children())
     {
         tmp_confidence = child.confidence_of_node() * max_min_val;
-        std::cout<<"tmp confidence "<<tmp_confidence<<std::endl;
 
         if (confidence < tmp_confidence)
         {

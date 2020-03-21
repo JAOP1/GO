@@ -1,5 +1,5 @@
 #pragma once
-
+#include "tqdm.h"
 #include "../BoardGame.hpp"
 #include "../Extra/hash_utilities.hpp"
 #include <cmath>
@@ -119,12 +119,12 @@ private:
 Action MCTS::search(const BoardGame& current_board)
 {
     Node root(current_board, -1, nullptr);
-    std::cout << "Buscando la mejor acción para el jugador: "
-              << current_board.player_status() << std::endl;
-    std::cout << '[';
+    tqdm bar;
+ 
+
     for (int i = 0; i < times_to_repeat; ++i)
     {
-        std::cout << '*' << std::flush;
+        bar.progress(i,times_to_repeat);
 
         Node& leaf = Select(root);
         // std::cout << "Ha finalizado etapa de seleccion" << std::endl;
@@ -162,7 +162,7 @@ Action MCTS::search(const BoardGame& current_board)
         // std::cout << "Tableros en memoria: " << global_information.size() <<
         // std::endl;
     }
-    std::cout << ']' << std::endl;
+    bar.finish();
     tree_size = 0;
     Node best_choice = child_highest_confidence(root, 1);
     // std::cout<<"Encuentra el que da mayor recompensa"<<std::endl;
