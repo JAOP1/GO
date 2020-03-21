@@ -1,14 +1,14 @@
-
 #include "GUI/BoardGame.hpp"
 #include "GUI/Client.hpp"
 #include "GUI/GraphGUI.hpp"
 #include "GUI/Include/Extra/Graph.hpp"
 #include "GUI/Include/Search_Algorithms/MCTS.hpp"
+#include "GUI/Include/Search_Algorithms/MCT_UCT_RAVE.hpp"
+#include "CLI11.hpp"
 #include <SFML/Graphics.hpp>
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include "CLI11.hpp"
 
 template <class search_algorithm1, class search_algorithm2>
 bool is_winner(search_algorithm1& player1,
@@ -71,27 +71,26 @@ double evaluate_accuracy(search_algorithm1& player1,
 int main(int argc, char **argv)
 {
     //Esto es para proobar Ggg.
-    CLI::App app{"---- Go generalized ---- \n the target is create a smart search wich gives a great performance in differents graphs. "};
+    CLI::App app{"---- Go generalized ----"};
 
     // Define options
     bool visualize = true; //If you visualize the board then you aren't interested in compare algorithms.
-    bool against_player = false;
-    bool compare_algorithms = false;
-    app.add_option("-v", visualize, "Launch the GUI.");
-    app.add_option("-p" , against_player , "Play against the algorithm.");
+    std::string player = "Human";
+
+    app.add_option("-p" , player , "type name: MCT_UCT, RAVE , Human");
 
     CLI11_PARSE(app, argc, argv);
 
     std::cout<<"Input Parameters: "<<std::endl;
     std::cout <<"Visualize: "<< visualize<<std::endl;
-    std::cout<<"Against player: "<< against_player<<std::endl;
+    std::cout<<"Against player: "<< player<<std::endl;
 
 
     Graph G(0);
     BoardGame Tablero(G); // Create rules set.
     MCTS Black_player(25, 100, 'B');
     MCTS White_player(25,100,'W');
-
+    MC_RAVE Black_player_RAVE(200, 100, 'B');
 
 
 
@@ -101,8 +100,10 @@ int main(int argc, char **argv)
         BoardGraphGUI Graph1(Tablero); // Create graph graphic.
         GUI APP(Graph1, 700, 700); // Listener and main window loop.
 
-        if(!against_player)
-            APP.Run_VS_AI(Black_player, true); // Play against algorithm.
+        if(player == "RAVE")
+            APP.Run_VS_AI(Black_player_RAVE, true); // Play against algorithm.
+        else if(player == "MCT_UCT")
+            APP.Run_VS_AI(Black_player, true);
         else
             APP.Run(); //Play against someone else.
     }

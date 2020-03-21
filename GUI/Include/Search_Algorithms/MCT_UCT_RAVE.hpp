@@ -9,7 +9,7 @@
 #include <vector>
 
 using Action = int;
-
+using vertex = std::int64_t ;
 //----------------------------------------------------------------------------------
 struct RAVE_Map
 {
@@ -83,7 +83,7 @@ private:
         double confidence_of_node() const
         {
             auto b = 1.0;
-            double B = N_ / (N  + N_ + 4.0 * N * N_ * std::pow(1.0,2));
+            double B = N_ / (N  + N_ + 4.0 * N * N_ * std::pow(b,2));
 
             return (1.0 - B) * Q + B * Q_;
         }
@@ -223,6 +223,8 @@ void MC_RAVE::Expand_by_RAVE(MC_RAVE::RAVE_Node &node)
 
     for (auto v : actions_set)
     {
+        if(simulation_stats.Q.find(v) == simulation_stats.Q.end())
+            continue;
 
         node.add_child(v, simulation_stats);
     }
@@ -249,10 +251,13 @@ MC_RAVE::RAVE_Node& MC_RAVE::child_highest_confidence(RAVE_Node& node, int max_m
     double tmp_confidence;
     RAVE_Node* child_highest_confidence_ = nullptr;
 
+    std::cout<<"The confidence is: "<<confidence<<std::endl;
 
     for (auto& child : node.children())
     {
         tmp_confidence = child.confidence_of_node() * max_min_val;
+        std::cout<<"tmp confidence "<<tmp_confidence<<std::endl;
+
         if (confidence < tmp_confidence)
         {
             child_highest_confidence_ = &child;
@@ -262,8 +267,10 @@ MC_RAVE::RAVE_Node& MC_RAVE::child_highest_confidence(RAVE_Node& node, int max_m
 
     if (child_highest_confidence_ == nullptr)
     {
+        std::cout.put('\n');
         std::cout << node.children().size() << std::endl;
         std::cout << confidence << std::endl;
+        std::cout<<node.is_leaf()<<std::endl;
     }
 
     assert(child_highest_confidence_ != nullptr);
