@@ -86,8 +86,7 @@ int main(int argc, char **argv)
     std::cout<<"Against player: "<< player<<std::endl;
 
 
-    Graph G(0);
-    BoardGame Tablero(G); // Create rules set.
+    
     MCTS Black_player(25, 100, 'B');
     MCTS White_player(25,100,'W');
     MC_RAVE Black_player_RAVE(200, 100, 'B');
@@ -95,8 +94,10 @@ int main(int argc, char **argv)
 
 
     // Si queremos visualizar las acciones y jugar.
-    if (visualize)
+    if (!visualize)
     {
+        Graph G(0);
+        BoardGame Tablero(G); // Create rules set.
         BoardGraphGUI Graph1(Tablero); // Create graph graphic.
         GUI APP(Graph1, 700, 700); // Listener and main window loop.
 
@@ -110,7 +111,9 @@ int main(int argc, char **argv)
 
     else
     {
-        auto win_rate_first_algorithm = evaluate_accuracy(Black_player,
+        Graph G =graphs::Grid(3,3);
+        BoardGame Tablero(G);
+        auto win_rate_first_algorithm = evaluate_accuracy(Black_player_RAVE,
                                                           White_player, Tablero , 30);
 
         std::cout<<"The first win in a rate of "<<win_rate_first_algorithm<<std::endl;

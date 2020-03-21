@@ -47,13 +47,14 @@ fi
 if [ is_valid_OS ]
 then 
     #You can replace the link by the suitable if you have GPU.
-    wget https://download.pytorch.org/libtorch/nightly/cpu/libtorch-shared-with-deps-latest.zip
-    unzip libtorch-shared-with-deps-latest.zip
+    #wget https://download.pytorch.org/libtorch/nightly/cpu/libtorch-shared-with-deps-latest.zip
+    #unzip libtorch-shared-with-deps-latest.zip
 
     cd GO-master/
     mkdir build
     cd build
-    cmake -DCMAKE_PREFIX_PATH=$pwd1/libtorch ..
+    #cmake -DCMAKE_PREFIX_PATH=$pwd1/libtorch ..
+    cmake ..
     make
     ./visualizer -v true -p true
 fi

@@ -3,11 +3,12 @@ cmake_minimum_required(VERSION 3.2)
 project(GUI_GO)
 enable_language(C CXX)
 
-find_package(Torch REQUIRED)
+#find_package(Torch REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 option(BUILD_VISUALIZER "Build visualizer (requires SFML)" ON)
 option(BUILD_TESTS "Build unit tests (requires gtest)" ON)
@@ -49,8 +50,9 @@ if (${BUILD_VISUALIZER})
 
     add_executable(visualizer main.cpp )
     add_dependencies(visualizer graph)
-    target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11 "${TORCH_LIBRARIES}")
-    
+    #target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11 "${TORCH_LIBRARIES}")
+    target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11)
+
 endif()
 
 # --------------------------------------------------------------------------------
@@ -67,7 +69,7 @@ if(${BUILD_TESTS})
 	if (${GTEST_FOUND})
         message("Using system's google test")
         include_directories(${GTEST_INCLUDE_DIRS})
-        add_executable(${TEST_MAIN} ${TESTFILES})
+        add_executable(${TEST_MAIN} ${TESTFILES} )
 	endif()
     
     target_link_libraries(${TEST_MAIN} ${GTEST_LIBRARIES} graph Threads::Threads)
