@@ -33,4 +33,3 @@ double distance(const sf::Vector2i& A, const sf::Vector2i& B)
 
     return std::sqrt(X + Y);
 }
-

@@ -50,6 +50,7 @@ public:
         // run the program as long as the window is open
         while (window.isOpen())
         {
+            Draw(is_finished);
 
             if (!is_finished)
             {
@@ -78,7 +79,6 @@ public:
             }
 
             //ClientListener();
-            Draw(is_finished);
         }
     }
 
@@ -162,7 +162,6 @@ void GUI::ClientOnKeyPress(sf::Keyboard::Key key)
         //Save graph in a JSON file.
         else if(key == sf::Keyboard::Num0)
         {
-            
             auto graph_ = Go.get_graph_GUI();
             save_graph_to_json( FileName_ , graph_);
         }

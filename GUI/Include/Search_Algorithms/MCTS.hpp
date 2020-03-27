@@ -1,7 +1,7 @@
 #pragma once
-#include "tqdm.h"
 #include "../BoardGame.hpp"
 #include "../Extra/hash_utilities.hpp"
+#include "../Extra/tqdm.h"
 #include <cmath>
 #include <limits>
 #include <stack>
@@ -114,17 +114,15 @@ private:
     double get_reward_from_one_simulation(int num_steps, BoardGame state);
 };
 
-
-
 Action MCTS::search(const BoardGame& current_board)
 {
     Node root(current_board, -1, nullptr);
     tqdm bar;
- 
+    bar.set_label("MCTS");
 
     for (int i = 0; i < times_to_repeat; ++i)
     {
-        bar.progress(i,times_to_repeat);
+        bar.progress(i, times_to_repeat);
 
         Node& leaf = Select(root);
         // std::cout << "Ha finalizado etapa de seleccion" << std::endl;

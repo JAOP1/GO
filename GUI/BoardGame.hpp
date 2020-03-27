@@ -18,7 +18,6 @@ using index_type = std::int64_t;
 using vertex = std::int64_t;
 using player = char;
 
-
 struct board_node
 {
 
@@ -57,7 +56,7 @@ public:
     void debug_function() const;
 
     board_node get_current_node_state(vertex v) const;
-    
+
     char player_status() const { return players[current_player]; }
 
     std::vector<char> show_current_state() const;
@@ -68,7 +67,7 @@ public:
 
     int reward(char player) const;
 
-    bool is_complete() const; 
+    bool is_complete() const;
 
     bool is_valid_move(vertex v) const;
 

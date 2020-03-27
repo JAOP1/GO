@@ -10,13 +10,10 @@ public:
     using size_type = std::int64_t;
     using index_type = std::int64_t;
 
-    explicit disjoint_sets(index_type n) : 
-    P(n),
-    m_num_components(n),
-    num_elements_in_component(n,1)
+    explicit disjoint_sets(index_type n)
+        : P(n), m_num_components(n), num_elements_in_component(n, 1)
     {
         std::iota(P.begin(), P.end(), 0L);
-        std::cout<<"Tamanio de arreglo: "<<num_elements_in_component.size()<<std::endl;
     }
 
     index_type find_root(index_type t) const
@@ -38,14 +35,14 @@ public:
         P.clear();
         num_elements_in_component.clear();
         P.resize(n_vertices);
-        num_elements_in_component.resize(n_vertices,1);
+        num_elements_in_component.resize(n_vertices, 1);
         std::iota(P.begin(), P.end(), 0L);
         m_num_components = n_vertices;
     }
 
     void reset_parent(int x)
-    { 
-        P[x] = x; 
+    {
+        P[x] = x;
         num_elements_in_component[x] = 1;
     }
 
@@ -55,7 +52,6 @@ public:
         index_type root_b = find_root(b);
 
         index_type rb = set_P(b, ra);
-
 
         if (ra != rb)
         {
@@ -71,10 +67,10 @@ public:
 
     size_type num_components() const { return m_num_components; }
 
-    size_type get_num_elements_in_component(index_type x) const 
+    size_type get_num_elements_in_component(index_type x) const
     {
         index_type root_component = find_root(x);
-         return num_elements_in_component[root_component];
+        return num_elements_in_component[root_component];
     }
 
     index_type size() const { return num_elements_in_component.size(); }
@@ -98,7 +94,7 @@ private:
         return x;
     }
 
-    mutable std::vector< size_type > num_elements_in_component; 
+    mutable std::vector<size_type> num_elements_in_component;
     mutable std::vector<index_type> P;
     size_type m_num_components;
 };
