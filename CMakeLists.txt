@@ -29,7 +29,8 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/GUI/Include/Search_Algorithms
     ${PROJECT_SOURCE_DIR}/GUI/Files
     ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/tests)
+    ${PROJECT_SOURCE_DIR}/tests
+    ${PROJECT_SOURCE_DIR}/Graphs)
 
 file(GLOB SOURCES "src/*.cpp")
 add_library(graph ${SOURCES})

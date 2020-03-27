@@ -1,7 +1,5 @@
 #include "../GUI/BoardGame.hpp"
 
-
-
 std::default_random_engine generator;
 std::uniform_real_distribution<double> distribution(0.0, 1.0);
 
@@ -31,20 +29,17 @@ void BoardGame::debug_function() const
 
     // Mostrar los hash de posiciones del juego.
     std::cout << "Hash del primer estado del juego: " << last_states[0]
-                << std::endl;
+              << std::endl;
     std::cout << "Hash del segundo estado del juego: " << last_states[1]
-                << std::endl;
+              << std::endl;
 
-    std::cout << "Tamanio de arreglo de hashes: " << hashing.size()
-                << std::endl;
+    std::cout << "Tamanio de arreglo de hashes: " << hashing.size() << std::endl;
 }
 
- board_node BoardGame::get_current_node_state(vertex v) const
- {
-     return pieces[v];
- }
-
-
+board_node BoardGame::get_current_node_state(vertex v) const
+{
+    return pieces[v];
+}
 
 std::vector<char> BoardGame::show_current_state() const
 {

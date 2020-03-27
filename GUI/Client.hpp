@@ -2,17 +2,20 @@
 
 #include "BoardGame.hpp"
 #include "GraphGUI.hpp"
+#include "Include/Extra/json_manage.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
+#include <string>
 
 class GUI
 {
 public:
-    GUI(BoardGraphGUI& board, int width, int height , bool is_building_ = true)
-        :   Go(board),
-            window(sf::VideoMode(width, height), "Go Board"),
-            is_building(is_building_) //Esto aun no funciona. (pronto...)
+    GUI(BoardGraphGUI& board, int width, int height,const std::string FileName  ,bool is_building_ = true  )
+        : Go(board)
+        , window(sf::VideoMode(width, height), "Go Board")
+        , is_building(is_building_)
+        , FileName_(FileName)
     {
 
         if (!m_texture.loadFromFile("fondo.jpg"))
@@ -59,8 +62,8 @@ public:
                         action = AI_Algorithm.search(Go.BoardGraph);
 
                     Go.make_action(action);
-                    std::cout << "Algoritmo pensó en esta accion " << action
-                              << std::endl;
+                    // std::cout << "Algoritmo pensó en esta accion " << action
+                    // << std::endl;
                     is_first_player = !is_first_player;
                     // Go.BoardGraph.show_array();
                 }
@@ -74,7 +77,7 @@ public:
                 is_finished = Go.BoardGraph.is_complete();
             }
 
-            ClientListener();
+            //ClientListener();
             Draw(is_finished);
         }
     }
@@ -90,6 +93,7 @@ private:
     sf::Texture m_texture;
     sf::RenderWindow window;
 
+    std::string FileName_;
     bool is_first_player;
     bool is_building = true;
     bool is_cursor = false;
@@ -146,26 +150,40 @@ private:
 
 void GUI::ClientOnKeyPress(sf::Keyboard::Key key)
 {
-    if (is_building && key == sf::Keyboard::Enter)
+    if (is_building )
     {
-        std::cout << "Ha finalizado la construccion del grafo." << std::endl;
-        is_building = false;
-        Go.Update_board();
+        //Finish graph creation.
+        if(key == sf::Keyboard::Enter)
+        {
+            std::cout << "Ha finalizado la construccion del grafo." << std::endl;
+            is_building = false;
+            Go.Update_board();
+        }
+        //Save graph in a JSON file.
+        else if(key == sf::Keyboard::Num0)
+        {
+            
+            auto graph_ = Go.get_graph_GUI();
+            save_graph_to_json( FileName_ , graph_);
+        }
     }
-    // Caso cuando pasa jugador.
-    else if (!is_building)
+
+    else
     {
+        //User pass.
         if (key == sf::Keyboard::Space)
         {
-            std::cout << "Pasa jugador actual." << std::endl;
+            // std::cout << "Pasa jugador actual." << std::endl;
             Go.make_action(-1);
             is_first_player = !is_first_player;
         }
+        // Debug function in graphboard.
         else if (key == sf::Keyboard::Num1)
         {
-            // Utilizaré esta tecla para debug.
             Go.BoardGraph.debug_function();
         }
+        
+        
     }
 }
 
@@ -201,7 +219,6 @@ void GUI::ClientOnMouseButtonPress(sf::Mouse::Button btn)
         if (v != INVALID_VERTEX)
         {
             // Regresa true si pudo realizar la acción.
-            std::cout<< "Usuario dio click "<<v<<std::endl;
             if (Go.make_action(v))
                 is_first_player = !is_first_player;
         }

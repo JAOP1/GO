@@ -11,6 +11,14 @@
 #define INVALID_VERTEX -1
 using vertex = std::int64_t;
 
+struct Graph_inf
+{
+    std::vector<std::vector<vertex>> edges;
+    std::vector<std::vector<int>> node_positions;
+    int num_vertices;
+};
+
+
 struct NodeGUI
 {
     NodeGUI(const int radius, int x, int y) : circle(radius), position(x, y)
@@ -27,8 +35,10 @@ struct NodeGUI
 class BoardGraphGUI
 {
 public:
-    BoardGraphGUI(BoardGame& Go)
-        : BoardGraph(Go), Fake_edge(sf::Lines, 2), Edges(sf::Lines, 0)
+    explicit BoardGraphGUI(BoardGame& Go)
+        : BoardGraph(Go), 
+        Fake_edge(sf::Lines, 2), 
+        Edges(sf::Lines, 0)
     {
         font.loadFromFile("font.ttf");
         text.setFont(font);
@@ -37,9 +47,52 @@ public:
         text.setCharacterSize(24);
     }
 
-    void add_edge(vertex a, vertex b)
+    //Build a existent graph.
+    explicit BoardGraphGUI(BoardGame& Go , std::vector<sf::Vector2i>& nodes_pos)
+    : BoardGraph(Go),
+      Fake_edge(sf::Lines,2),
+      Edges(sf::Lines,0)
     {
-        if (BoardGraph.Board.add_edge_no_repeat(a, b))
+        font.loadFromFile("font.ttf");
+        text.setFont(font);
+        text.setString("dwd");
+        text.setFillColor(sf::Color::Black);
+        text.setCharacterSize(24);
+        
+        for(vertex v = 0 ; v < Go.Board.num_vertices() ; ++v)
+            add_vertex(nodes_pos[v] , false );
+
+        for(auto edge : Go.Board.edges())
+        {
+            add_edge(edge.from, edge.to, true);
+        }
+        
+
+        is_building = false;
+    }
+
+    Graph_inf get_graph_GUI()
+    {
+        Graph_inf graph;
+
+        for(auto edge :  BoardGraph.Board.edges())
+        {
+            graph.edges.push_back({edge.from , edge.to});
+        }
+
+        for(auto node : nodes)
+        {
+            graph.node_positions.push_back({node.position.x , node.position.y});
+        }
+
+        graph.num_vertices = nodes.size();
+
+        return graph;
+    }
+
+    void add_edge(vertex a, vertex b , bool ignore = false)
+    {
+        if (BoardGraph.Board.add_edge_no_repeat(a, b) || ignore)
         {
             // Create Edge graphic.
             sf::Vector2f A(nodes[a].position.x, nodes[a].position.y);
@@ -49,10 +102,12 @@ public:
         }
     }
 
-    vertex add_vertex(sf::Vector2i point)
+    vertex add_vertex(sf::Vector2i point , bool add_to_graph = true)
     {
         nodes.emplace_back(20, point.x, point.y);
-        return BoardGraph.Board.add_vertex();
+        if(add_to_graph)
+            return BoardGraph.Board.add_vertex();
+        return nodes.size();
     }
 
     vertex is_collision_vertex(sf::Vector2i MousePosition)
@@ -111,6 +166,7 @@ void BoardGraphGUI::draw(sf::RenderWindow& window, bool is_finished)
     sf::Vector2i MousePosition = sf::Mouse::getPosition(window);
 
     // Show the player.
+    //Show current player, otherwise, the score.
     if (!is_building)
     {
 
