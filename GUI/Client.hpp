@@ -74,6 +74,8 @@ public:
                     // the last iteration of the loop
 
                     ClientListener();
+                    if(v_ != -2) //Eso significa que no ha hecho acción valida.
+                        AI_Algorithm.fit_precompute_tree(v_);
                 }
                 is_finished = Go.BoardGraph.is_complete();
             }
@@ -97,6 +99,7 @@ private:
     bool is_first_player;
     bool is_building = true;
     bool is_cursor = false;
+    vertex v_ = -2; 
 
     void Draw(bool is_finished = false)
     {
@@ -218,9 +221,13 @@ void GUI::ClientOnMouseButtonPress(sf::Mouse::Button btn)
         if (v != INVALID_VERTEX)
         {
             // Regresa true si pudo realizar la acción.
-            if (Go.make_action(v))
+            if (Go.make_action(v)){
                 is_first_player = !is_first_player;
+                v_=v;
+                return;
+            }
         }
+        v_ = -2;
     }
 }
 

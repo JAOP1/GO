@@ -11,7 +11,7 @@ is_valid_OS=true
 if [ $is_manjaro -gt 0 ]
 then
     echo The current operative system is Manjaro.
-    sudo pacman -S --needed sfml git cmake gtest clang gcc
+    sudo pacman -S --needed sfml git cmake gtest clang gcc boost 
 
 elif [ $is_ubuntu -gt 0 ]
 then 

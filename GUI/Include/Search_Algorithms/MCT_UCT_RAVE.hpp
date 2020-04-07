@@ -42,6 +42,8 @@ public:
 
     Action search(const BoardGame& current_board);
 
+    void fit_precompute_tree(Action A){}
+
 private:
     class RAVE_Node
     {

@@ -72,7 +72,7 @@ double evaluate_accuracy(search_algorithm1& player1,
 }
 
 //Solución parcial....
-void run_search(const std::string& player ,  GUI& client)
+void run_search(const std::string& player ,  GUI& client , const BoardGame& G)
 {
 
 
@@ -83,7 +83,7 @@ void run_search(const std::string& player ,  GUI& client)
     }
     else if (player == "MCT_UCT"){
 
-        MCTS Black_player(25, 100, 'B');
+        MCTS Black_player(G,25, 100, 'B');
         client.Run_VS_AI(Black_player, true);
     }
     else
@@ -121,15 +121,15 @@ int main(int argc, char** argv)
             BoardGraphGUI Graph_visualizer(ruleset , arr);
 
             GUI APP(Graph_visualizer , 700,700,output_file , false);
-            run_search(player , APP);
+            run_search(player , APP , ruleset);
         }
         else
         {
             Graph G(0);
-            BoardGame Tablero(G); // Create rules set.
-            BoardGraphGUI Graph1(Tablero); // Create graph graphic.
+            BoardGame ruleset(G); // Create rules set.
+            BoardGraphGUI Graph1(ruleset); // Create graph graphic.
             GUI APP(Graph1, 700, 700, output_file); // Listener and main window loop.
-            run_search(player, APP);
+            run_search(player, APP , ruleset);
         }
         
         
