@@ -27,18 +27,26 @@ public:
     void Run()
     {
 
+        bool is_finished = false;
+        bool is_playing = true;
         // run the program as long as the window is open
         while (window.isOpen())
         {
+
+            Draw(is_finished);
+            
+            if(!is_building && !is_finished)
+                is_finished= Go.BoardGraph.is_complete();
+            else
+                is_playing=false;
             // check all the window's events that were triggered since the last
             // iteration of the loop
             sf::Event event;
-            while (window.pollEvent(event))
+            while (window.pollEvent(event) )
             {
-                ClientOnEvent(event);
+                ClientOnEvent(event , is_playing);
             }
 
-            Draw();
         }
     }
 
@@ -73,20 +81,24 @@ public:
                     // check all the window's events that were triggered since
                     // the last iteration of the loop
 
-                    ClientListener();
+                    ClientListener(true);
                     if(v_ != -2) //Eso significa que no ha hecho acción valida.
+                    {
                         AI_Algorithm.fit_precompute_tree(v_);
+                        //AI_Algorithm.root->objectCount;
+                    }
                 }
                 is_finished = Go.BoardGraph.is_complete();
+                continue;
             }
 
-            //ClientListener();
+            ClientListener(false);
         }
     }
 
-    void ClientListener();
+    void ClientListener(bool is_playing);
     void ClientOnKeyPress(sf::Keyboard::Key key);
-    void ClientOnMouseButtonPress(sf::Mouse::Button btn);
+    void ClientOnMouseButtonPress(sf::Mouse::Button btn , bool is_playing);
     void ClientOnMouseButtonRelease(sf::Mouse::Button btn);
 
 private:
@@ -113,7 +125,7 @@ private:
         window.display();
     }
 
-    void ClientOnEvent(const sf::Event& event)
+    void ClientOnEvent(const sf::Event& event, bool is_playing)
     {
         switch (event.type)
         {
@@ -135,7 +147,7 @@ private:
             break;
 
         case (sf::Event::MouseButtonPressed):
-            ClientOnMouseButtonPress(event.mouseButton.button);
+            ClientOnMouseButtonPress(event.mouseButton.button , is_playing);
             break;
 
         case (sf::Event::MouseButtonReleased):
@@ -189,8 +201,11 @@ void GUI::ClientOnKeyPress(sf::Keyboard::Key key)
     }
 }
 
-void GUI::ClientOnMouseButtonPress(sf::Mouse::Button btn)
+void GUI::ClientOnMouseButtonPress(sf::Mouse::Button btn , bool is_playing)
 {
+    if(!is_playing)
+        return ;
+
     if (btn == sf::Mouse::Button::Left)
     {
         vertex v = Go.is_collision_vertex(MousePosition());
@@ -251,11 +266,11 @@ void GUI::ClientOnMouseButtonRelease(sf::Mouse::Button btn)
     }
 }
 
-void GUI::ClientListener()
+void GUI::ClientListener(bool is_playing)
 {
     sf::Event event;
     while (window.pollEvent(event))
     {
-        ClientOnEvent(event);
+        ClientOnEvent(event , is_playing);
     }
 }
