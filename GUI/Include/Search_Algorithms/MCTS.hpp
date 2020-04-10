@@ -13,12 +13,6 @@
 
 using Action = int;
 
-template<class T>
-void print(T i)
-{
-    std::cout<<i<<" ";
-}
-
 //----------------------------------------------------------------------------------
 class Node
     {
@@ -29,10 +23,12 @@ class Node
                 applied_action_(action),
                 height_(height)
         {
-            objectCount++;
+            //objectCount++;
         }
+         
+        ~Node() = default;
 
-        ~Node(){ objectCount--;};
+        //~Node(){ objectCount--;};
 
         void add_child(Action action_)
         {
@@ -60,9 +56,9 @@ class Node
              state_ = game_state;
         }
 
-        BoardGame state() { return state_; }
+        BoardGame state() const { return state_; }
 
-        int get_height() { return height_;}
+        int get_height() const { return height_;}
 
         int num_visits() const { return num_visits_; }
 
@@ -91,7 +87,7 @@ class Node
         std::vector<std::shared_ptr<Node>> children_;
     };
 
-int Node::objectCount = 0;
+//int Node::objectCount = 0;
 
 
 
@@ -139,7 +135,6 @@ public:
         //std::cout<< "Sise after to update tree is: "<<root->objectCount<<std::endl;
     }
 
-    std::shared_ptr<Node> root;
 private:
     
     // Parametros
@@ -153,14 +148,17 @@ private:
     using state_t = std::vector<char>;
     using memoizer = std::unordered_map<state_t, double, polynomial_hash<char>>;
     memoizer global_information; // nuevo
-    double tree_size = 0;
     bool is_first_move = true;
+    std::shared_ptr<Node> root;
+
 
     std::shared_ptr<Node> child_highest_confidence(std::shared_ptr<Node>& node, int max_min_val);
 
     double Simulation(std::shared_ptr<Node> node);
 
-    void Backpropagation(std::shared_ptr<Node> leaf, const double reward, const int num_visits);
+    void Backpropagation(std::shared_ptr<Node> leaf, 
+                         const double reward, 
+                         const int num_visits);
 
     void Expand(std::shared_ptr<Node>& node);
 
@@ -177,6 +175,13 @@ Action MCTS::search(const BoardGame& current_board)
         is_first_move = false;
     }
 
+    std::vector<char> s = root->show_board();
+    for(auto i : s)
+        std::cout<<i<<" ";
+    std::cout<<std::endl;
+
+
+
     tqdm bar;
     bar.set_label("MCTS");
 
@@ -185,9 +190,8 @@ Action MCTS::search(const BoardGame& current_board)
         bar.progress(i, times_to_repeat);
 
         std::shared_ptr<Node> leaf = Select(root);
-        // std::cout << "Seleccion" << std::endl;
+
         Expand(leaf);
-        // std::cout << "Expandir" << std::endl;
 
 
         double average_reward = 0;
@@ -225,17 +229,13 @@ Action MCTS::search(const BoardGame& current_board)
             total_children++;
         }
         
-        //std::cout<<"simulaciones"<<std::endl;
         Backpropagation(leaf, average_reward, total_children);
-        //std::cout<<"backpropagation"<<std::endl;
+   
     }
     bar.finish();
-    tree_size = 0;
-    //std::cout<<"Nodos totales antes de: "<<root->objectCount<<std::endl;
     
     root = std::move(child_highest_confidence(root, 1));
     root->set_parent();
-    // std::cout<<"Encuentra el que da mayor recompensa"<<std::endl;
     
     return root->action();
 }
@@ -271,14 +271,12 @@ void MCTS::Expand(std::shared_ptr<Node>& node)
 {
     int real_height = node->get_height() - root->get_height();
     if(real_height > depth_)
-    {
         return;
-    }
+    
     BoardGame state = node->state();
 
     std::vector<vertex> actions_set = state.get_available_sample_cells(1.0);
 
-    tree_size += actions_set.size();
 
     for (auto v : actions_set)
         node->add_child(v);
@@ -301,14 +299,17 @@ std::shared_ptr<Node> MCTS::Select(std::shared_ptr<Node> node)
 std::shared_ptr<Node> MCTS::child_highest_confidence(std::shared_ptr<Node>& node, int max_min_val)
 {
     double confidence = std::numeric_limits<double>::lowest();
+    double tmp_confidence;
     std::shared_ptr<Node> child_highest_confidence_;
 
     for (std::shared_ptr<Node>& child : node->children())
     {
-        if (confidence < child->confidence_of_node()*max_min_val)
+        tmp_confidence = child->confidence_of_node()*max_min_val;
+       
+        if (confidence < tmp_confidence)
         {
             child_highest_confidence_ = child;
-            confidence = child->confidence_of_node()*max_min_val;
+            confidence = tmp_confidence;
         }
     }
 

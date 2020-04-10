@@ -78,7 +78,7 @@ void run_search(const std::string& player ,  GUI& client , const BoardGame& G)
 
     if (player == "RAVE")
     {
-        MC_RAVE Black_player_RAVE(200, 100, 'B');
+        MC_RAVE Black_player_RAVE(G,200, 100, 'B');
         client.Run_VS_AI(Black_player_RAVE, true); // Play against algorithm.
     }
     else if (player == "MCT_UCT"){
