@@ -71,10 +71,9 @@ public:
                         action = AI_Algorithm.search(Go.BoardGraph);
 
                     Go.make_action(action);
-                    // std::cout << "Algoritmo pensó en esta accion " << action
-                    // << std::endl;
+                    
                     is_first_player = !is_first_player;
-                    // Go.BoardGraph.show_array();
+                  
                 }
                 else
                 {
@@ -82,10 +81,10 @@ public:
                     // the last iteration of the loop
 
                     ClientListener(true);
-                    if(v_ != -2) //Eso significa que no ha hecho acción valida.
+                    if(v_ != -2 && is_first_player) //Eso significa que no ha hecho acción valida.
                     {
                         AI_Algorithm.fit_precompute_tree(v_);
-                        //AI_Algorithm.root->objectCount;
+                       
                     }
                 }
                 is_finished = Go.BoardGraph.is_complete();

@@ -102,7 +102,7 @@ public:
     double confidence_of_node() const
     {
         auto b = 1.0;
-        double B = N_/(N + N_ + 4.0*N*N_*std::pow(b, 2));
+        double B = N_/(N + N_ + 4.0*N*N_*std::pow(b, 2) + 0.0000001); // Lo utilizo para que no sea 0/0
 
         return (1.0 - B)*Q + B*Q_;
     }
@@ -345,9 +345,11 @@ std::shared_ptr<RAVE_Node> MC_RAVE::child_highest_confidence(std::shared_ptr<RAV
     if (!child_highest_confidence_ )
     {
         std::cout.put('\n');
-        std::cout << node->children().size() << std::endl;
-        std::cout << confidence << std::endl;
-        std::cout << node->is_leaf() << std::endl;
+        auto array = node->children();
+        std::cout << "Available action set " << array.size() << std::endl;
+        std::cout<<"Action " << array[0]->action()<<std::endl;
+        std::cout << "node score by AMAF: "<< array[0]->confidence_of_node() << std::endl;
+    
     }
 
     assert(child_highest_confidence_ != nullptr);
