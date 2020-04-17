@@ -2,162 +2,163 @@
 #include "../BoardGame.hpp"
 #include "../Extra/hash_utilities.hpp"
 #include "../Extra/tqdm.h"
+#include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <stack>
 #include <unordered_map>
-#include <vector>
-#include <algorithm>
 #include <utility>
-#include <memory>
+#include <vector>
 
 using Action = int;
 
 //----------------------------------------------------------------------------------
 class Node
+{
+public:
+    Node(const BoardGame& game_state,
+         Action action,
+         int height,
+         Node* Parent = nullptr)
+        : parent_(Parent)
+        , state_(game_state)
+        , applied_action_(action)
+        , height_(height)
     {
-    public:
-        
-        Node(const BoardGame& game_state, Action action,int height,Node* Parent = nullptr)
-            :   parent_(Parent), state_(game_state), 
-                applied_action_(action),
-                height_(height)
-        {
-            //objectCount++;
-        }
-         
-        ~Node() = default;
+        // objectCount++;
+    }
 
-        //~Node(){ objectCount--;};
+    ~Node() = default;
 
-        void add_child(Action action_)
-        {
-            auto game_state_ = state_;
-            game_state_.make_action(action_);
-            std::shared_ptr<Node> child = std::make_shared<Node>(game_state_ , action_ , height_ +1 , this);
-            children_.push_back(child);
-        }
+    //~Node(){ objectCount--;};
 
-        void update_stats(double average_reward, int total_visits)
-        {
-            num_visits_ += total_visits;
-            value_ += average_reward;
-        }
+    void add_child(Action action_)
+    {
+        auto game_state_ = state_;
+        game_state_.make_action(action_);
+        std::shared_ptr<Node> child =
+          std::make_shared<Node>(game_state_, action_, height_ + 1, this);
+        children_.push_back(child);
+    }
 
-        double confidence_of_node() const
-        {
-            auto N = (is_root() ? 0 : parent_->num_visits());
-            double C = 2.0;
-            return value_ + C*std::sqrt(std::log1p(N)/num_visits_);
-        }
+    void update_stats(double average_reward, int total_visits)
+    {
+        num_visits_ += total_visits;
+        value_ += average_reward;
+    }
 
-        void update_board(const BoardGame& game_state)
-        {
-             state_ = game_state;
-        }
+    double confidence_of_node() const
+    {
+        auto N = (is_root() ? 0 : parent_->num_visits());
+        double C = 2.0;
+        return value_ + C*std::sqrt(std::log1p(N)/num_visits_);
+    }
 
-        BoardGame state() const { return state_; }
+    void update_board(const BoardGame& game_state) { state_ = game_state; }
 
-        int get_height() const { return height_;}
+    BoardGame state() const { return state_; }
 
-        int num_visits() const { return num_visits_; }
+    int get_height() const { return height_; }
 
-        Action action() const { return applied_action_; }
+    int num_visits() const { return num_visits_; }
 
-        Node* parent() const { return parent_; }
+    Action action() const { return applied_action_; }
 
-        bool is_root() const { return parent_ == nullptr; }
+    Node* parent() const { return parent_; }
 
-        bool is_leaf() const { return children_.empty(); }
+    bool is_root() const { return parent_ == nullptr; }
 
-        std::vector<std::shared_ptr<Node>>& children() { return children_; }
+    bool is_leaf() const { return children_.empty(); }
 
-        std::vector<char> show_board() const { return state_.show_current_state(); }
+    std::vector<std::shared_ptr<Node>>& children() { return children_; }
 
-        void set_parent(){ parent_ = nullptr;} ;
+    std::vector<char> show_board() const { return state_.show_current_state(); }
 
-        static int objectCount;
-    private:
-        Node* parent_{nullptr};
-        BoardGame state_;
-        Action applied_action_ = -1; // Null action
-        int num_visits_ = 0;
-        double value_ = 0.0;
-        int height_ ;
-        std::vector<std::shared_ptr<Node>> children_;
-    };
+    void set_parent() { parent_ = nullptr; };
 
-//int Node::objectCount = 0;
+    static int objectCount;
 
+private:
+    Node* parent_{nullptr};
+    BoardGame state_;
+    Action applied_action_ = -1; // Null action
+    int num_visits_ = 0;
+    double value_ = 0.0;
+    int height_;
+    std::vector<std::shared_ptr<Node>> children_;
+};
 
+// int Node::objectCount = 0;
 
 class MCTS
 {
 public:
-
     explicit MCTS(const BoardGame& current_board,
-                 int num_simulation , 
-                 int num_times,
-                 char player,
-                 bool do_memoization = true,
-                 int depth = 10 )
-                 :
+                  int num_simulation,
+                  int num_times,
+                  char player,
+                  bool do_memoization = true,
+                  int depth = 10)
+        :
 
-          simulation_num(num_simulation)
+        simulation_num(num_simulation)
         , times_to_repeat(num_times)
         , player_(player)
         , do_memoization_(do_memoization) // nuevo
         , depth_(depth)
-        //, root(current_board , -1, 0 , nullptr)
-    { 
-        root = std::make_shared<Node>(current_board , -1, 0 , nullptr);
+    //, root(current_board , -1, 0 , nullptr)
+    {
+        root = std::make_shared<Node>(current_board, -1, 0, nullptr);
     }
 
     Action search(const BoardGame& current_board);
 
     void fit_precompute_tree(Action A)
     {
-        //std::cout<<"Accion del estado actual "<<root->action()<<std::endl;
+        // std::cout<<"Accion del estado actual "<<root->action()<<std::endl;
 
-        //std::cout<<"Size before to update tree is: "<<root->objectCount<<std::endl;
-        for(std::shared_ptr<Node>& child : root->children())
+        // std::cout<<"Size before to update tree is:
+        // "<<root->objectCount<<std::endl;
+        for (std::shared_ptr<Node>& child : root->children())
         {
-            if(child->action() == A){
+            if (child->action() == A)
+            {
                 root = std::move(child);
                 root->set_parent();
-                //root = child;
+                // root = child;
                 break;
             }
         }
-        
-        //std::cout<<" Accion del estado después "<<root->action()<<std::endl;
-        //std::cout<<"Es la raiz "<<root->is_root()<<std::endl;
-        //std::cout<< "Sise after to update tree is: "<<root->objectCount<<std::endl;
+
+        // std::cout<<" Accion del estado después "<<root->action()<<std::endl;
+        // std::cout<<"Es la raiz "<<root->is_root()<<std::endl;
+        // std::cout<< "Sise after to update tree is:
+        // "<<root->objectCount<<std::endl;
     }
 
 private:
-    
     // Parametros
     int simulation_num;
     int times_to_repeat;
     bool do_memoization_; // nuevo
     char player_;
-    int  depth_;
+    int depth_;
 
-    //Local information.
+    // Local information.
     using state_t = std::vector<char>;
     using memoizer = std::unordered_map<state_t, double, polynomial_hash<char>>;
     memoizer global_information; // nuevo
     bool is_first_move = true;
     std::shared_ptr<Node> root;
 
-
-    std::shared_ptr<Node> child_highest_confidence(std::shared_ptr<Node>& node, int max_min_val);
+    std::shared_ptr<Node> child_highest_confidence(std::shared_ptr<Node>& node,
+                                                   int max_min_val);
 
     double Simulation(std::shared_ptr<Node> node);
 
-    void Backpropagation(std::shared_ptr<Node> leaf, 
-                         const double reward, 
+    void Backpropagation(std::shared_ptr<Node> leaf,
+                         const double reward,
                          const int num_visits);
 
     void Expand(std::shared_ptr<Node>& node);
@@ -169,18 +170,16 @@ private:
 
 Action MCTS::search(const BoardGame& current_board)
 {
-    if(is_first_move)
+    if (is_first_move)
     {
         root->update_board(current_board);
         is_first_move = false;
     }
 
     std::vector<char> s = root->show_board();
-    for(auto i : s)
-        std::cout<<i<<" ";
-    std::cout<<std::endl;
-
-
+    for (auto i : s)
+        std::cout << i << " ";
+    std::cout << std::endl;
 
     tqdm bar;
     bar.set_label("MCTS");
@@ -193,11 +192,10 @@ Action MCTS::search(const BoardGame& current_board)
 
         Expand(leaf);
 
-
         double average_reward = 0;
         int total_children = 0;
 
-        if(leaf->children().size() > 0)
+        if (leaf->children().size() > 0)
         {
 
             for (std::shared_ptr<Node>& child : leaf->children())
@@ -208,8 +206,9 @@ Action MCTS::search(const BoardGame& current_board)
                 total_children++;
 
                 child->update_stats(simulation_reward, 1);
-                
-                //-------------------- nuevo -------------------------------------
+
+                //-------------------- nuevo
+                //-------------------------------------
 
                 auto vstate = child->show_board();
                 if (do_memoization_)
@@ -228,15 +227,14 @@ Action MCTS::search(const BoardGame& current_board)
             average_reward = Simulation(leaf);
             total_children++;
         }
-        
+
         Backpropagation(leaf, average_reward, total_children);
-   
     }
     bar.finish();
-    
+
     root = std::move(child_highest_confidence(root, 1));
     root->set_parent();
-    
+
     return root->action();
 }
 
@@ -252,10 +250,12 @@ double MCTS::Simulation(std::shared_ptr<Node> node)
     return reward/simulation_num;
 }
 
-void MCTS::Backpropagation(std::shared_ptr<Node> leaf, const double reward, const int num_visits)
+void MCTS::Backpropagation(std::shared_ptr<Node> leaf,
+                           const double reward,
+                           const int num_visits)
 {
-    leaf->update_stats(reward , num_visits);
-    if(leaf->is_root())
+    leaf->update_stats(reward, num_visits);
+    if (leaf->is_root())
         return;
 
     Node* node = leaf->parent();
@@ -270,13 +270,12 @@ void MCTS::Backpropagation(std::shared_ptr<Node> leaf, const double reward, cons
 void MCTS::Expand(std::shared_ptr<Node>& node)
 {
     int real_height = node->get_height() - root->get_height();
-    if(real_height > depth_)
+    if (real_height > depth_)
         return;
-    
+
     BoardGame state = node->state();
 
     std::vector<vertex> actions_set = state.get_available_sample_cells(1.0);
-
 
     for (auto v : actions_set)
         node->add_child(v);
@@ -296,7 +295,8 @@ std::shared_ptr<Node> MCTS::Select(std::shared_ptr<Node> node)
     return current;
 }
 
-std::shared_ptr<Node> MCTS::child_highest_confidence(std::shared_ptr<Node>& node, int max_min_val)
+std::shared_ptr<Node> MCTS::child_highest_confidence(std::shared_ptr<Node>& node,
+                                                     int max_min_val)
 {
     double confidence = std::numeric_limits<double>::lowest();
     double tmp_confidence;
@@ -305,7 +305,7 @@ std::shared_ptr<Node> MCTS::child_highest_confidence(std::shared_ptr<Node>& node
     for (std::shared_ptr<Node>& child : node->children())
     {
         tmp_confidence = child->confidence_of_node()*max_min_val;
-       
+
         if (confidence < tmp_confidence)
         {
             child_highest_confidence_ = child;
@@ -313,7 +313,7 @@ std::shared_ptr<Node> MCTS::child_highest_confidence(std::shared_ptr<Node>& node
         }
     }
 
-    if (!child_highest_confidence_ )
+    if (!child_highest_confidence_)
     {
         std::cout << node->children().size() << std::endl;
         std::cout << confidence << std::endl;

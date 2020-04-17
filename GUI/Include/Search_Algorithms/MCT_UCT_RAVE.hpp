@@ -4,18 +4,14 @@
 #include "../Extra/tqdm.h"
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <stack>
 #include <unordered_map>
-#include <vector>
 #include <utility>
-#include <memory>
+#include <vector>
 
 using Action = int;
 using vertex = std::int64_t;
-
-
-
-
 
 //----------------------------------------------------------------------------------
 struct RAVE_Map
@@ -34,7 +30,6 @@ struct RAVE_Map
     std::unordered_map<vertex, double> Q_;
 };
 
-
 class RAVE_Node
 {
 public:
@@ -43,8 +38,8 @@ public:
                         Action action,
                         int height,
                         RAVE_Node* Parent = nullptr)
-        : parent_(Parent), 
-          state_(game_state), 
+        : parent_(Parent),
+          state_(game_state),
           applied_action_(action),
           height_(height)
     { objectCount++; }
@@ -52,44 +47,44 @@ public:
     */
 
     RAVE_Node(const BoardGame& game_state,
-                    Action action,
-                    int height,
-                    RAVE_Map& stats,
-                    RAVE_Node* Parent = nullptr)
+              Action action,
+              int height,
+              RAVE_Map& stats,
+              RAVE_Node* Parent = nullptr)
         : parent_(Parent)
         , state_(game_state)
         , applied_action_(action)
         , height_(height)
-    { 
-        objectCount++; 
-        
-        if(stats.N_.find(action) != stats.N_.end())
+    {
+        objectCount++;
+
+        if (stats.N_.find(action) != stats.N_.end())
         {
             N_ = stats.N_[action];
-            N  = stats.N[action];
+            N = stats.N[action];
             Q = stats.Q[action]/stats.N[action];
             Q_ = stats.Q_[action];
         }
         else
         {
             N_ = 0;
-            N  = 0;
-            Q  = 0.0;
+            N = 0;
+            Q = 0.0;
             Q_ = 0.0;
         }
-        
     }
 
-    ~RAVE_Node(){ objectCount--;}
+    ~RAVE_Node() { objectCount--; }
 
     void add_child(Action action_, RAVE_Map& stats)
     {
         auto game_state_ = state_;
         game_state_.make_action(action_);
-        std::shared_ptr<RAVE_Node> child = std::make_shared<RAVE_Node>(game_state_ , action_ , height_ + 1 , stats , this);
+        std::shared_ptr<RAVE_Node> child =
+          std::make_shared<RAVE_Node>(game_state_, action_, height_ + 1, stats, this);
         children_.push_back(child);
     }
-    void set_parent(){ parent_ = nullptr;}
+    void set_parent() { parent_ = nullptr; }
 
     void update_board(const BoardGame& game_state) { state_ = game_state; }
 
@@ -102,11 +97,13 @@ public:
     double confidence_of_node() const
     {
         auto b = 1.0;
-        double B = N_/(N + N_ + 4.0*N*N_*std::pow(b, 2) + 0.0000001); // Lo utilizo para que no sea 0/0
+        double B = N_ /
+          (N + N_ + 4.0*N*N_*std::pow(b, 2) + 0.0000001); // Lo utilizo
+                                                                // para que no
+                                                                // sea 0/0
 
         return (1.0 - B)*Q + B*Q_;
     }
-
 
     BoardGame state() { return state_; }
 
@@ -124,7 +121,7 @@ public:
 
     std::vector<char> show_board() { return state_.show_current_state(); }
 
-    int get_height() const { return height_;}
+    int get_height() const { return height_; }
 
     static int objectCount;
 
@@ -143,7 +140,6 @@ private:
 
 int RAVE_Node::objectCount = 0;
 
-
 class MC_RAVE
 {
 public:
@@ -156,29 +152,36 @@ public:
         , times_to_repeat(num_times)
         , player_(player)
         , depth_(depth)
-    { 
-        root = std::make_shared<RAVE_Node>(current_board , -1, 0, simulation_stats , nullptr);
+    {
+        root = std::make_shared<RAVE_Node>(current_board,
+                                           -1,
+                                           0,
+                                           simulation_stats,
+                                           nullptr);
     }
 
     Action search(const BoardGame& current_board);
 
     void fit_precompute_tree(Action A)
     {
-        //std::cout<<"Accion del estado actual "<<root->action()<<std::endl;
-        //std::cout<<"Size before to update tree is: "<<root->objectCount<<std::endl;
-        for(std::shared_ptr<RAVE_Node>& child : root->children())
+        // std::cout<<"Accion del estado actual "<<root->action()<<std::endl;
+        // std::cout<<"Size before to update tree is:
+        // "<<root->objectCount<<std::endl;
+        for (std::shared_ptr<RAVE_Node>& child : root->children())
         {
-            if(child->action() == A){
+            if (child->action() == A)
+            {
                 root = std::move(child);
                 root->set_parent();
-                //root = child;
+                // root = child;
                 break;
             }
         }
-        
-        //std::cout<<" Accion del estado después "<<root->action()<<std::endl;
-        //std::cout<<"Es la raiz "<<root->is_root()<<std::endl;
-        //std::cout<< "Sise after to update tree is: "<<root->objectCount<<std::endl;
+
+        // std::cout<<" Accion del estado después "<<root->action()<<std::endl;
+        // std::cout<<"Es la raiz "<<root->is_root()<<std::endl;
+        // std::cout<< "Sise after to update tree is:
+        // "<<root->objectCount<<std::endl;
     }
 
 private:
@@ -189,14 +192,14 @@ private:
     char player_;
     int depth_;
 
-    //Local information. 
+    // Local information.
     bool is_first_move = true;
     std::shared_ptr<RAVE_Node> root;
 
     using state_t = std::vector<char>;
 
-
-    std::shared_ptr<RAVE_Node> child_highest_confidence(std::shared_ptr<RAVE_Node>& node, int max_min_val);
+    std::shared_ptr<RAVE_Node> child_highest_confidence(
+      std::shared_ptr<RAVE_Node>& node, int max_min_val);
 
     std::shared_ptr<RAVE_Node> Select(std::shared_ptr<RAVE_Node>& node);
 
@@ -213,17 +216,16 @@ private:
 
 Action MC_RAVE::search(const BoardGame& current_board)
 {
-    if(is_first_move)
+    if (is_first_move)
     {
         root->update_board(current_board);
         is_first_move = false;
     }
 
     std::vector<char> s = root->show_board();
-    for(auto i : s)
-        std::cout<<i<<" ";
-    std::cout<<std::endl;
-
+    for (auto i : s)
+        std::cout << i << " ";
+    std::cout << std::endl;
 
     tqdm bar;
     bar.set_label("MC RAVE");
@@ -244,12 +246,11 @@ Action MC_RAVE::search(const BoardGame& current_board)
     }
     bar.finish();
 
-    root  = std::move(child_highest_confidence(root, 1));
+    root = std::move(child_highest_confidence(root, 1));
     root->set_parent();
 
     return root->action();
 }
-
 
 double MC_RAVE::Simulations_by_RAVE(std::shared_ptr<RAVE_Node>& node)
 {
@@ -277,8 +278,8 @@ void MC_RAVE::Backpropagation(std::shared_ptr<RAVE_Node> leaf,
                               const double reward,
                               const int num_visits)
 {
-    leaf->update_stats(reward , num_visits);
-    if(leaf->is_root()) 
+    leaf->update_stats(reward, num_visits);
+    if (leaf->is_root())
         return;
 
     RAVE_Node* node = leaf->parent();
@@ -293,16 +294,15 @@ void MC_RAVE::Backpropagation(std::shared_ptr<RAVE_Node> leaf,
 void MC_RAVE::Expand_by_RAVE(std::shared_ptr<RAVE_Node>& node)
 {
     int real_height = node->get_height() - root->get_height();
-    if(real_height > depth_)
+    if (real_height > depth_)
         return;
 
     BoardGame state = node->state();
     std::vector<vertex> actions_set = state.get_available_sample_cells(1.0);
 
-
     for (auto v : actions_set)
     {
-        //It's because I haven't information yet.
+        // It's because I haven't information yet.
         if (simulation_stats.Q.find(v) == simulation_stats.Q.end())
             continue;
 
@@ -317,19 +317,19 @@ std::shared_ptr<RAVE_Node> MC_RAVE::Select(std::shared_ptr<RAVE_Node>& node)
 
     while (!current->is_leaf())
     {
-        current = child_highest_confidence( current , max_min);
+        current = child_highest_confidence(current, max_min);
         max_min *= -1;
     }
 
     return current;
 }
 
-std::shared_ptr<RAVE_Node> MC_RAVE::child_highest_confidence(std::shared_ptr<RAVE_Node>& node,
-                                                      int max_min_val)
+std::shared_ptr<RAVE_Node> MC_RAVE::child_highest_confidence(
+  std::shared_ptr<RAVE_Node>& node, int max_min_val)
 {
     double confidence = std::numeric_limits<double>::lowest();
     double tmp_confidence;
-    std::shared_ptr<RAVE_Node> child_highest_confidence_ ;
+    std::shared_ptr<RAVE_Node> child_highest_confidence_;
 
     for (std::shared_ptr<RAVE_Node>& child : node->children())
     {
@@ -342,21 +342,20 @@ std::shared_ptr<RAVE_Node> MC_RAVE::child_highest_confidence(std::shared_ptr<RAV
         }
     }
 
-    if (!child_highest_confidence_ )
+    if (!child_highest_confidence_)
     {
         std::cout.put('\n');
         auto array = node->children();
         std::cout << "Available action set " << array.size() << std::endl;
-        std::cout<<"Action " << array[0]->action()<<std::endl;
-        std::cout << "node score by AMAF: "<< array[0]->confidence_of_node() << std::endl;
-    
+        std::cout << "Action " << array[0]->action() << std::endl;
+        std::cout << "node score by AMAF: " << array[0]->confidence_of_node()
+                  << std::endl;
     }
 
     assert(child_highest_confidence_ != nullptr);
 
     return child_highest_confidence_;
 }
-
 
 // The last place in the array is the reward.
 std::vector<Action> MC_RAVE::simulation_recording(int num_steps, BoardGame state)

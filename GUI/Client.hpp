@@ -5,13 +5,17 @@
 #include "Include/Extra/json_manage.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 class GUI
 {
 public:
-    GUI(BoardGraphGUI& board, int width, int height,const std::string FileName  ,bool is_building_ = true  )
+    GUI(BoardGraphGUI& board,
+        int width,
+        int height,
+        const std::string FileName,
+        bool is_building_ = true)
         : Go(board)
         , window(sf::VideoMode(width, height), "Go Board")
         , is_building(is_building_)
@@ -35,18 +39,12 @@ public:
 
             Draw(is_finished);
             
-            if(!is_building && !is_finished)
-                is_finished= Go.BoardGraph.is_complete();
-            else
-                is_playing=false;
-            // check all the window's events that were triggered since the last
-            // iteration of the loop
-            sf::Event event;
-            while (window.pollEvent(event) )
-            {
-                ClientOnEvent(event , is_playing);
-            }
-
+            if(is_finished)
+                is_playing = true;
+            else if (!is_building )
+                is_finished = Go.BoardGraph.is_complete();
+        
+            ClientListener(is_playing);
         }
     }
 
@@ -71,9 +69,8 @@ public:
                         action = AI_Algorithm.search(Go.BoardGraph);
 
                     Go.make_action(action);
-                    
+
                     is_first_player = !is_first_player;
-                  
                 }
                 else
                 {
@@ -81,10 +78,10 @@ public:
                     // the last iteration of the loop
 
                     ClientListener(true);
-                    if(v_ != -2 && is_first_player) //Eso significa que no ha hecho acción valida.
+                    if (v_ != -2 && is_first_player) // Eso significa que no ha
+                                                     // hecho acción valida.
                     {
                         AI_Algorithm.fit_precompute_tree(v_);
-                       
                     }
                 }
                 is_finished = Go.BoardGraph.is_complete();
@@ -97,7 +94,7 @@ public:
 
     void ClientListener(bool is_playing);
     void ClientOnKeyPress(sf::Keyboard::Key key);
-    void ClientOnMouseButtonPress(sf::Mouse::Button btn , bool is_playing);
+    void ClientOnMouseButtonPress(sf::Mouse::Button btn, bool is_playing);
     void ClientOnMouseButtonRelease(sf::Mouse::Button btn);
 
 private:
@@ -110,7 +107,7 @@ private:
     bool is_first_player;
     bool is_building = true;
     bool is_cursor = false;
-    vertex v_ = -2; 
+    vertex v_ = -2;
 
     void Draw(bool is_finished = false)
     {
@@ -146,7 +143,7 @@ private:
             break;
 
         case (sf::Event::MouseButtonPressed):
-            ClientOnMouseButtonPress(event.mouseButton.button , is_playing);
+            ClientOnMouseButtonPress(event.mouseButton.button, is_playing);
             break;
 
         case (sf::Event::MouseButtonReleased):
@@ -164,26 +161,26 @@ private:
 
 void GUI::ClientOnKeyPress(sf::Keyboard::Key key)
 {
-    if (is_building )
+    if (is_building)
     {
-        //Finish graph creation.
-        if(key == sf::Keyboard::Enter)
+        // Finish graph creation.
+        if (key == sf::Keyboard::Enter)
         {
             std::cout << "Ha finalizado la construccion del grafo." << std::endl;
             is_building = false;
             Go.Update_board();
         }
-        //Save graph in a JSON file.
-        else if(key == sf::Keyboard::Num0)
+        // Save graph in a JSON file.
+        else if (key == sf::Keyboard::Num0)
         {
             auto graph_ = Go.get_graph_GUI();
-            save_graph_to_json( FileName_ , graph_);
+            save_graph_to_json(FileName_, graph_);
         }
     }
 
     else
     {
-        //User pass.
+        // User pass.
         if (key == sf::Keyboard::Space)
         {
             // std::cout << "Pasa jugador actual." << std::endl;
@@ -195,15 +192,13 @@ void GUI::ClientOnKeyPress(sf::Keyboard::Key key)
         {
             Go.BoardGraph.debug_function();
         }
-        
-        
     }
 }
 
-void GUI::ClientOnMouseButtonPress(sf::Mouse::Button btn , bool is_playing)
+void GUI::ClientOnMouseButtonPress(sf::Mouse::Button btn, bool is_playing)
 {
-    if(!is_playing)
-        return ;
+    if (!is_playing)
+        return;
 
     if (btn == sf::Mouse::Button::Left)
     {
@@ -235,9 +230,10 @@ void GUI::ClientOnMouseButtonPress(sf::Mouse::Button btn , bool is_playing)
         if (v != INVALID_VERTEX)
         {
             // Regresa true si pudo realizar la acción.
-            if (Go.make_action(v)){
+            if (Go.make_action(v))
+            {
                 is_first_player = !is_first_player;
-                v_=v;
+                v_ = v;
                 return;
             }
         }
@@ -270,6 +266,6 @@ void GUI::ClientListener(bool is_playing)
     sf::Event event;
     while (window.pollEvent(event))
     {
-        ClientOnEvent(event , is_playing);
+        ClientOnEvent(event, is_playing);
     }
 }

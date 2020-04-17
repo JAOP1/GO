@@ -3,15 +3,17 @@ cmake_minimum_required(VERSION 3.2)
 project(GUI_GO)
 enable_language(C CXX)
 
-#find_package(Torch REQUIRED)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+SET(CMAKE_PREFIX_PATH /home/dell/libtorch/) #Change to real path of libtorch.
+
+find_package(Torch REQUIRED)
 
 option(BUILD_VISUALIZER "Build visualizer (requires SFML)" ON)
 option(BUILD_TESTS "Build unit tests (requires gtest)" ON)
+#option(BUILD_TRAINER "Build trainer. (requires libtorch)" ON)
 
 # CLI11 settings
 add_library(CLI11::CLI11 IMPORTED INTERFACE)
@@ -27,6 +29,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/GUI/Include
     ${PROJECT_SOURCE_DIR}/GUI/Include/Extra
     ${PROJECT_SOURCE_DIR}/GUI/Include/Search_Algorithms
+    ${PROJECT_SOURCE_DIR}/GUI/Include/Search_Algorithms/C_49
     ${PROJECT_SOURCE_DIR}/GUI/Files
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/tests
@@ -41,6 +44,8 @@ add_library(graph ${SOURCES})
 
 
 if (${BUILD_VISUALIZER})
+    message(STATUS "Building visualizer.")
+
     add_definitions(-DUSE_SFML)
     
 
@@ -51,8 +56,8 @@ if (${BUILD_VISUALIZER})
 
     add_executable(visualizer main.cpp )
     add_dependencies(visualizer graph)
-    #target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11 "${TORCH_LIBRARIES}")
-    target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11)
+    target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11 "${TORCH_LIBRARIES}")
+    #target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11)
 
 endif()
 
@@ -63,6 +68,8 @@ endif()
 # The setup of Google Test is done at the very end of this file.
 
 if(${BUILD_TESTS})
+    message(STATUS "Creating unit tests.")
+    
     find_package(GTest)
     find_package(Threads REQUIRED)
     file(GLOB TESTFILES "tests/*.cpp")
@@ -81,3 +88,15 @@ if(${BUILD_TESTS})
     enable_testing()
     add_test(unit_tests ${PROJECT_BINARY_DIR}/${TEST_MAIN})
 endif()
+
+
+# --------------------------------------------------------------------------------
+#                              Trainer build.
+# --------------------------------------------------------------------------------
+
+#if(${BUILD_TRAINER})
+
+#    add_executable(trainer )
+
+#endif()
+
