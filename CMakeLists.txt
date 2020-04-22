@@ -5,11 +5,14 @@ enable_language(C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-SET(CMAKE_PREFIX_PATH /home/dell/libtorch/) #Change to real path of libtorch.
+#set(CMAKE_PREFIX_PATH /home/dell/libtorch/ ${CMAKE_PREFIX_PATH}) #Change to real path of libtorch.
 
 find_package(Torch REQUIRED)
+find_package(SFML 2.5 REQUIRED network audio graphics window system)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 
 option(BUILD_VISUALIZER "Build visualizer (requires SFML)" ON)
 option(BUILD_TESTS "Build unit tests (requires gtest)" ON)
@@ -51,11 +54,9 @@ if (${BUILD_VISUALIZER})
     configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/font.ttf ${CMAKE_CURRENT_BINARY_DIR}/font.ttf COPYONLY)
     configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/fondo.jpg ${CMAKE_CURRENT_BINARY_DIR}/fondo.jpg COPYONLY)
     
-    #file(GLOB SOURCES "src/*.cpp")
     add_executable(visualizer main.cpp )
     add_dependencies(visualizer graph)
     target_link_libraries(visualizer graph sfml-graphics sfml-window sfml-system CLI11::CLI11 )
-    #target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11)
 
 endif()
 
@@ -78,7 +79,7 @@ if(${BUILD_TESTS})
         add_executable(${TEST_MAIN} ${TESTFILES} )
 	endif()
     
-    target_link_libraries(${TEST_MAIN} ${GTEST_LIBRARIES} graph Threads::Threads)
+    target_link_libraries(${TEST_MAIN} ${GTEST_LIBRARIES} graph Threads::Threads "${TORCH_LIBRARIES}")
     add_custom_target(gtest COMMAND "${PROJECT_BINARY_DIR}/${TEST_MAIN}" DEPENDS ${TEST_MAIN})
 
     # Add a standard make target 'test' that runs the tests under CTest (only as an alt. to gtest).
