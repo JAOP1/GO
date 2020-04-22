@@ -19,21 +19,20 @@ option(BUILD_TESTS "Build unit tests (requires gtest)" ON)
 add_library(CLI11::CLI11 IMPORTED INTERFACE)
 target_include_directories(CLI11::CLI11 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_features(CLI11::CLI11 INTERFACE cxx_std_11)
-
 # --------------------------------------------------------------------------------
 #                         Locate files (no change needed).
 # --------------------------------------------------------------------------------
 # We make sure that CMake sees all the files.
 include_directories(
     ${PROJECT_SOURCE_DIR}/GUI/
-    ${PROJECT_SOURCE_DIR}/GUI/Include
-    ${PROJECT_SOURCE_DIR}/GUI/Include/Extra
-    ${PROJECT_SOURCE_DIR}/GUI/Include/Search_Algorithms
-    ${PROJECT_SOURCE_DIR}/GUI/Include/Search_Algorithms/C_49
-    ${PROJECT_SOURCE_DIR}/GUI/Files
-    ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/tests
-    ${PROJECT_SOURCE_DIR}/Graphs)
+    ${PROJECT_SOURCE_DIR}/Include/
+    ${PROJECT_SOURCE_DIR}/Include/Extra/
+    ${PROJECT_SOURCE_DIR}/Include/Search_Algorithms/
+    ${PROJECT_SOURCE_DIR}/Include/Search_Algorithms/C_49/
+    ${PROJECT_SOURCE_DIR}/GUI/Files/
+    ${PROJECT_SOURCE_DIR}/src/
+    ${PROJECT_SOURCE_DIR}/tests/
+    ${PROJECT_SOURCE_DIR}/Graphs/)
 
 file(GLOB SOURCES "src/*.cpp")
 add_library(graph ${SOURCES})
@@ -53,10 +52,9 @@ if (${BUILD_VISUALIZER})
     configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/fondo.jpg ${CMAKE_CURRENT_BINARY_DIR}/fondo.jpg COPYONLY)
     
     #file(GLOB SOURCES "src/*.cpp")
-
     add_executable(visualizer main.cpp )
     add_dependencies(visualizer graph)
-    target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11 "${TORCH_LIBRARIES}")
+    target_link_libraries(visualizer graph sfml-graphics sfml-window sfml-system CLI11::CLI11 )
     #target_link_libraries(visualizer graph sfml-window sfml-graphics sfml-system CLI11::CLI11)
 
 endif()
