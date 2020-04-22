@@ -1,5 +1,5 @@
-#include "../GUI/Include/Extra/DisjointSets.hpp"
-#include "../GUI/Include/Extra/Graph.hpp"
+#include "../Include/Extra/DisjointSets.hpp"
+#include "../Include/Extra/Graph.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

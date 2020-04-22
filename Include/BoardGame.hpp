@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Include/Extra/DisjointSets.hpp"
-#include "Include/Extra/Graph.hpp"
-#include "Include/Extra/hash_utilities.hpp"
+#include "Extra/DisjointSets.hpp"
+#include "Extra/Graph.hpp"
+#include "Extra/hash_utilities.hpp"
 #include <cstdlib>
 #include <functional>
 #include <limits>

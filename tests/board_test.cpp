@@ -1,4 +1,4 @@
-#include "../GUI/BoardGame.hpp"
+#include "../Include/BoardGame.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

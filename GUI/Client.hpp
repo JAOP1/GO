@@ -1,8 +1,8 @@
 #pragma once
 
-#include "BoardGame.hpp"
+#include "../Include/BoardGame.hpp"
+#include "../Include/Extra/json_manage.hpp"
 #include "GraphGUI.hpp"
-#include "Include/Extra/json_manage.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
@@ -99,8 +99,8 @@ public:
 
 private:
     BoardGraphGUI Go;
-    sf::Sprite Background;
-    sf::Texture m_texture;
+    sf::Sprite Background{};
+    sf::Texture m_texture{};
     sf::RenderWindow window;
 
     std::string FileName_;

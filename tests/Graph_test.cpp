@@ -1,4 +1,4 @@
-#include "../GUI/Include/Extra/Graph.hpp"
+#include "../Include/Extra/Graph.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

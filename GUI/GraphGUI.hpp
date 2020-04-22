@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BoardGame.hpp"
+#include "../Include/BoardGame.hpp"
 #include "Include/Extra/Utilities.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -48,7 +48,7 @@ public:
     explicit BoardGraphGUI(BoardGame& Go, std::vector<sf::Vector2i>& nodes_pos)
         : BoardGraph(Go), Fake_edge(sf::Lines, 2), Edges(sf::Lines, 0)
     {
-        font.loadFromFile("font.ttf");
+        font.loadFromFile("Files/font.ttf");
         text.setFont(font);
         text.setString("dwd");
         text.setFillColor(sf::Color::Black);
@@ -140,8 +140,8 @@ public:
 private:
     // Specific to the board_score and bla.
     bool is_building = true;
-    sf::Font font;
-    sf::Text text;
+    sf::Font font{};
+    sf::Text text{};
 
     // Variables GUI.
     vertex selected_node = INVALID_VERTEX;

@@ -1,5 +1,5 @@
-#include "../GUI/Include/Extra/Graph.hpp"
-#include "../GUI/Include/Extra/json_manage.hpp"
+#include "../Include/Extra/Graph.hpp"
+#include "../Include/Extra/json_manage.hpp"
 #include <SFML/Graphics.hpp>
 #include <gtest/gtest.h>
 #include <iostream>

@@ -6,7 +6,7 @@
 torch::Tensor read_data(const std::string& loc)
 {
     torch::Tensor tensor = ...
-
+2
       // Here you need to get your data.
 
       return tensor;
