@@ -1,7 +1,7 @@
 #pragma once
-#include "../BoardGame.hpp"
-#include "../Extra/hash_utilities.hpp"
-#include "../Extra/tqdm.h"
+#include "../Include/BoardGame.hpp"
+#include "../Include/Extra/hash_utilities.hpp"
+#include "../Include/Extra/tqdm.h"
 #include <cmath>
 #include <limits>
 #include <memory>
