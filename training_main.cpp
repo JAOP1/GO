@@ -8,12 +8,33 @@
 #include "Include/Extra/json_manage.hpp"
 #include "Include/Extra/Utilities.hpp"
 #include "Include/BoardGame.hpp"
-#include "CLI11.hpp"
+#include "Include/Extra/External/CLI11.hpp"
 
+size_t dataset_size;
 
-
-void train_one_epoch()
+template <typename DataLoader>
+void train_one_epoch(Net& model , DataLoader& loader , torch::Device device , torch::optim::Optimizer& optimizer )
 {
+
+    model.train();
+    size_t batch_idx = 0;
+    for (auto& batch : data_loader) {
+        auto data = batch.data.to(device), targets = batch.target.to(device);
+        optimizer.zero_grad();
+        auto output = model.forward(data);
+        auto loss = torch::nll_loss(output, targets);
+        AT_ASSERT(!std::isnan(loss.template item<float>()));
+        loss.backward();
+        optimizer.step();
+
+        if (batch_idx++ % 4 == 0) {
+        std::printf(
+            "\rTrain Epoch: [%5ld/%5ld] Loss: %.4f",
+            batch_idx * batch.data.size(0),
+            dataset_size,
+            loss.template item<float>());
+        }
+    }
 
 }
 
@@ -21,17 +42,14 @@ void train_one_epoch()
 
 void train_model(std::string ModelName , int games , BoardGame& G ,  int  Batch_size, int Num_epoch , torch::Device device , std::string DataPath)
 {
-   
+    Net Model;
     //Si quieres continuar entrenado un modelo.
     if(std::filesystem::exists( ModelName))
-    {
+        torch::load(Model , ModelName);
 
-    }
-    else
-    {
-        
-    }
-
+    Model.to(device);
+    Model.train();
+    
     auto Enconde_ = ; //Voy a pensar como hacer esto...
     torch::optim:: optimizer();
     while(){
@@ -39,10 +57,13 @@ void train_model(std::string ModelName , int games , BoardGame& G ,  int  Batch_
         auto DataSet = get_data_games(/*Path_to_load=*/DataPath, /*Encoder= */ ); // This will be a datastruct.
         torch::data::samplers::RandomSampler sampler(DataSet.get_size());
         auto DataLoader = torch::data::make_data_loader(G, sampler, Batch_size);
-
+        dataset_size = DataSet.size();
 
         for(size_t epoch_ = 1 ; epoch_ <= Num_epoch ; ++epoch_ )
-            train_one_epoch(model , *DataLoader , device , optimizer);    
+            train_one_epoch(Model , *DataLoader , device , optimizer);    
+        
+        if()
+            torch::save(Model , ModelName); //Ahorita pienso como salvar 
     }
 
     //Save model here.

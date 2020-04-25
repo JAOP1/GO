@@ -3,35 +3,33 @@ cmake_minimum_required(VERSION 3.2)
 project(GUI_GO)
 enable_language(C CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-#set(CMAKE_PREFIX_PATH /home/dell/libtorch/ ${CMAKE_PREFIX_PATH}) #Change to real path of libtorch.
+#set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/home/dell/libtorch/") #Change to real path of libtorch.
 
 find_package(Torch REQUIRED)
-find_package(SFML 2.5 REQUIRED network audio graphics window system)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 
 option(BUILD_VISUALIZER "Build visualizer (requires SFML)" ON)
 option(BUILD_TESTS "Build unit tests (requires gtest)" ON)
 #option(BUILD_TRAINER "Build trainer. (requires libtorch)" ON)
 
-# CLI11 settings
-add_library(CLI11::CLI11 IMPORTED INTERFACE)
-target_include_directories(CLI11::CLI11 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_compile_features(CLI11::CLI11 INTERFACE cxx_std_11)
 # --------------------------------------------------------------------------------
 #                         Locate files (no change needed).
 # --------------------------------------------------------------------------------
 # We make sure that CMake sees all the files.
+
 include_directories(
     ${PROJECT_SOURCE_DIR}/GUI/
     ${PROJECT_SOURCE_DIR}/Include/
     ${PROJECT_SOURCE_DIR}/Include/Extra/
-    ${PROJECT_SOURCE_DIR}/Include/Search_Algorithms/
-    ${PROJECT_SOURCE_DIR}/Include/Search_Algorithms/C_49/
+    ${PROJECT_SOURCE_DIR}/Include/Extra/External/
+    ${PROJECT_SOURCE_DIR}/Search_Algorithms/
+    ${PROJECT_SOURCE_DIR}/Search_Algorithms/C_49/
+    ${PROJECT_SOURCE_DIR}/Search_Algorithms/C_49/Models/
+    ${PROJECT_SOURCE_DIR}/Search_Algorithms/C_49/Data/
     ${PROJECT_SOURCE_DIR}/GUI/Files/
     ${PROJECT_SOURCE_DIR}/src/
     ${PROJECT_SOURCE_DIR}/tests/
@@ -56,7 +54,10 @@ if (${BUILD_VISUALIZER})
     
     add_executable(visualizer main.cpp )
     add_dependencies(visualizer graph)
-    target_link_libraries(visualizer graph sfml-graphics sfml-window sfml-system CLI11::CLI11 )
+    
+    target_link_libraries(visualizer graph sfml-graphics sfml-window sfml-system "${TORCH_LIBRARIES}")
+
+   
 
 endif()
 
