@@ -1,19 +1,20 @@
 #pragma once
-
 #include "Graph.hpp"
-#include "json.hpp"
-#include <SFML/Graphics.hpp>
+#include "External/json.hpp"
 #include <fstream>
 #include <iostream>
 #include <tuple>
 #include <vector>
 
+using json = nlohmann::json;
+
+//This give you the graph and positional vector.
 template <class T>
 std::tuple<Graph, std::vector<T>> get_json_to_graph_GUI(const std::string FileName)
 {
     std::cout << "Create graph with the name " << FileName << std::endl;
     std::string Directory = "../Graphs/";
-    nlohmann::json j;
+    json j;
     // write prettified JSON to another file
     std::ifstream input_file;
     input_file.open(Directory + FileName, std::ifstream::in);
@@ -37,6 +38,7 @@ std::tuple<Graph, std::vector<T>> get_json_to_graph_GUI(const std::string FileNa
         nodes_position.emplace_back(x, y);
     }
 
+    input_file.close();
     return std::make_tuple(G, nodes_position);
 }
 
@@ -45,7 +47,7 @@ void save_graph_to_json(const std::string FileName, T graph_inf)
 {
     std::cout << "Saving graph with the name " << FileName << std::endl;
     std::string Directory = "../Graphs/";
-    nlohmann::json j;
+    json j;
 
     j["num vertices"] = graph_inf.num_vertices;
 
@@ -61,4 +63,45 @@ void save_graph_to_json(const std::string FileName, T graph_inf)
     std::ofstream output_file;
     output_file.open(Directory + FileName, std::ofstream::trunc);
     output_file << j << std::endl;
+    output_file.close();
+}
+
+
+
+
+/*
+std::vector<game> get_json_to_game_data(const std::string FileName)
+{
+    std::vector<game> game_recordings;
+
+}
+*/
+
+/*
+Game
+
+*/
+
+
+template<class game>
+void save_game_recording_to_json(const std::string FileName,std::vector<game>  game_recordings)
+{
+    json JsonFile;
+    int total_games = game_recordings.size();
+    int game_id = 0;
+    JsonFile["Num_Games"] = total_games;
+
+    for(auto G :  game_recordings)
+    {
+        JsonFile["Game " + std::to_string(game_id)]["actions"] = G.actions;
+        JsonFile["Game " + std::to_string(game_id)]["probabilities_by_action"]= G.probabilities;
+        JsonFile["Game " + std::to_string(game_id)]["Is_black_winner"] = G.is_first_winner;
+        game_id++;
+    }
+
+    std::ofstream output_file;
+    output_file.open(FileName, std::ofstream::trunc);
+    output_file << JsonFile << std::endl;
+    output_file.close();
+
 }

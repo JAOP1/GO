@@ -69,7 +69,13 @@ public:
                         action = AI_Algorithm.search(Go.BoardGraph);
 
                     Go.make_action(action);
-
+                    
+                    auto prob = AI_Algorithm.get_probabilities_current_state();
+                    for(auto i : prob)
+                        std::cout<<i<<" ";
+                    std::cout.put('\n');
+                    
+                    AI_Algorithm.fit_precompute_tree(action);
                     is_first_player = !is_first_player;
                 }
                 else
@@ -78,9 +84,12 @@ public:
                     // the last iteration of the loop
 
                     ClientListener(true);
+                    
+
                     if (v_ != -2 && is_first_player) // Eso significa que no ha
                                                      // hecho acción valida.
                     {
+                        std::cout<<"Entro aqui"<<std::endl;
                         AI_Algorithm.fit_precompute_tree(v_);
                     }
                 }

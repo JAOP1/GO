@@ -3,27 +3,36 @@
 #include <filesystem>
 #include <string>
 #include <exception>
+#include <memory>
 #include <torch/torch.h>
 #include "Include/Extra/Graph.hpp"
 #include "Include/Extra/json_manage.hpp"
 #include "Include/Extra/Utilities.hpp"
 #include "Include/BoardGame.hpp"
 #include "Include/Extra/External/CLI11.hpp"
+#include "Search_Algorithms/C_49/encoders.hpp"
+#include "Search_Algorithms/C_49/loading_data.hpp"
+#include "Search_Algorithms/C_49/Net_Class.hpp"
 
 size_t dataset_size;
 
+
+
+
+
 template <typename DataLoader>
-void train_one_epoch(Net& model , DataLoader& loader , torch::Device device , torch::optim::Optimizer& optimizer )
+void train_one_epoch(Network_evaluator& model , DataLoader& loader , torch::Device device , torch::optim::Optimizer& optimizer )
 {
 
     model.train();
     size_t batch_idx = 0;
     for (auto& batch : data_loader) {
-        auto data = batch.data.to(device), targets = batch.target.to(device);
+        auto data = batch.data.to(device);
+        auto targets = batch.target.to(device);
         optimizer.zero_grad();
-        auto output = model.forward(data);
+        torch::Tensor output = model.forward(data);
+        //Aqui modificar.
         auto loss = torch::nll_loss(output, targets);
-        AT_ASSERT(!std::isnan(loss.template item<float>()));
         loss.backward();
         optimizer.step();
 
@@ -42,28 +51,34 @@ void train_one_epoch(Net& model , DataLoader& loader , torch::Device device , to
 
 void train_model(std::string ModelName , int games , BoardGame& G ,  int  Batch_size, int Num_epoch , torch::Device device , std::string DataPath)
 {
-    Net Model;
+    Network_evaluetor Model;
     //Si quieres continuar entrenado un modelo.
     if(std::filesystem::exists( ModelName))
-        torch::load(Model , ModelName);
+    {
+        auto load_model_ptr = std::make_shared<Network_evaluator>();
+        torch::load( load_model_ptr, ModelName);
+        Model = *load_model_ptr;
+    }
 
     Model.to(device);
-    Model.train();
     
-    auto Enconde_ = ; //Voy a pensar como hacer esto...
-    torch::optim:: optimizer();
+    SimpleEncoder Enconder_(G) ; //Voy a pensar como hacer esto...
+    torch::optim::Adam optimizer(Model.parameters());
     while(){
-        generate_games(/*Path_to_save = */ DataPath, /*total_records=*/ games); //
-        auto DataSet = get_data_games(/*Path_to_load=*/DataPath, /*Encoder= */ ); // This will be a datastruct.
+        generate_games(/*Path_to_save = */ DataPath, /*total_records = */ games , /*Model = */Model ,/*BoardGame = */ G );    
+        auto DataSet = get_data_games(/*Path_to_load=*/DataPath, /*Encoder= */ Encoder_ ); // This return the Datastructure.
         torch::data::samplers::RandomSampler sampler(DataSet.get_size());
-        auto DataLoader = torch::data::make_data_loader(G, sampler, Batch_size);
+        auto DataLoader = torch::data::make_data_loader(DataSet, sampler, Batch_size);
         dataset_size = DataSet.size();
 
         for(size_t epoch_ = 1 ; epoch_ <= Num_epoch ; ++epoch_ )
             train_one_epoch(Model , *DataLoader , device , optimizer);    
         
         if()
-            torch::save(Model , ModelName); //Ahorita pienso como salvar 
+        {
+            auto Net = std::make_shared<Net>(Model);
+            torch::save(Net, ModelName); 
+        }
     }
 
     //Save model here.
@@ -80,13 +95,12 @@ int main(int argc, char** argv)
 
 
     std::string GraphFile = ""; //Train algorithm for this graph.
-    std::string ModelName = "Model.pt"; //Load neural model.
+    std::string ModelName; //Load neural model.
     int batch = 80;  // Parameters for trainer.
     int epoch = 10;
     int Num_games = 100; //Number of generated games. 
 
-    app.add_option("-n",ModelName, "Create or load neural model (if exist).");
-    app.add_option("-i", GraphFile, "Load Graph to train.");
+    app.add_option("-i", GraphFile, "Load Graph to train.(needed)");
     app.add_option("--batch" , batch, "Batch size.");
     app.add_option("--epoch" , epoch , "Epoch number.");
     app.add_option("-N" , "--Num" , Num_games , "Game records.");
@@ -111,28 +125,25 @@ int main(int argc, char** argv)
 
     try
     {
+        std::vector<std::string> v;
+        split(GraphFile, '.', v);
+        
 
         std::string directory_path = std::filesystem::current_path();
-        std::string ModelPath = directory_path+"/Models/" + ModelName;
+        std::string ModelPath = directory_path+"../Search_Algorithms/C_49/Models/Model_" + v[0] + ".pt";
 
-        std::vector<std::string> v;
-        split(ModelName, '.', v);
-        std::string DataPath = directory_path+"/Data/"+v[0]+".json";
+        std::string DataPath = directory_path+"../Search_Algorithms/C_49/Data/Data_"+v[0]+".json";
 
         std::tuple<Graph, std::vector<sf::Vector2i>> graph_ = get_json_to_graph_GUI<sf::Vector2i>(GraphFile);   
         Graph G = std::get<0>(graph_);
         BoardGame BG(G);
-        train_model(ModelName,Num_games , BG , batch , epoch, device , DataPath);
+
+        train_model(ModelPath,Num_games , BG , batch , epoch, device , DataPath);
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
     
-
-
-
-
-
     return 0;
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Include/BoardGame.hpp"
-#include "Include/Extra/Utilities.hpp"
+#include "../Include/Extra/Utilities.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
@@ -48,7 +48,7 @@ public:
     explicit BoardGraphGUI(BoardGame& Go, std::vector<sf::Vector2i>& nodes_pos)
         : BoardGraph(Go), Fake_edge(sf::Lines, 2), Edges(sf::Lines, 0)
     {
-        font.loadFromFile("Files/font.ttf");
+        font.loadFromFile("font.ttf");
         text.setFont(font);
         text.setString("dwd");
         text.setFillColor(sf::Color::Black);

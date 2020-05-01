@@ -1,7 +1,7 @@
 #pragma once
 #include "../Include/BoardGame.hpp"
 #include "../Include/Extra/hash_utilities.hpp"
-#include "../Include/Extra/tqdm.h"
+#include "../Include/Extra/External/tqdm.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -116,14 +116,13 @@ public:
 
     void fit_precompute_tree(Action A)
     {
-        // std::cout<<"Accion del estado actual "<<root->action()<<std::endl;
-
-        // std::cout<<"Size before to update tree is:
-        // "<<root->objectCount<<std::endl;
+            
+        bool is_changed = false;
         for (std::shared_ptr<Node>& child : root->children())
         {
             if (child->action() == A)
             {
+                is_changed = true;
                 root = std::move(child);
                 root->set_parent();
                 // root = child;
@@ -131,11 +130,11 @@ public:
             }
         }
 
-        // std::cout<<" Accion del estado después "<<root->action()<<std::endl;
-        // std::cout<<"Es la raiz "<<root->is_root()<<std::endl;
-        // std::cout<< "Sise after to update tree is:
-        // "<<root->objectCount<<std::endl;
+        if(!is_changed)
+            is_unknown = true;
     }
+
+    std::vector<double> get_probabilities_current_state() const;
 
 private:
     // Parametros
@@ -144,12 +143,13 @@ private:
     bool do_memoization_; // nuevo
     char player_;
     int depth_;
+    int Actions_space = -1;
 
     // Local information.
     using state_t = std::vector<char>;
     using memoizer = std::unordered_map<state_t, double, polynomial_hash<char>>;
     memoizer global_information; // nuevo
-    bool is_first_move = true;
+    bool is_unknown = true;
     std::shared_ptr<Node> root;
 
     std::shared_ptr<Node> child_highest_confidence(std::shared_ptr<Node>& node,
@@ -170,10 +170,11 @@ private:
 
 Action MCTS::search(const BoardGame& current_board)
 {
-    if (is_first_move)
+    if (is_unknown)
     {
+        Actions_space = current_board.Board.num_vertices();
         root->update_board(current_board);
-        is_first_move = false;
+        is_unknown = false;
     }
 
     std::vector<char> s = root->show_board();
@@ -232,10 +233,8 @@ Action MCTS::search(const BoardGame& current_board)
     }
     bar.finish();
 
-    root = std::move(child_highest_confidence(root, 1));
-    root->set_parent();
-
-    return root->action();
+    auto node = child_highest_confidence(root, 1);
+    return node->action();
 }
 
 double MCTS::Simulation(std::shared_ptr<Node> node)
@@ -342,4 +341,33 @@ double MCTS::get_reward_from_one_simulation(int num_steps, BoardGame state)
         //--------------------------------------------------------------
     }
     return state.reward(player_);
+}
+
+
+
+std::vector<double> MCTS::get_probabilities_current_state() const 
+{
+        std::vector<double> probabilities(Actions_space+1 , 0); //Por el pasar.
+        int id,total;
+        double total_visits_counter = 0;
+
+        for (std::shared_ptr<Node>& child : root->children())
+        {
+            id = child->action();
+            if(id == -1)
+                id = probabilities.size()-1;
+                
+            total = child->num_visits();
+            probabilities[id] = total;
+            total_visits_counter += total;
+        }
+
+        //Implica que si tiene algún hijo.
+        if(total_visits_counter)
+        {
+            for(int  i = 0 ;  i < probabilities.size() ; ++i)
+                probabilities[i] /= total_visits_counter;
+        }
+
+        return probabilities;
 }

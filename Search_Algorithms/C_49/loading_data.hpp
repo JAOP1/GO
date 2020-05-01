@@ -1,14 +1,17 @@
 #pragma once 
-#include <iostream>
 #include <torch/torch.h>
+#include <iostream>
 #include <vector>
 #include <numeric>
+#include "Include/BoardGame.hpp"
+#include "Search_Algorithms/C_49/Net_Class.hpp"
 
-using element =  torch::data::Example<torch::Tensor , std::vector<double>>;
 
-struct GameDateSet : torch::data::datasets::BatchDataset< GameDateSet, std::vector<element>, std::vector<size_t> > {
+using element =  torch::data::Example<torch::Tensor , torch::Tensor>;
+
+struct GameDateset : torch::data::datasets::BatchDataset< GameDateSet, std::vector<element>, std::vector<size_t> > {
   
-  explicit GameDateSet(std::vector<torch::Tensor>& X , std::vector<int>& Y) : data(X) , target(Y) {}
+  explicit GameDateset(std::vector<torch::Tensor>& X , std::vector<int>& Y) : data(X) , target(Y) {}
   
   std::vector<element> get_batch(std::vector<size_t> indices) override {
     
@@ -26,5 +29,22 @@ struct GameDateSet : torch::data::datasets::BatchDataset< GameDateSet, std::vect
   }
 
   std::vector<torch::Tensor> data;
-  std::vector<std::vector<double>> target;
+  std::vector<torch::Tensor> target;
 };
+
+void generate_game(std::string path, int games , Network_evaluator& Model ,BoardGame G )
+{
+
+
+}
+
+template <class encoder>
+GameDataset get_data_games(std::string& DataPath, encoder&  Encoder_)
+{
+  std::vector<torch::Tensor> X;
+  std::vector<torch::Tensor> Y;
+
+  SimpleEncoder 
+
+  return GameDateset(X,Y).map(torch::data::transforms::Stack<>());
+}

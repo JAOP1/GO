@@ -1,7 +1,7 @@
 #pragma once
 #include <torch/torch.h>
 
-struct Network_evaluetor : nn::Module
+struct Network_evaluator : nn::Module
 {
     Network_evaluetor(int input_size)
         : conv1(nn::ConvTranspose2dOptions(kNoiseSize, 256, 4).bias(false))

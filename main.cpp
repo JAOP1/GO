@@ -1,11 +1,11 @@
-#include "CLI11.hpp"
+#include "Include/Extra/External/CLI11.hpp"
 #include "Include/BoardGame.hpp"
 #include "GUI/Client.hpp"
 #include "GUI/GraphGUI.hpp"
 #include "Include/Extra/Graph.hpp"
 #include "Include/Extra/json_manage.hpp"
-#include "Include/Search_Algorithms/MCTS.hpp"
-#include "Include/Search_Algorithms/MCT_UCT_RAVE.hpp"
+#include "Search_Algorithms/MCTS.hpp"
+#include "Search_Algorithms/MCT_UCT_RAVE.hpp"
 #include <SFML/Graphics.hpp>
 #include <fstream>
 #include <iostream>

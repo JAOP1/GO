@@ -4,12 +4,23 @@
 #include <vector>
 
 
-class GameEncoder
+class SimpleEncoder
 {
     public:
-        GameEncoder():{}
+
+
+        //Solo funciona si le mandas todos los estados del juego.
+        std::vector<torch::Tensor> Encode_sequence()
+        {
+
+        }
+
+        torch::Tensor Encode_state()
+        {}
 
     private:
+
+        
 
 };
 
