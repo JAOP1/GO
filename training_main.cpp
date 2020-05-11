@@ -31,7 +31,7 @@ void train_one_epoch(Network_evaluator& model , DataLoader& loader , torch::Devi
         auto targets = batch.target.to(device);
         optimizer.zero_grad();
         torch::Tensor output = model.forward(data);
-        //Aqui modificar.
+        //Aqui modificar, pero podemos por el momento dejar así....
         auto loss = torch::nll_loss(output, targets);
         loss.backward();
         optimizer.step();
@@ -61,15 +61,16 @@ void train_model(std::string ModelName , int games , BoardGame& G ,  int  Batch_
     }
 
     Model.to(device);
-    
-    SimpleEncoder Enconder_(G) ; //Voy a pensar como hacer esto...
+    SimpleEncoder Enconder_(G);
     torch::optim::Adam optimizer(Model.parameters());
+
     while(){
         generate_games(/*Path_to_save = */ DataPath, /*total_records = */ games , /*Model = */Model ,/*BoardGame = */ G );    
-        auto DataSet = get_data_games(/*Path_to_load=*/DataPath, /*Encoder= */ Encoder_ ); // This return the Datastructure.
-        torch::data::samplers::RandomSampler sampler(DataSet.get_size());
-        auto DataLoader = torch::data::make_data_loader(DataSet, sampler, Batch_size);
-        dataset_size = DataSet.size();
+        auto data = get_data_games(/*Path_to_load=*/DataPath, /*Encoder= */ Encoder_ ,); // This return a data vector.
+        auto Dataset = GameDateset(data).map(torch::data::transforms::Stack<>()); // Transform the dataset in understable form for torch.
+        torch::data::samplers::RandomSampler sampler(Dataset.get_size()); //This say how will be getting the data.
+        auto DataLoader = torch::data::make_data_loader(Dataset, sampler, Batch_size);
+        dataset_size = Dataset.size();
 
         for(size_t epoch_ = 1 ; epoch_ <= Num_epoch ; ++epoch_ )
             train_one_epoch(Model , *DataLoader , device , optimizer);    
@@ -96,6 +97,7 @@ int main(int argc, char** argv)
 
     std::string GraphFile = ""; //Train algorithm for this graph.
     std::string ModelName; //Load neural model.
+    std::string selection_mode = "UCT";
     int batch = 80;  // Parameters for trainer.
     int epoch = 10;
     int Num_games = 100; //Number of generated games. 
@@ -104,7 +106,7 @@ int main(int argc, char** argv)
     app.add_option("--batch" , batch, "Batch size.");
     app.add_option("--epoch" , epoch , "Epoch number.");
     app.add_option("-N" , "--Num" , Num_games , "Game records.");
-
+    app.add_option("-p", selection_mode , "type name (default = UCT): RAVE");
     CLI11_PARSE(app, argc, argv);
 
     
@@ -113,7 +115,8 @@ int main(int argc, char** argv)
         std::cout << "CUDA available! Training on GPU." << std::endl;
         std::cout<<"Cuda diveces:" << torch::cuda::device_count()<<std::endl;
         device_type = torch::kCUDA;
-    } else {
+    }
+    else {
         std::cout << "Training on CPU." << std::endl;
         device_type = torch::kCPU;
     }
