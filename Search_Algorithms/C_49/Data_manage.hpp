@@ -35,46 +35,10 @@ struct GameDateSet : torch::data::datasets::BatchDataset<GameDateSet, std::vecto
   std::vector<element> dataset;
 };
 
-//Estructura para salvar toda una partida jugada.
-struct game
-{
-  explicit game(){}
-  explicit game(std::vector<int>& actions_ , std::vector<std::vector<double>>& prob,
-            std::vector<std::vector<int>>& killed_vertices_ , int black_reward_)
-            : actions(actions_) , 
-              probabilities(prob),
-              killed_vertices(killed_vertices_),
-              black_reward(black_reward_)
-            {}
-
-  int episode_size()
-  {
-    return actions.size();
-  }
-
-  void set_reward(int value)
-  {
-    black_reward = value;
-  }
-
-  void add_game_information(int vertex ,
-                            const std::vector<double>& prob , 
-                            const std::vector<int>&  killed_vertices_
-                            )
-  {
-    actions.push_back(vertex);
-    probabilities.push_back(prob);
-    killed_vertices.push_back(killed_vertices_);
-  }
-
-  std::vector<int> actions;
-  std::vector<std::vector<double>> probabilities;
-  std::vector<std::vector<int>> killed_vertices; 
-  int black_reward;
-};
 
 //Mañana realizo esta función.
-game get_game(Network_evaluator& Model , std::string slection_mode, BoardGame BG)
+template<class game>
+game get_episode(Network_evaluator& Model , std::string slection_mode, BoardGame BG)
 {
   game episode;
 
@@ -92,11 +56,12 @@ void generate_games(std::string path, int games , Network_evaluator& Model , std
   std::vector<game> episodes;
   for(int i = 0; i < games; ++i)
   {
-    episodes.push_back(get_game(Model , selection_mode ,BG));
+    episodes.push_back(get_episode(Model , selection_mode ,BG));
   }
 
   save_games_recordings_to_json(path ,  episodes);
 }
+
 
 template <class encoder>
 std::vector<element> get_data_games(std::string& DataPath, encoder&  Encoder_,const BoardGame& BG)

@@ -83,10 +83,10 @@ std::vector<game> get_json_to_game_data(const std::string FileName)
     for(int  i = 0 ; i < total_recordings; ++i)
     {
         games_played.emplace_back
-        (
-            J["Game " + std::to_string(i)]["actions"],
+        (     
+            J["Game " + std::to_string(i)]["state"],
             J["Game " + std::to_string(i)]["probabilities_by_action"],
-            J["Game " + std::to_string(i)]["killed"],
+            J["Game " + std::to_string(i)]["valid_actions"],
             J["Game " + std::to_string(i)]["black_reward"]
         );
     }
@@ -104,8 +104,8 @@ vector of probabilities vectors.
 */
 
 
-template<class game>
-void save_games_recordings_to_json(const std::string FileName,std::vector<game>  game_played)
+template<class episode>
+void save_games_recordings_to_json(const std::string FileName,std::vector<episode>  games_played)
 {
     json JsonFile;
     int total_games = games_played.size();
@@ -114,10 +114,10 @@ void save_games_recordings_to_json(const std::string FileName,std::vector<game> 
 
     for(auto G :  games_played)
     {
-        JsonFile["Game " + std::to_string(game_id)]["actions"] = G.actions;
+        JsonFile["Game " + std::to_string(game_id)]["state"] = G.states;
+        JsonFile["Game " + std::to_string(game_id)]["valid_actions"] = G.valid_actions;
         JsonFile["Game " + std::to_string(game_id)]["probabilities_by_action"]= G.probabilities;
         JsonFile["Game " + std::to_string(game_id)]["black_reward"] = G.black_reward;
-        JsonFile["Game " + std::to_string(game_id)]["killed"] = G.killed_vertices;
         game_id++;
     }
 

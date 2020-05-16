@@ -16,7 +16,13 @@
 
 size_t dataset_size;
 
-
+//Aqui probar cosas.
+template<typename loss>
+loss calculate_loss(torch::Tensor& data , torch::Tensor target)
+{
+  auto output1 = torch::nll_loss(data,target);
+  return output1;
+}
 
 
 
@@ -31,8 +37,7 @@ void train_one_epoch(Network_evaluator& model , DataLoader& loader , torch::Devi
         auto targets = batch.target.to(device);
         optimizer.zero_grad();
         torch::Tensor output = model.forward(data);
-        //Aqui modificar, pero podemos por el momento dejar así....
-        auto loss = torch::nll_loss(output, targets);
+        auto loss = calculate_loss<torch::Tensor>(output, targets);
         loss.backward();
         optimizer.step();
 
@@ -52,6 +57,7 @@ void train_one_epoch(Network_evaluator& model , DataLoader& loader , torch::Devi
 void train_model(std::string ModelName , int games , BoardGame& G ,  int  Batch_size, int Num_epoch , torch::Device device , std::string DataPath)
 {
     Network_evaluetor Model;
+    
     //Si quieres continuar entrenado un modelo.
     if(std::filesystem::exists( ModelName))
     {
@@ -64,7 +70,9 @@ void train_model(std::string ModelName , int games , BoardGame& G ,  int  Batch_
     SimpleEncoder Enconder_(G);
     torch::optim::Adam optimizer(Model.parameters());
 
+    //Condición de paro por establecer.
     while(){
+
         generate_games(/*Path_to_save = */ DataPath, /*total_records = */ games , /*Model = */Model ,/*BoardGame = */ G );    
         auto data = get_data_games(/*Path_to_load=*/DataPath, /*Encoder= */ Encoder_ ,); // This return a data vector.
         auto Dataset = GameDateset(data).map(torch::data::transforms::Stack<>()); // Transform the dataset in understable form for torch.
@@ -75,6 +83,7 @@ void train_model(std::string ModelName , int games , BoardGame& G ,  int  Batch_
         for(size_t epoch_ = 1 ; epoch_ <= Num_epoch ; ++epoch_ )
             train_one_epoch(Model , *DataLoader , device , optimizer);    
         
+        //Cada cuanto actualizamos nuestro algoritmo por establecer.
         if()
         {
             auto Net = std::make_shared<Net>(Model);
@@ -82,7 +91,6 @@ void train_model(std::string ModelName , int games , BoardGame& G ,  int  Batch_
         }
     }
 
-    //Save model here.
 
 }
 
@@ -103,9 +111,9 @@ int main(int argc, char** argv)
     int Num_games = 100; //Number of generated games. 
 
     app.add_option("-i", GraphFile, "Load Graph to train.(needed)");
-    app.add_option("--batch" , batch, "Batch size.");
-    app.add_option("--epoch" , epoch , "Epoch number.");
-    app.add_option("-N" , "--Num" , Num_games , "Game records.");
+    app.add_option("-b" , batch, "Batch size.");
+    app.add_option("-e" , epoch , "Epoch number.");
+    app.add_option("-N" ,  Num_games , "Game records.");
     app.add_option("-p", selection_mode , "type name (default = UCT): RAVE");
     CLI11_PARSE(app, argc, argv);
 
