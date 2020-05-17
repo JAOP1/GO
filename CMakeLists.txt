@@ -5,16 +5,20 @@ enable_language(C CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-#set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/home/dell/libtorch/") #Change to real path of libtorch.
 
+
+set(CMAKE_PREFIX_PATH "/home/dell/libtorch/") #Change to real path of libtorch.
+
+message(STATUS "${CMAKE_PREFIX_PATH}")
 find_package(Torch REQUIRED)
+
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 
-option(BUILD_VISUALIZER "Build visualizer (requires SFML)" ON)
+option(BUILD_VISUALIZER "Build visualizer (requires SFML)" OFF)
 option(BUILD_TESTS "Build unit tests (requires gtest)" ON)
-#option(BUILD_TRAINER "Build trainer. (requires libtorch)" ON)
+option(BUILD_TRAINER "Build trainer. (requires libtorch)" OFF)
 
 # --------------------------------------------------------------------------------
 #                         Locate files (no change needed).
@@ -45,17 +49,18 @@ add_library(graph ${SOURCES})
 
 if (${BUILD_VISUALIZER})
     message(STATUS "Building visualizer.")
-
+    
     add_definitions(-DUSE_SFML)
     
 
     configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/font.ttf ${CMAKE_CURRENT_BINARY_DIR}/font.ttf COPYONLY)
     configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/fondo.jpg ${CMAKE_CURRENT_BINARY_DIR}/fondo.jpg COPYONLY)
     
-    add_executable(visualizer main.cpp )
+    add_executable(visualizer GUI_main.cpp )
     add_dependencies(visualizer graph)
     
-    target_link_libraries(visualizer graph sfml-graphics sfml-window sfml-system "${TORCH_LIBRARIES}")
+    target_link_libraries(visualizer graph   sfml-graphics sfml-window sfml-system)
+    target_link_libraries(visualizer ${TORCH_LIBRARIES})
 
    
 
@@ -80,7 +85,7 @@ if(${BUILD_TESTS})
         add_executable(${TEST_MAIN} ${TESTFILES} )
 	endif()
     
-    target_link_libraries(${TEST_MAIN} ${GTEST_LIBRARIES} graph Threads::Threads "${TORCH_LIBRARIES}")
+    target_link_libraries(${TEST_MAIN} ${GTEST_LIBRARIES} graph Threads::Threads ${TORCH_LIBRARIES})
     add_custom_target(gtest COMMAND "${PROJECT_BINARY_DIR}/${TEST_MAIN}" DEPENDS ${TEST_MAIN})
 
     # Add a standard make target 'test' that runs the tests under CTest (only as an alt. to gtest).
@@ -94,9 +99,12 @@ endif()
 #                              Trainer build.
 # --------------------------------------------------------------------------------
 
-#if(${BUILD_TRAINER})
+if(${BUILD_TRAINER})
+    message(STATUS "Building Trainer.")
 
-#    add_executable(trainer )
+    add_executable(trainer traning_main.cpp)
+    add_dependencies(trainer graph)
 
-#endif()
+    target_link_libraries(trainer graph  ${TORCH_LIBRARIES})
+endif()
 
