@@ -8,24 +8,21 @@
 #include <unordered_map>
 #include <vector>
 
+void split(const std::string& s, char c, std::vector<std::string>& v)
+{
+    std::string::size_type i = 0;
+    std::string::size_type j = s.find(c);
 
+    while (j != std::string::npos)
+    {
+        v.push_back(s.substr(i, j - i));
+        i = ++j;
+        j = s.find(c, j);
 
-void split(const std::string& s, char c,
-           std::vector<std::string>& v) {
-   std::string::size_type i = 0;
-   std::string::size_type j = s.find(c);
-
-   while (j != std::string::npos) {
-      v.push_back(s.substr(i, j-i));
-      i = ++j;
-      j = s.find(c, j);
-
-      if (j == std::string::npos)
-         v.push_back(s.substr(i, s.length()));
-   }
+        if (j == std::string::npos)
+            v.push_back(s.substr(i, s.length()));
+    }
 }
-
-
 
 // Regresa num de nodos por fila y su distancia
 std::vector<int> EdgeSizeNodes(int num_nodes, int widht, int height)
@@ -52,7 +49,6 @@ double distance(const sf::Vector2i& A, const sf::Vector2i& B)
 
     return std::sqrt(X + Y);
 }
-
 
 template <class search_algorithm1, class search_algorithm2>
 bool is_winner(search_algorithm1& player1,
@@ -111,4 +107,3 @@ double evaluate_accuracy(search_algorithm1& player1,
     win_rate *= (1.0/games_played);
     return win_rate;
 }
-

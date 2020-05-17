@@ -1,6 +1,6 @@
 #pragma once
-#include "Graph.hpp"
 #include "External/json.hpp"
+#include "Graph.hpp"
 #include <fstream>
 #include <iostream>
 #include <tuple>
@@ -8,7 +8,7 @@
 
 using json = nlohmann::json;
 
-//This give you the graph and positional vector.
+// This give you the graph and positional vector.
 template <class T>
 std::tuple<Graph, std::vector<T>> get_json_to_graph_GUI(const std::string FileName)
 {
@@ -66,35 +66,29 @@ void save_graph_to_json(const std::string FileName, T graph_inf)
     output_file.close();
 }
 
-
-
-
-template<class game>
+template <class game>
 std::vector<game> get_json_to_game_data(const std::string FileName)
 {
     std::vector<game> games_played;
     json J;
     // write prettified JSON to another file
     std::ifstream input_file;
-    input_file.open( FileName, std::ifstream::in);
+    input_file.open(FileName, std::ifstream::in);
     input_file >> J;
     int total_recordings = J["Num_Games"];
 
-    for(int  i = 0 ; i < total_recordings; ++i)
+    for (int i = 0; i < total_recordings; ++i)
     {
-        games_played.emplace_back
-        (     
-            J["Game " + std::to_string(i)]["state"],
-            J["Game " + std::to_string(i)]["probabilities_by_action"],
-            J["Game " + std::to_string(i)]["valid_actions"],
-            J["Game " + std::to_string(i)]["black_reward"]
-        );
+        games_played.emplace_back(
+          J["Game " + std::to_string(i)]["state"],
+          J["Game " + std::to_string(i)]["probabilities_by_action"],
+          J["Game " + std::to_string(i)]["valid_actions"],
+          J["Game " + std::to_string(i)]["black_reward"]);
     }
 
     input_file.close();
     return games_played;
 }
-
 
 /*
 Game structure has this attributes:
@@ -103,21 +97,24 @@ vector of probabilities vectors.
 1 is the first player won the game.
 */
 
-
-template<class episode>
-void save_games_recordings_to_json(const std::string FileName,std::vector<episode>  games_played)
+template <class episode>
+void save_games_recordings_to_json(const std::string FileName,
+                                   std::vector<episode> games_played)
 {
     json JsonFile;
     int total_games = games_played.size();
     int game_id = 0;
     JsonFile["Num_Games"] = total_games;
 
-    for(auto G :  games_played)
+    for (auto G : games_played)
     {
         JsonFile["Game " + std::to_string(game_id)]["state"] = G.states;
-        JsonFile["Game " + std::to_string(game_id)]["valid_actions"] = G.valid_actions;
-        JsonFile["Game " + std::to_string(game_id)]["probabilities_by_action"]= G.probabilities;
-        JsonFile["Game " + std::to_string(game_id)]["black_reward"] = G.black_reward;
+        JsonFile["Game " + std::to_string(game_id)]["valid_actions"] =
+          G.valid_actions;
+        JsonFile["Game " + std::to_string(game_id)]["probabilities_by_action"] =
+          G.probabilities;
+        JsonFile["Game " + std::to_string(game_id)]["black_reward"] =
+          G.black_reward;
         game_id++;
     }
 
@@ -125,5 +122,4 @@ void save_games_recordings_to_json(const std::string FileName,std::vector<episod
     output_file.open(FileName, std::ofstream::trunc);
     output_file << JsonFile << std::endl;
     output_file.close();
-
 }

@@ -103,15 +103,15 @@ namespace detail
 #include <utility> // pair
 // #include <nlohmann/thirdparty/hedley/hedley.hpp>
 /* Hedley - https://nemequ.github.io/hedley
-*Created by Evan Nemerson <evan@nemerson.com>
+ *Created by Evan Nemerson <evan@nemerson.com>
  *
-*To the extent possible under law, the author(s) have dedicated all
-*copyright and related and neighboring rights to this software to
-*the public domain worldwide. This software is distributed without
-*any warranty.
+ *To the extent possible under law, the author(s) have dedicated all
+ *copyright and related and neighboring rights to this software to
+ *the public domain worldwide. This software is distributed without
+ *any warranty.
  *
-*For details, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-*SPDX-License-Identifier: CC0-1.0
+ *For details, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ *SPDX-License-Identifier: CC0-1.0
  */
 
 #if !defined(JSON_HEDLEY_VERSION) || (JSON_HEDLEY_VERSION < 11)
@@ -2097,19 +2097,19 @@ namespace detail
     Unicode string containing a sequence of zero or more reference tokens, each
     prefixed by a `/` character. json.exception.parse_error.108 | parse error:
     escape character '~' must be followed with '0' or '1' | In a JSON Pointer,
-    only `~0` and `~1` are valid escape sequences. json.exception.parse_error.109
-    | parse error: array index 'one' is not a number | A JSON Pointer array
-    index must be a number. json.exception.parse_error.110 | parse error at 1:
-    cannot read 2 bytes from vector | When parsing CBOR or MessagePack, the byte
-    vector ends before the complete value has been read.
-    json.exception.parse_error.112 | parse error at 1: error reading CBOR; last
-    byte: 0xF8 | Not all types of CBOR or MessagePack are supported. This
-    exception occurs if an unsupported byte was read.
-    json.exception.parse_error.113 | parse error at 2: expected a CBOR string;
-    last byte: 0x98 | While parsing a map key, a value that is not a string has
-    been read. json.exception.parse_error.114 | parse error: Unsupported BSON
-    record type 0x0F | The parsing of the corresponding BSON record type is not
-    implemented (yet).
+    only `~0` and `~1` are valid escape sequences.
+    json.exception.parse_error.109 | parse error: array index 'one' is not a
+    number | A JSON Pointer array index must be a number.
+    json.exception.parse_error.110 | parse error at 1: cannot read 2 bytes from
+    vector | When parsing CBOR or MessagePack, the byte vector ends before the
+    complete value has been read. json.exception.parse_error.112 | parse error
+    at 1: error reading CBOR; last byte: 0xF8 | Not all types of CBOR or
+    MessagePack are supported. This exception occurs if an unsupported byte was
+    read. json.exception.parse_error.113 | parse error at 2: expected a CBOR
+    string; last byte: 0x98 | While parsing a map key, a value that is not a
+    string has been read. json.exception.parse_error.114 | parse error:
+    Unsupported BSON record type 0x0F | The parsing of the corresponding BSON
+    record type is not implemented (yet).
 
     @note For an input with n bytes, 1 is the index of the first character and
     n+1 is the index of the terminating null byte or the end of file. This also
@@ -14220,7 +14220,8 @@ namespace detail
             assert(M_plus.e <= kGamma);
 
             std::uint64_t delta = diyfp::sub(M_plus, M_minus).f; // (significand
-                                                                 // of (M+ - M-),
+                                                                 // of (M+ -
+                                                                 // M-),
                                                                  // implicit
                                                                  // exponent is
                                                                  // e)
@@ -15659,9 +15660,9 @@ namespace detail
         }
 
         /*
-        *Overload to make the compiler happy while it is instantiating
-        *dump_integer for number_unsigned_t.
-        *Must never be called.
+         *Overload to make the compiler happy while it is instantiating
+         *dump_integer for number_unsigned_t.
+         *Must never be called.
          */
         number_unsigned_t remove_sign(number_unsigned_t x)
         {
@@ -15670,13 +15671,13 @@ namespace detail
         }
 
         /*
-        *Helper function for dump_integer
+         *Helper function for dump_integer
          *
-        *This function takes a negative signed integer and returns its
-        *absolute value as unsigned integer. The plus/minus shuffling is
-        *necessary as we can not directly remove the sign of an arbitrary
-        *signed integer as the absolute values of INT_MIN and INT_MAX are
-        *usually not the same. See #1708 for details.
+         *This function takes a negative signed integer and returns its
+         *absolute value as unsigned integer. The plus/minus shuffling is
+         *necessary as we can not directly remove the sign of an arbitrary
+         *signed integer as the absolute values of INT_MIN and INT_MAX are
+         *usually not the same. See #1708 for details.
          */
         inline number_unsigned_t remove_sign(number_integer_t x) noexcept
         {
@@ -18077,8 +18078,7 @@ private:
     }
 
     /// get a pointer to the value (object)
-    constexpr const object_t* get_impl_ptr(const object_t* /*unused*/) const
-      noexcept
+    constexpr const object_t* get_impl_ptr(const object_t* /*unused*/) const noexcept
     {
         return is_object() ? m_value.object : nullptr;
     }
@@ -18102,8 +18102,7 @@ private:
     }
 
     /// get a pointer to the value (string)
-    constexpr const string_t* get_impl_ptr(const string_t* /*unused*/) const
-      noexcept
+    constexpr const string_t* get_impl_ptr(const string_t* /*unused*/) const noexcept
     {
         return is_string() ? m_value.string : nullptr;
     }
@@ -18115,8 +18114,7 @@ private:
     }
 
     /// get a pointer to the value (boolean)
-    constexpr const boolean_t* get_impl_ptr(const boolean_t* /*unused*/) const
-      noexcept
+    constexpr const boolean_t* get_impl_ptr(const boolean_t* /*unused*/) const noexcept
     {
         return is_boolean() ? &m_value.boolean : nullptr;
     }
@@ -18154,8 +18152,8 @@ private:
     }
 
     /// get a pointer to the value (floating-point number)
-    constexpr const number_float_t* get_impl_ptr(const number_float_t* /*unused*/) const
-      noexcept
+    constexpr const number_float_t* get_impl_ptr(
+      const number_float_t* /*unused*/) const noexcept
     {
         return is_number_float() ? &m_value.number_float : nullptr;
     }
