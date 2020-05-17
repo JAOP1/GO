@@ -1,7 +1,7 @@
-#include "Include/Extra/External/CLI11.hpp"
-#include "Include/BoardGame.hpp"
 #include "GUI/Client.hpp"
 #include "GUI/GraphGUI.hpp"
+#include "Include/BoardGame.hpp"
+#include "Include/Extra/External/CLI11.hpp"
 #include "Include/Extra/Graph.hpp"
 #include "Include/Extra/json_manage.hpp"
 #include "Search_Algorithms/MCTS.hpp"
@@ -12,7 +12,6 @@
 #include <string>
 #include <tuple>
 #include <vector>
-
 
 // Solución parcial....
 void run_search(const std::string& player, GUI& client, const BoardGame& G)
@@ -53,15 +52,14 @@ int main(int argc, char** argv)
     app.add_option("-i", input_file, "Load Graph visualizer");
     CLI11_PARSE(app, argc, argv);
 
+    std::cout << "----------------- Go -----------------" << std::endl;
+    std::cout << "* Build phase: " << std::endl;
+    std::cout << "Add edges:  LShift + click node A + click node B" << std::endl;
+    std::cout << "Add nodes:  Ctrl + click on mouse." << std::endl;
+    std::cout << "Move node:  Click in mouse on the node." << std::endl;
+    std::cout << "Save graph: Keyboard num 0" << std::endl;
+    std::cout << "Start game: Keyboard Enter" << std::endl;
 
-    std::cout<<"----------------- Go -----------------"<<std::endl;
-    std::cout<< "* Build phase: " <<std::endl;
-    std::cout<< "Add edges:  LShift + click node A + click node B"<<std::endl;
-    std::cout<< "Add nodes:  Ctrl + click on mouse." <<std::endl;
-    std::cout<< "Move node:  Click in mouse on the node."<<std::endl;
-    std::cout<< "Save graph: Keyboard num 0" <<std::endl;
-    std::cout<< "Start game: Keyboard Enter"<<std::endl;
-    
     // Si queremos visualizar las acciones y jugar.
     if (visualize)
     {
@@ -88,6 +86,6 @@ int main(int argc, char** argv)
             run_search(player, APP, ruleset);
         }
     }
-    
+
     return 0;
 }

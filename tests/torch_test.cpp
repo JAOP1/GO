@@ -1,8 +1,8 @@
 /*
-#include <torch/torch.h>
 #include <iostream>
-#include <vector>
 #include <numeric>
+#include <torch/torch.h>
+#include <vector>
 
 TEST(TensorTest, ToOptionsWithRequiresGrad) {
   {
@@ -16,4 +16,3 @@ TEST(TensorTest, ToOptionsWithRequiresGrad) {
 }
 
 */
-
