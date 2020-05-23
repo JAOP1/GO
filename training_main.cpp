@@ -3,113 +3,29 @@
 #include "Include/Extra/Graph.hpp"
 #include "Include/Extra/Utilities.hpp"
 #include "Include/Extra/json_manage.hpp"
-#include "Search_Algorithms/C_49/Net_Class.hpp"
-#include "Search_Algorithms/C_49/encoders.hpp"
-#include "Search_Algorithms/C_49/loading_data.hpp"
+//#include "Search_Algorithms/C_49/Net_trainer.hpp"
+#include <torch/torch.h>
 #include <exception>
 #include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <torch/torch.h>
 #include <vector>
 
-size_t dataset_size;
-
-// Aqui probar cosas.
-template <typename loss>
-loss calculate_loss(torch::Tensor& data, torch::Tensor target)
+template<class T>
+std::ostream& operator<<(std::ostream& os , std::vector<T>& array)
 {
-    auto output1 = torch::nll_loss(data, target);
-    return output1;
+  for(auto i : array)
+    os<<i<<" ";
+
+  return os;
 }
 
-template <typename DataLoader>
-void train_one_epoch(Network_evaluator& model,
-                     DataLoader& loader,
-                     torch::Device device,
-                     torch::optim::Optimizer& optimizer)
-{
 
-    model.train();
-    size_t batch_idx = 0;
-    for (auto& batch : data_loader)
-    {
-        auto data = batch.data.to(device);
-        auto targets = batch.target.to(device);
-        optimizer.zero_grad();
-        torch::Tensor output = model.forward(data);
-        auto loss = calculate_loss<torch::Tensor>(output, targets);
-        loss.backward();
-        optimizer.step();
-
-        if (batch_idx++%4 == 0)
-        {
-            std::printf("\rTrain Epoch: [%5ld/%5ld] Loss: %.4f",
-                        batch_idx*batch.data.size(0),
-                        dataset_size,
-                        loss.template item<float>());
-        }
-    }
-}
-
-void train_model(std::string ModelName,
-                 int games,
-                 BoardGame& G,
-                 int Batch_size,
-                 int Num_epoch,
-                 torch::Device device,
-                 std::string DataPath)
-{
-    Network_evaluetor Model;
-
-    // Si quieres continuar entrenado un modelo.
-    if (std::filesystem::exists(ModelName))
-    {
-        auto load_model_ptr = std::make_shared<Network_evaluator>();
-        torch::load(load_model_ptr, ModelName);
-        Model = *load_model_ptr;
-    }
-
-    Model.to(device);
-    SimpleEncoder Enconder_(G);
-    torch::optim::Adam optimizer(Model.parameters());
-
-    // Condición de paro por establecer.
-    while ()
-    {
-
-        generate_games(/*Path_to_save = */ DataPath,
-                       /*total_records = */ games,
-                       /*Model = */ Model,
-                       /*BoardGame = */ G);
-        auto data = get_data_games(/*Path_to_load=*/DataPath,
-                                   /*Encoder= */ Encoder_); // This return a
-                                                            // data vector.
-        auto Dataset = GameDateset(data).map(
-          torch::data::transforms::Stack<>()); // Transform the dataset in
-                                               // understable form for torch.
-        torch::data::samplers::RandomSampler sampler(
-          Dataset.size()); // This say how will be getting the data.
-        auto DataLoader =
-          torch::data::make_data_loader(Dataset, sampler, Batch_size);
-        dataset_size = Dataset.size();
-
-        for (size_t epoch_ = 1; epoch_ <= Num_epoch; ++epoch_)
-            train_one_epoch(Model, *DataLoader, device, optimizer);
-
-        // Cada cuanto actualizamos nuestro algoritmo por establecer.
-        if ()
-        {
-            auto Net = std::make_shared<Net>(Model);
-            torch::save(Net, ModelName);
-        }
-    }
-}
 
 int main(int argc, char** argv)
 {
-
+/*
     // Esto es para proobar Ggg.
     CLI::App app{"---- Go Trainer ----"};
 
@@ -159,12 +75,14 @@ int main(int argc, char** argv)
         Graph G = std::get<0>(graph_);
         BoardGame BG(G);
 
-        train_model(ModelPath, Num_games, BG, batch, epoch, device, DataPath);
+        train_model<SimpleEncoder>(ModelPath, DataPath, BG, Num_games, batch, epoch, device);
     }
     catch (const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
 
-    return 0;
+*/
+
+  return 0;
 }
