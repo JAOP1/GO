@@ -1,7 +1,8 @@
 #pragma once
 #include "../Include/BoardGame.hpp"
-#include "../Include/Extra/hash_utilities.hpp"
 #include "../Include/Extra/External/tqdm.h"
+#include "../Include/Extra/hash_utilities.hpp"
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <memory>
@@ -9,12 +10,15 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <algorithm>
 
 using Action = int;
 using vertex = std::int64_t;
 
+
 //----------------------------------------------------------------------------------
+// Rave data structure.
+//----------------------------------------------------------------------------------
+
 struct RAVE_Map
 {
 
@@ -141,6 +145,12 @@ private:
 
 int RAVE_Node::objectCount = 0;
 
+//----------------------------------------------------------------------------------
+// MCTS RAVE declaration.
+//----------------------------------------------------------------------------------
+
+
+
 class MC_RAVE
 {
 public:
@@ -174,7 +184,7 @@ public:
         {
             if (child->action() == A)
             {
-                is_changed =true;
+                is_changed = true;
                 root = std::move(child);
                 root->set_parent();
                 // root = child;
@@ -182,12 +192,23 @@ public:
             }
         }
 
-        //Caso que no tenga información de ese segmento.
-        if(!is_changed)
+        // Caso que no tenga información de ese segmento.
+        if (!is_changed)
             is_unknown = true;
     }
 
-    //This give you probabilities vector.
+    
+    void reset_tree()
+    {
+        is_unknown = true;
+    }
+
+    void set_player(char player)
+    {
+        player_ = player;
+    }
+
+    // This give you probabilities vector.
     std::vector<double> get_probabilities_current_state() const;
 
 private:
@@ -221,9 +242,15 @@ private:
     std::vector<Action> simulation_recording(int num_steps, BoardGame state);
 };
 
+
+//----------------------------------------------------------------------------------
+// Rave public functions.
+//----------------------------------------------------------------------------------
+
+
 Action MC_RAVE::search(const BoardGame& current_board)
 {
-    if (is_unknown )
+    if (is_unknown)
     {
         Actions_space = current_board.Board.num_vertices();
         root->update_board(current_board);
@@ -254,11 +281,43 @@ Action MC_RAVE::search(const BoardGame& current_board)
     }
     bar.finish();
 
-    
     auto node = child_highest_confidence(root, 1);
 
     return node->action();
 }
+
+
+std::vector<double> MC_RAVE::get_probabilities_current_state() const
+{
+    std::vector<double> probabilities(Actions_space + 1, 0);
+    int id, total;
+    double total_visits_counter = 0;
+
+    for (std::shared_ptr<RAVE_Node>& child : root->children())
+    {
+        id = child->action();
+        if (id == -1)
+            id = probabilities.size() - 1;
+
+        total = child->num_visits();
+        probabilities[id] = total;
+        total_visits_counter += total;
+    }
+
+    // Implica que si tiene algún hijo.
+    if (total_visits_counter)
+    {
+        for (int i = 0; i < probabilities.size(); ++i)
+            probabilities[i] /= total_visits_counter;
+    }
+
+    return probabilities;
+}
+
+
+//----------------------------------------------------------------------------------
+// Rave private functions.
+//----------------------------------------------------------------------------------
 
 double MC_RAVE::Simulations_by_RAVE(std::shared_ptr<RAVE_Node>& node)
 {
@@ -381,29 +440,3 @@ std::vector<Action> MC_RAVE::simulation_recording(int num_steps, BoardGame state
     return made_actions;
 }
 
-std::vector<double> MC_RAVE::get_probabilities_current_state() const
-{
-        std::vector<double> probabilities(Actions_space+1 , 0);
-        int id,total;
-        double total_visits_counter = 0;
-
-        for (std::shared_ptr<RAVE_Node>& child : root->children())
-        {
-            id = child->action();
-            if(id == -1)
-                id = probabilities.size() - 1;
-
-            total = child->num_visits();
-            probabilities[id] = total;
-            total_visits_counter += total;
-        }
-
-        //Implica que si tiene algún hijo.
-        if(total_visits_counter)
-        {
-            for(int  i = 0 ;  i < probabilities.size() ; ++i)
-                probabilities[i] /= total_visits_counter;
-        }
-
-        return probabilities;
-}

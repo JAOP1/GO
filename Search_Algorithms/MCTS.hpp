@@ -1,7 +1,7 @@
 #pragma once
 #include "../Include/BoardGame.hpp"
-#include "../Include/Extra/hash_utilities.hpp"
 #include "../Include/Extra/External/tqdm.h"
+#include "../Include/Extra/hash_utilities.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -13,6 +13,8 @@
 
 using Action = int;
 
+//----------------------------------------------------------------------------------
+// Data structure.
 //----------------------------------------------------------------------------------
 class Node
 {
@@ -91,6 +93,10 @@ private:
 
 // int Node::objectCount = 0;
 
+//----------------------------------------------------------------------------------
+// MCTS declaration.
+//----------------------------------------------------------------------------------
+
 class MCTS
 {
 public:
@@ -116,7 +122,7 @@ public:
 
     void fit_precompute_tree(Action A)
     {
-            
+
         bool is_changed = false;
         for (std::shared_ptr<Node>& child : root->children())
         {
@@ -130,8 +136,18 @@ public:
             }
         }
 
-        if(!is_changed)
+        if (!is_changed)
             is_unknown = true;
+    }
+
+    void reset_tree()
+    {
+        is_unknown = true;
+    }
+
+    void set_player(char player)
+    {
+        player_ = player;
     }
 
     std::vector<double> get_probabilities_current_state() const;
@@ -167,6 +183,10 @@ private:
 
     double get_reward_from_one_simulation(int num_steps, BoardGame state);
 };
+
+//----------------------------------------------------------------------------------
+// Public MCTS functions.
+//----------------------------------------------------------------------------------
 
 Action MCTS::search(const BoardGame& current_board)
 {
@@ -236,6 +256,37 @@ Action MCTS::search(const BoardGame& current_board)
     auto node = child_highest_confidence(root, 1);
     return node->action();
 }
+
+std::vector<double> MCTS::get_probabilities_current_state() const
+{
+    std::vector<double> probabilities(Actions_space + 1, 0); // Por el pasar.
+    int id, total;
+    double total_visits_counter = 0;
+
+    for (std::shared_ptr<Node>& child : root->children())
+    {
+        id = child->action();
+        if (id == -1)
+            id = probabilities.size() - 1;
+
+        total = child->num_visits();
+        probabilities[id] = total;
+        total_visits_counter += total;
+    }
+
+    // Implica que si tiene algún hijo.
+    if (total_visits_counter)
+    {
+        for (int i = 0; i < probabilities.size(); ++i)
+            probabilities[i] /= total_visits_counter;
+    }
+
+    return probabilities;
+}
+
+//----------------------------------------------------------------------------------
+// Private MCTS functions.
+//----------------------------------------------------------------------------------
 
 double MCTS::Simulation(std::shared_ptr<Node> node)
 {
@@ -341,33 +392,4 @@ double MCTS::get_reward_from_one_simulation(int num_steps, BoardGame state)
         //--------------------------------------------------------------
     }
     return state.reward(player_);
-}
-
-
-
-std::vector<double> MCTS::get_probabilities_current_state() const 
-{
-        std::vector<double> probabilities(Actions_space+1 , 0); //Por el pasar.
-        int id,total;
-        double total_visits_counter = 0;
-
-        for (std::shared_ptr<Node>& child : root->children())
-        {
-            id = child->action();
-            if(id == -1)
-                id = probabilities.size()-1;
-                
-            total = child->num_visits();
-            probabilities[id] = total;
-            total_visits_counter += total;
-        }
-
-        //Implica que si tiene algún hijo.
-        if(total_visits_counter)
-        {
-            for(int  i = 0 ;  i < probabilities.size() ; ++i)
-                probabilities[i] /= total_visits_counter;
-        }
-
-        return probabilities;
 }
