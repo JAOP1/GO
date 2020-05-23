@@ -81,6 +81,9 @@ bool is_winner(search_algorithm1& player1,
         else
             action = player2.search(board);
 
+        player1.fit_precompute_tree(action);
+        player2.fit_precompute_tree(action);
+
         board.make_action(action);
     }
 
@@ -97,11 +100,30 @@ double evaluate_accuracy(search_algorithm1& player1,
     std::cout
       << "Evaluamos el número de veces que gana el algoritmo 1 contra el otro."
       << std::endl;
-    for (int i = 0; i < games_played; ++i)
+    int mitad =(int)games_played/2;
+
+    //Primer parte el player1 es jugador negro. 
+    player1.set_player('B');
+    player2.set_player('W');
+       
+    for (int i = 0; i < mitad; ++i)
     {
-        std::cout << "Game number " << i << std::endl;
+        //std::cout << "Game number " << i << std::endl;
         if (is_winner(player1, player2, board))
             win_rate++;
+        player1.reset_tree();
+        player2.reset_tree();
+    }
+
+    //Segunda parte el player1 es jugador blanco.
+    player1.set_player('W');
+    player2.set_player('B');
+    for(int i = 0; i < mitad;++i)
+    {
+        if(!is_winner(player2 , player1 , board))
+            win_rate++;
+        player1.reset_tree();
+        player2.reset_tree();
     }
 
     win_rate *= (1.0/games_played);

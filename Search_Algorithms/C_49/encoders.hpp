@@ -32,10 +32,12 @@ public:
         {
             auto data =
               Encode_data(G.states[i], G.valid_actions[i], current_player);
+            
             auto target = Encode_label(reward, G.probabilities[i]);
+            
             game_recodings.emplace_back(data, target);
 
-            reward *= 1;
+            reward *= -1;
             current_player ^= 1;
         }
 
@@ -50,7 +52,7 @@ public:
         set_player_planes();
         Update_pieces(state);
 
-        torch::Tensor data = torch::zeros({4, G.num_vertices(), G.num_vertices()});
+        torch::Tensor data = torch::zeros({3, G.num_vertices(), G.num_vertices()});
 
         std::vector<double> valid_actions_plane(G.num_vertices() *
                                                   G.num_vertices(),
@@ -58,7 +60,8 @@ public:
 
         for (auto v : valid_actions)
         {
-            update_action_to(valid_actions_plane, v, 1);
+            if(v != -1)
+                update_action_to(valid_actions_plane, v, 1);
         }
 
         torch::Tensor plane_white =
@@ -115,15 +118,9 @@ private:
 
         for (int v = 0; v < state.size(); ++v)
         {
-
-            if (state[v] == 'N')
-            {
-                update_action_to(AdjMatrix_White, v, 0);
-                update_action_to(AdjMatrix_Black, v, 0);
-            }
-            else if (state[v] == 'B')
+            if (state[v] == 'B')
                 update_action_to(AdjMatrix_Black, v, 1);
-            else
+            else if(state[v] == 'W')
                 update_action_to(AdjMatrix_White, v, 1);
         }
     }
@@ -131,7 +128,7 @@ private:
     // Si queremos pesar (?)
     void update_action_to(std::vector<double>& array, int vertex_, int value)
     {
-        int ind = vertex_*G.num_vertices();
+        int ind = vertex_ * G.num_vertices();
         for (auto v : G.neighbors(vertex_))
             array[ind + v] = value;
     }

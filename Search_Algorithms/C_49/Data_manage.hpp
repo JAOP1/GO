@@ -2,10 +2,12 @@
 #include "Include/BoardGame.hpp"
 #include "Include/Extra/Graph.hpp"
 #include "Include/Extra/json_manage.hpp"
-#include "Search_Algorithms/C_49/Net_Class.hpp"
+#include "game_structure.hpp"
+#include "Net_Class.hpp"
+#include "encoders.hpp"
+#include <torch/torch.h>
 #include <iostream>
 #include <numeric>
-#include <torch/torch.h>
 #include <tuple>
 #include <vector>
 
@@ -37,16 +39,16 @@ struct GameDateSet
     std::vector<element> dataset;
 };
 
-// Solo le falta incluir los parametros de los algoritmos de busqueda.
-template <class game>
-game get_episode(Network_evaluator& Model, std::string slection_mode, BoardGame BG)
+template<class Encoder>
+game get_episode(Network_evaluator& Model, std::string slection_mode, BoardGame BG, Encoder& encoder_)
 {
     game episode;
     std::vector<char> state;
     std::vector<double> prob;
     std::vector<int> valid_actions;
-    MCT_Net Black(); // Esto lo incluiré cuando haya hecho MCT_Net
-    MCT_Net White(); //...
+
+    MCTS_Net Black(BG , Model , encoder_ , 100, 'B'); 
+    MCTS_Net White(BG, Model, encoder_ , 100 , 'W'); 
 
     for (int move = 0; move < 70 && !BG.is_complete(); ++move)
     {
@@ -76,16 +78,19 @@ game get_episode(Network_evaluator& Model, std::string slection_mode, BoardGame 
     return episode;
 }
 
+template<class Encoder>
 void generate_games(std::string path,
                     int games,
                     Network_evaluator& Model,
                     std::string slection_mode,
-                    BoardGame& BG)
+                    BoardGame& BG,
+                    Encoder& encoder_
+                    )
 {
     std::vector<game> episodes;
     for (int i = 0; i < games; ++i)
     {
-        episodes.push_back(get_episode(Model, selection_mode, BG));
+        episodes.push_back(get_episode<Encoder>(Model, selection_mode, BG, encoder_));
     }
 
     save_games_recordings_to_json(path, episodes);

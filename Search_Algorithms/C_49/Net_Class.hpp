@@ -1,6 +1,12 @@
 #pragma once
 #include <torch/torch.h>
 
+
+/*
+Aqui tengo que modificar todo....
+Buscar una estructura prueba de red neuronal para el proyecto.
+*/
+
 struct Network_evaluator : nn::Module
 {
     Network_evaluetor(int input_size)
