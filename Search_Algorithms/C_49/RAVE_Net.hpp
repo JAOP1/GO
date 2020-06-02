@@ -14,7 +14,7 @@
 #include <vector>
 
 using Action = int;
-using vertex = std::int64_t;
+using vertex = int;
 
 int get_random_action(torch::Tensor prob_ , int num_actions)
 {
@@ -267,8 +267,8 @@ private:
 // Public RAVE functions.
 //----------------------------------------------------------------------------------
 
-
-Action MC_RAVE::search(const BoardGame& current_board)
+template< class Net_architect , class encoder>
+Action MC_RAVE< Net_architect ,  encoder>::search(const BoardGame& current_board)
 {
     if (is_unknown)
     {
@@ -306,7 +306,9 @@ Action MC_RAVE::search(const BoardGame& current_board)
     return node->action();
 }
 
-std::vector<double> MC_RAVE::get_probabilities_current_state() const
+
+template< class Net_architect , class encoder>
+std::vector<double> MC_RAVE<  Net_architect ,  encoder>::get_probabilities_current_state() const
 {
     std::vector<double> probabilities(Actions_space + 1, 0);
     int id, total;
@@ -337,8 +339,8 @@ std::vector<double> MC_RAVE::get_probabilities_current_state() const
 // Private RAVE functions.
 //----------------------------------------------------------------------------------
 
-
-double MC_RAVE::Simulations_by_RAVE(std::shared_ptr<RAVE_Node>& node)
+template< class Net_architect , class encoder>
+double MC_RAVE<  Net_architect ,  encoder>::Simulations_by_RAVE(std::shared_ptr<RAVE_Node>& node)
 {
     double reward = 0.0;
     double tmp_reward;
@@ -360,7 +362,8 @@ double MC_RAVE::Simulations_by_RAVE(std::shared_ptr<RAVE_Node>& node)
     return reward/simulation_num;
 }
 
-void MC_RAVE::Backpropagation(std::shared_ptr<RAVE_Node> leaf,
+template< class Net_architect , class encoder>
+void MC_RAVE<  Net_architect , encoder>::Backpropagation(std::shared_ptr<RAVE_Node> leaf,
                               const double reward,
                               const int num_visits)
 {
@@ -377,7 +380,8 @@ void MC_RAVE::Backpropagation(std::shared_ptr<RAVE_Node> leaf,
     node->update_stats(reward, num_visits);
 }
 
-void MC_RAVE::Expand_by_RAVE(std::shared_ptr<RAVE_Node>& node)
+template< class Net_architect , class encoder>
+void MC_RAVE<  Net_architect ,  encoder>::Expand_by_RAVE(std::shared_ptr<RAVE_Node>& node)
 {
     int real_height = node->get_height() - root->get_height();
     if (real_height > depth_)
@@ -396,7 +400,8 @@ void MC_RAVE::Expand_by_RAVE(std::shared_ptr<RAVE_Node>& node)
     }
 }
 
-std::shared_ptr<RAVE_Node> MC_RAVE::Select(std::shared_ptr<RAVE_Node>& node)
+template< class Net_architect , class encoder>
+std::shared_ptr<RAVE_Node> MC_RAVE<  Net_architect ,  encoder>::Select(std::shared_ptr<RAVE_Node>& node)
 {
     std::shared_ptr<RAVE_Node> current = node;
     int max_min = 1;
@@ -410,7 +415,8 @@ std::shared_ptr<RAVE_Node> MC_RAVE::Select(std::shared_ptr<RAVE_Node>& node)
     return current;
 }
 
-std::shared_ptr<RAVE_Node> MC_RAVE::child_highest_confidence(
+template< class Net_architect , class encoder>
+std::shared_ptr<RAVE_Node> MC_RAVE<  Net_architect ,  encoder>::child_highest_confidence(
   std::shared_ptr<RAVE_Node>& node, int max_min_val)
 {
     double confidence = std::numeric_limits<double>::lowest();
@@ -444,7 +450,8 @@ std::shared_ptr<RAVE_Node> MC_RAVE::child_highest_confidence(
 }
 
 // The last place in the array is the reward.
-std::vector<Action> MC_RAVE::simulation_recording(int num_steps, BoardGame state)
+template< class Net_architect , class encoder>
+std::vector<Action> MC_RAVE<  Net_architect ,  encoder>::simulation_recording(int num_steps, BoardGame state)
 {
     std::vector<Action> made_actions;
     for (int i = 0; i < 60 && !state.is_complete(); ++i)

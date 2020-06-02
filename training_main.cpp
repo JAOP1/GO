@@ -4,13 +4,13 @@
 #include "Include/Extra/Utilities.hpp"
 #include "Include/Extra/json_manage.hpp"
 //Incluir estas lineas.
-//#include "Search_Algorithms/C_49/RAVE_Net.hpp"
-//#include "Search_Algorithms/C_49/UCT_Net.hpp"
-//#include "Search_Algorithms/C_49/Net_trainer.hpp"
+#include "Search_Algorithms/C_49/RAVE_Net.hpp"
+#include "Search_Algorithms/C_49/UCT_Net.hpp"
+#include "Search_Algorithms/C_49/Net_trainer.hpp"
 #include "Search_Algorithms/C_49/game_structure.hpp"
-#include "Search_Algorithms/C_49/encoders.hpp"
+//#include "Search_Algorithms/C_49/encoders.hpp"
 #include "Search_Algorithms/C_49/Net_Class.hpp"
-#include "Search_Algorithms/C_49/Data_manage.hpp"
+//#include "Search_Algorithms/C_49/Data_manage.hpp"
 #include <torch/torch.h>
 #include <exception>
 #include <filesystem>
@@ -27,6 +27,14 @@ std::ostream& operator<<(std::ostream& os , std::vector<T>& array)
 
   return os;
 }
+
+
+struct graph_position
+{
+  graph_position(int a, int b):x(a) , y(b){}
+  int x;
+  int y;
+};
 
 
 using element = torch::data::Example<torch::Tensor, torch::Tensor>;
@@ -78,15 +86,15 @@ int main(int argc, char** argv)
         std::string DataPath = directory_path +
           "../Search_Algorithms/C_49/Data/Data_" + v[0] + ".json";
 
-        std::tuple<Graph, std::vector<sf::Vector2i>> graph_ =
-          get_json_to_graph_GUI<sf::Vector2i>(GraphFile);
+        std::tuple<Graph, std::vector<graph_position>> graph_ =
+          get_json_to_graph_GUI<graph_position>(GraphFile);
         Graph G = std::get<0>(graph_);
         BoardGame BG(G);
 
         if(selection_mode == "UCT")
-          train_model<MCTS_Net,SimpleEncoder>(ModelPath, DataPath, BG, Num_games, batch, epoch, device);
-        else
-          train_model<MC_RAVE,SimpleEncoder>(ModelPath, DataPath, BG, Num_games, batch, epoch, device);
+          train_model<MCTS_Net<Network_evaluator,SimpleEncoder1d >,SimpleEncoder1d>(ModelPath, DataPath, BG, Num_games, batch, epoch, device);
+        else if(selection_mode == "RAVE")
+          train_model<MC_RAVE<Network_evaluator,SimpleEncoder1d>,SimpleEncoder1d>(ModelPath, DataPath, BG, Num_games, batch, epoch, device);
     }
     catch (const std::exception& e)
     {

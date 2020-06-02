@@ -9,7 +9,7 @@ Por hacer una red mas generica!!
 struct Network_evaluator : torch::nn::Module
 {
     //Ahorita haré una red prueba... para un grid 5x5.
-    Network_evaluator(int valor):
+    Network_evaluator():
         /*Lout = (Lin - (kernel_size)) + 1*/
         conv1( torch::nn::Conv1dOptions(/*in_channels=*/3,/*out_channels=*/ 5,/*kernel_size=*/ 3)),
         /*Output conv1 = {num_samples , 5 ,23}*/

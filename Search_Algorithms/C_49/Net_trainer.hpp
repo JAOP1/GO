@@ -1,5 +1,7 @@
 #pragma once
 #include <torch/torch.h>
+#include "UCT_Net.hpp"
+#include "RAVE_Net.hpp"
 #include "Net_Class.hpp"
 #include "encoders.hpp"
 #include "Data_manage.hpp"
@@ -45,13 +47,13 @@ void train_one_epoch(Network_evaluator& model,
 
     model.train();
     size_t batch_idx = 0;
-    for (auto& batch : data_loader)
+    for (auto& batch : loader)
     {
         auto data = batch.data.to(device);
         auto targets = batch.target.to(device);
         optimizer.zero_grad();
         torch::Tensor output = model.forward(data);
-        auto loss = calculate_loss<torch::Tensor>(output, targets);
+        torch::Tensor loss = calculate_loss<torch::Tensor>(output, targets);
         loss.backward();
         optimizer.step();
 
@@ -60,7 +62,7 @@ void train_one_epoch(Network_evaluator& model,
             std::printf("\rTrain Epoch: [%5ld/%5ld] Loss: %.4f",
                         batch_idx*batch.data.size(0),
                         dataset_size,
-                        loss.template item<float>());
+                        loss[0].item<double>());
         }
     }
 }
@@ -69,7 +71,7 @@ void train_one_epoch(Network_evaluator& model,
 //Parcialmente completo.
 template<class search_type,class Encoder>
 void train_model(std::string ModelPath,
-                 std::string DataPath
+                 std::string DataPath,
                  BoardGame& G,
                  int games,
                  int Batch_size,
@@ -83,10 +85,10 @@ void train_model(std::string ModelPath,
     load_net<Network_evaluator>(ModelPath, Model_tmp);
 
     Model.to(device);
-    Mode_tmp.to(device);
+    Model_tmp.to(device);
 
-    Encoder Enconder_(G);
-    torch::optim::Adam optimizer(Model.parameters());
+    Encoder Encoder_(G.Board);
+    torch::optim::SGD optimizer(Model.parameters(), torch::optim::SGDOptions(0.01).momentum(0.5));
 
     // Condición de paro. (Falta por hacer!)
     int valor_ini = 2;
@@ -101,13 +103,12 @@ void train_model(std::string ModelPath,
         auto data = get_data_games<Encoder>(/*Path_to_load=*/DataPath,
                                    /*Encoder= */ Encoder_); // This return a
                                                             // torch example vector.
-        auto Dataset = GameDataset(data).map(
+        auto Dataset = GameDataSet(data).map(
           torch::data::transforms::Stack<>()); // Transform the dataset in
                                                // understable form for torch.
-        dataset_size = Dataset.size();
 
         torch::data::samplers::RandomSampler sampler(
-          Dataset.size()); // This say how will be getting the data.
+          data.size()); // This say how will be getting the data.
           
         auto DataLoader =
           torch::data::make_data_loader(Dataset, sampler, Batch_size);
@@ -116,8 +117,8 @@ void train_model(std::string ModelPath,
             train_one_epoch(Model, *DataLoader, device, optimizer);
 
         
-        search_type current<Network_evaluator , Encoder>(G , Model , Encoder_, 80 , 'B');
-        search_type last<Network_evaluator , Encoder>( G , Model_tmp , Encoder_ , 80 , 'W');
+        search_type current(G , Model , Encoder_, 80 , 'B');
+        search_type last( G , Model_tmp , Encoder_ , 80 , 'W');
         
         if (evaluate_accuracy<search_type , search_type>(current , last, G, 30) >= .6)
         {

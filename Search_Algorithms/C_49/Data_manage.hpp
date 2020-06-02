@@ -38,7 +38,7 @@ struct GameDataSet: torch::data::datasets::BatchDataset<GameDataSet, std::vector
 };
 
 template<class search_type, class Encoder>
-game get_episode(Network_evaluator& Model, std::string slection_mode, BoardGame BG, Encoder& encoder_)
+game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
 {
     game episode;
     std::vector<char> state;
@@ -81,7 +81,6 @@ template<class search_type,class Encoder>
 void generate_games(std::string path,
                     int games,
                     Network_evaluator& Model,
-                    std::string selection_mode,
                     BoardGame& BG,
                     Encoder& encoder_
                     )
@@ -89,7 +88,7 @@ void generate_games(std::string path,
     std::vector<game> episodes;
     for (int i = 0; i < games; ++i)
     {
-        episodes.push_back(get_episode<search_type,Encoder>(Model, selection_mode, BG, encoder_));
+        episodes.push_back(get_episode<search_type,Encoder>(Model, BG, encoder_));
     }
 
     save_games_recordings_to_json(path, episodes);
