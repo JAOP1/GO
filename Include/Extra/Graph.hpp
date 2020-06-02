@@ -23,7 +23,7 @@ class Graph
 public:
     using size_type = std::int64_t;
 
-    using Vertex = std::int64_t;
+    using Vertex = int;
 
     enum WORKAROUND_UNTIL_CPP17
     {

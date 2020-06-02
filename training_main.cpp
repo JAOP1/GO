@@ -3,7 +3,14 @@
 #include "Include/Extra/Graph.hpp"
 #include "Include/Extra/Utilities.hpp"
 #include "Include/Extra/json_manage.hpp"
+//Incluir estas lineas.
+//#include "Search_Algorithms/C_49/RAVE_Net.hpp"
+//#include "Search_Algorithms/C_49/UCT_Net.hpp"
 //#include "Search_Algorithms/C_49/Net_trainer.hpp"
+#include "Search_Algorithms/C_49/game_structure.hpp"
+#include "Search_Algorithms/C_49/encoders.hpp"
+#include "Search_Algorithms/C_49/Net_Class.hpp"
+#include "Search_Algorithms/C_49/Data_manage.hpp"
 #include <torch/torch.h>
 #include <exception>
 #include <filesystem>
@@ -22,10 +29,11 @@ std::ostream& operator<<(std::ostream& os , std::vector<T>& array)
 }
 
 
+using element = torch::data::Example<torch::Tensor, torch::Tensor>;
 
 int main(int argc, char** argv)
 {
-/*
+
     // Esto es para proobar Ggg.
     CLI::App app{"---- Go Trainer ----"};
 
@@ -75,13 +83,72 @@ int main(int argc, char** argv)
         Graph G = std::get<0>(graph_);
         BoardGame BG(G);
 
-        train_model<SimpleEncoder>(ModelPath, DataPath, BG, Num_games, batch, epoch, device);
+        if(selection_mode == "UCT")
+          train_model<MCTS_Net,SimpleEncoder>(ModelPath, DataPath, BG, Num_games, batch, epoch, device);
+        else
+          train_model<MC_RAVE,SimpleEncoder>(ModelPath, DataPath, BG, Num_games, batch, epoch, device);
     }
     catch (const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
 
+
+
+/*
+  //Todo esto fue para probar!! 
+  int rows = 4;
+  int columns = 4;
+  Graph G = graphs::Grid(rows, columns);
+  BoardGame BG(G);
+  game D;
+  SimpleEncoder2d encoder2d(G);
+  SimpleEncoder1d encoder1d(G);
+
+  std::vector<vertex> actions = BG.get_available_sample_cells(1.0);
+  D.add_game_state({0.25, 0.25, 0.25, 0.25}, BG.show_current_state(), actions);
+
+  BG.make_action(0);
+  actions = BG.get_available_sample_cells(1.0);
+  D.add_game_state({0, 0.333, 0.333, 0.333}, BG.show_current_state(), actions);
+
+  BG.make_action(1);
+  actions = BG.get_available_sample_cells(1.0);
+  D.add_game_state({0, 0, 0.5, 0.5}, BG.show_current_state(), actions);
+
+  D.set_reward(BG.reward('B'));
+
+  auto vector_torch_planes_2d = encoder2d.Encode_episode<game>(D);
+  auto vector_torch_planes_1d = encoder1d.Encode_episode<game>(D);
+
+  
+  std::cout<<"Resultado con encoder 2d: "<<std::endl;
+  std::cout<<vector_torch_planes_2d[1].data<<std::endl;
+  std::cout<<vector_torch_planes_2d[1].target<<std::endl;
+  
+  std::cout<<"Resultado con encoder 1d:"<<std::endl;
+  std::cout<<vector_torch_planes_1d[1].data<<std::endl;
+  std::cout<<vector_torch_planes_1d[1].target<<std::endl;
+
+  
+  torch::data::samplers::RandomSampler sampler(vector_torch_planes_1d.size());
+  auto  F = GameDataSet(vector_torch_planes_1d).map(torch::data::transforms::Stack<>());
+  auto data_loader = torch::data::make_data_loader(F, sampler, 2);
+
+  std::cout<<"He llegado a la parte de la red neuronal."<<std::endl;
+  Network_evaluator NN(4);
+  NN.to(torch::kCUDA);
+  NN.eval();
+
+  for (const auto& batch : *data_loader) {
+    auto data = batch.data.to(torch::kCUDA), targets = batch.target.to(torch::kCUDA);
+    
+    //std::cout<<data.sizes()<<std::endl;
+    //std::cout<<targets.sizes()<<std::endl;
+    auto output = NN.forward(data);
+    std::cout<<output.sizes()<<std::endl;
+    std::cout<<"----"<<std::endl;
+  }
 */
 
   return 0;

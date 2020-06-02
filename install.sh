@@ -51,9 +51,11 @@ then
     #unzip libtorch-shared-with-deps-latest.zip
 
     cd GO-master/
+    rm -r  build/
+    
     mkdir build
     cd build
-    #cmake -DCMAKE_PREFIX_PATH=$pwd1/libtorch ..
+
     cmake ..
     make
     ./visualizer -v true -p true

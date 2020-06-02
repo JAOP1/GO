@@ -67,7 +67,7 @@ void train_one_epoch(Network_evaluator& model,
 
 
 //Parcialmente completo.
-template<class Encoder>
+template<class search_type,class Encoder>
 void train_model(std::string ModelPath,
                  std::string DataPath
                  BoardGame& G,
@@ -89,10 +89,11 @@ void train_model(std::string ModelPath,
     torch::optim::Adam optimizer(Model.parameters());
 
     // Condición de paro. (Falta por hacer!)
-    while (true)
+    int valor_ini = 2;
+    while (valor_ini--)
     {
 
-        generate_games<Encoder>(/*Path_to_save = */ DataPath,
+        generate_games<search_type,Encoder>(/*Path_to_save = */ DataPath,
                        /*total_records = */ games,
                        /*Model = */ Model_tmp,
                        /*BoardGame = */ G,
@@ -100,7 +101,7 @@ void train_model(std::string ModelPath,
         auto data = get_data_games<Encoder>(/*Path_to_load=*/DataPath,
                                    /*Encoder= */ Encoder_); // This return a
                                                             // torch example vector.
-        auto Dataset = GameDateset(data).map(
+        auto Dataset = GameDataset(data).map(
           torch::data::transforms::Stack<>()); // Transform the dataset in
                                                // understable form for torch.
         dataset_size = Dataset.size();
@@ -115,10 +116,10 @@ void train_model(std::string ModelPath,
             train_one_epoch(Model, *DataLoader, device, optimizer);
 
         
-        MCTS_Net current<Network_evaluator , Encoder>(G , Model , Encoder_, 80 , 'B');
-        MCTS_Net last<Network_evaluator , Encoder>( G , Model_tmp , Encoder_ , 80 , 'W');
+        search_type current<Network_evaluator , Encoder>(G , Model , Encoder_, 80 , 'B');
+        search_type last<Network_evaluator , Encoder>( G , Model_tmp , Encoder_ , 80 , 'W');
         
-        if (evaluate_accuracy<MCTS_Net , MCTS_Net>(current , last, G, 30) >= .6)
+        if (evaluate_accuracy<search_type , search_type>(current , last, G, 30) >= .6)
         {
             save_net<Network_evaluator>(ModelPath , Model);
             load_net<Network_evaluator>(ModelPath , Model_tmp);

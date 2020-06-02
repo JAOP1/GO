@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 
-using vertex = std::int64_t;
+using vertex = int;
 
 struct game
 {

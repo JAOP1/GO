@@ -1,3 +1,4 @@
+/*
 #include "../Include/BoardGame.hpp"
 #include "../Include/Extra/Graph.hpp"
 #include "../Search_Algorithms/C_49/encoders.hpp"
@@ -40,3 +41,4 @@ TEST(Encoder, SimpleEncoderTest)
         ASSERT_TRUE(size_target == vector_torch_planes[i].target.sizes());
     }
 }
+*/

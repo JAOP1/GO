@@ -7,8 +7,8 @@
 class disjoint_sets
 {
 public:
-    using size_type = std::int64_t;
-    using index_type = std::int64_t;
+    using size_type = int;
+    using index_type = int;
 
     explicit disjoint_sets(index_type n)
         : P(n), m_num_components(n), num_elements_in_component(n, 1)

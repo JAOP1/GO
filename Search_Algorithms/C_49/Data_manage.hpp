@@ -1,7 +1,7 @@
 #pragma once
-#include "Include/BoardGame.hpp"
-#include "Include/Extra/Graph.hpp"
-#include "Include/Extra/json_manage.hpp"
+#include "../../Include/BoardGame.hpp"
+#include "../../Include/Extra/Graph.hpp"
+#include "../../Include/Extra/json_manage.hpp"
 #include "game_structure.hpp"
 #include "Net_Class.hpp"
 #include "encoders.hpp"
@@ -14,12 +14,10 @@
 using element = torch::data::Example<torch::Tensor, torch::Tensor>;
 
 // Estructura para recolectar los datos.
-struct GameDateSet
-    : torch::data::datasets::
-        BatchDataset<GameDateSet, std::vector<element>, std::vector<size_t>>
+struct GameDataSet: torch::data::datasets::BatchDataset<GameDataSet, std::vector<element>, std::vector<size_t>>
 {
 
-    explicit GameDateSet(std::vector<element>& sample) : dataset(sample) {}
+    explicit GameDataSet(std::vector<element>& sample) : dataset(sample) {}
 
     std::vector<element> get_batch(std::vector<size_t> indices) override
     {
@@ -39,16 +37,17 @@ struct GameDateSet
     std::vector<element> dataset;
 };
 
-template<class Encoder>
+template<class search_type, class Encoder>
 game get_episode(Network_evaluator& Model, std::string slection_mode, BoardGame BG, Encoder& encoder_)
 {
     game episode;
     std::vector<char> state;
     std::vector<double> prob;
     std::vector<int> valid_actions;
+    int action;
 
-    MCTS_Net Black(BG , Model , encoder_ , 100, 'B'); 
-    MCTS_Net White(BG, Model, encoder_ , 100 , 'W'); 
+    search_type Black(BG , Model , encoder_ , 60, 'B'); 
+    search_type White(BG, Model, encoder_ , 60 , 'W'); 
 
     for (int move = 0; move < 70 && !BG.is_complete(); ++move)
     {
@@ -56,12 +55,12 @@ game get_episode(Network_evaluator& Model, std::string slection_mode, BoardGame 
 
         if (move%2)
         {
-            auto action = White.search(BG);
+            action = White.search(BG);
             prob = White.get_probabilities_current_state();
         }
         else
         {
-            auto action = Black.search(BG);
+            action = Black.search(BG);
             prob = Black.get_probabilities_current_state();
         }
         Black.fit_precompute_tree(action);
@@ -78,11 +77,11 @@ game get_episode(Network_evaluator& Model, std::string slection_mode, BoardGame 
     return episode;
 }
 
-template<class Encoder>
+template<class search_type,class Encoder>
 void generate_games(std::string path,
                     int games,
                     Network_evaluator& Model,
-                    std::string slection_mode,
+                    std::string selection_mode,
                     BoardGame& BG,
                     Encoder& encoder_
                     )
@@ -90,7 +89,7 @@ void generate_games(std::string path,
     std::vector<game> episodes;
     for (int i = 0; i < games; ++i)
     {
-        episodes.push_back(get_episode<Encoder>(Model, selection_mode, BG, encoder_));
+        episodes.push_back(get_episode<search_type,Encoder>(Model, selection_mode, BG, encoder_));
     }
 
     save_games_recordings_to_json(path, episodes);

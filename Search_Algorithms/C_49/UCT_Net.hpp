@@ -2,7 +2,6 @@
 #include "../../Include/BoardGame.hpp"
 #include "../../Include/Extra/External/tqdm.h"
 #include "../../Include/Extra/hash_utilities.hpp"
-#include "Net_Class.hpp"
 #include <torch/torch.h>
 #include <algorithm>
 #include <cmath>
@@ -15,7 +14,7 @@
 #include <cstdlib> 
 
 using Action = int;
-int get_random_action(torch::Tensor prob_ , int num_actions)
+int get_random_action_MCTS(torch::Tensor prob_ , int num_actions)
 {
   double value = (double) rand() / RAND_MAX;
 
@@ -411,7 +410,7 @@ double MCTS_Net::get_reward_from_one_simulation(int num_steps, BoardGame state)
 
         auto net_output = Net_.forward(encoded_state); 
 
-        Action cell = get_random_action(net_output , state.Board.num_vertices() + 1);
+        Action cell = get_random_action_MCTS(net_output , state.Board.num_vertices() + 1);
         state.make_action(cell);
 
         //------------------------ nuevo --------------------------------

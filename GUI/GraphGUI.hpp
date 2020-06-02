@@ -3,13 +3,27 @@
 #include "../Include/BoardGame.hpp"
 #include "../Include/Extra/Utilities.hpp"
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/System/String.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
 //#include "Extra.hpp"
 
 #define INVALID_VERTEX -1
-using vertex = std::int64_t;
+using vertex = int;
+
+
+double distance(const sf::Vector2i& A, const sf::Vector2i& B)
+{
+    double X = std::pow(A.x - B.x, 2);
+    double Y = std::pow(A.y - B.y, 2);
+
+    return std::sqrt(X + Y);
+}
+
 
 struct Graph_inf
 {

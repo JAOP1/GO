@@ -4,6 +4,9 @@
 #include "../Include/Extra/json_manage.hpp"
 #include "GraphGUI.hpp"
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/System/String.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -38,12 +41,12 @@ public:
         {
 
             Draw(is_finished);
-            
-            if(is_finished)
+
+            if (is_finished)
                 is_playing = true;
-            else if (!is_building )
+            else if (!is_building)
                 is_finished = Go.BoardGraph.is_complete();
-        
+
             ClientListener(is_playing);
         }
     }
@@ -69,12 +72,12 @@ public:
                         action = AI_Algorithm.search(Go.BoardGraph);
 
                     Go.make_action(action);
-                    
+
                     auto prob = AI_Algorithm.get_probabilities_current_state();
-                    for(auto i : prob)
-                        std::cout<<i<<" ";
+                    for (auto i : prob)
+                        std::cout << i << " ";
                     std::cout.put('\n');
-                    
+
                     AI_Algorithm.fit_precompute_tree(action);
                     is_first_player = !is_first_player;
                 }
@@ -84,12 +87,11 @@ public:
                     // the last iteration of the loop
 
                     ClientListener(true);
-                    
 
                     if (v_ != -2 && is_first_player) // Eso significa que no ha
                                                      // hecho acción valida.
                     {
-                        std::cout<<"Entro aqui"<<std::endl;
+                        std::cout << "Entro aqui" << std::endl;
                         AI_Algorithm.fit_precompute_tree(v_);
                     }
                 }

@@ -13,9 +13,9 @@
 #include <tuple>
 #include <vector>
 
-using size_type = std::int64_t;
-using index_type = std::int64_t;
-using vertex = std::int64_t;
+using size_type = int;
+using index_type = int;
+using vertex = int;
 using player = char;
 
 struct board_node

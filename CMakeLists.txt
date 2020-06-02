@@ -1,24 +1,28 @@
-cmake_minimum_required(VERSION 3.2)
-
+cmake_minimum_required(VERSION 3.1)
 project(GUI_GO)
 enable_language(C CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-
 
 set(CMAKE_PREFIX_PATH "/home/dell/libtorch/") #Change to real path of libtorch.
 
-message(STATUS "${CMAKE_PREFIX_PATH}")
+#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+find_package(SFML 2 REQUIRED network audio graphics window system)
+#find_package(Torch QUIET PATHS "${CMAKE_SOURCE_DIR}/libtorch")
 find_package(Torch REQUIRED)
 
+#if(NOT Torch_FOUND)
+#    unset(Torch_FOUND)
+#    include(download_libtorch)
+#endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-
-option(BUILD_VISUALIZER "Build visualizer (requires SFML)" OFF)
-option(BUILD_TESTS "Build unit tests (requires gtest)" ON)
-option(BUILD_TRAINER "Build trainer. (requires libtorch)" OFF)
+option(BUILD_VISUALIZER "Build visualizer (requires SFML and libtorch)" OFF)
+option(BUILD_TESTS "Build unit tests (requires gtest)" OFF)
+option(BUILD_TRAINER "Build trainer. (requires libtorch)" ON)
 
 # --------------------------------------------------------------------------------
 #                         Locate files (no change needed).
@@ -38,21 +42,22 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/
     ${PROJECT_SOURCE_DIR}/tests/
     ${PROJECT_SOURCE_DIR}/Graphs/)
-
-file(GLOB SOURCES "src/*.cpp")
-add_library(graph ${SOURCES})
-
+    
+    file(GLOB SOURCES "src/*.cpp")
+    add_library(graph ${SOURCES})
+    
 # --------------------------------------------------------------------------------
 #                            Build! (Change as needed)
 # --------------------------------------------------------------------------------
-
-
+    
+    
 if (${BUILD_VISUALIZER})
+
     message(STATUS "Building visualizer.")
     
     add_definitions(-DUSE_SFML)
     
-
+    
     configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/font.ttf ${CMAKE_CURRENT_BINARY_DIR}/font.ttf COPYONLY)
     configure_file(${PROJECT_SOURCE_DIR}/GUI/Files/fondo.jpg ${CMAKE_CURRENT_BINARY_DIR}/fondo.jpg COPYONLY)
     
@@ -61,9 +66,9 @@ if (${BUILD_VISUALIZER})
     
     target_link_libraries(visualizer graph   sfml-graphics sfml-window sfml-system)
     target_link_libraries(visualizer ${TORCH_LIBRARIES})
-
-   
-
+    
+    
+    
 endif()
 
 # --------------------------------------------------------------------------------
@@ -77,34 +82,37 @@ if(${BUILD_TESTS})
     
     find_package(GTest)
     find_package(Threads REQUIRED)
+
     file(GLOB TESTFILES "tests/*.cpp")
     set(TEST_MAIN unit_tests.x)
-	if (${GTEST_FOUND})
+    
+    if (${GTEST_FOUND})
         message("Using system's google test")
         include_directories(${GTEST_INCLUDE_DIRS})
         add_executable(${TEST_MAIN} ${TESTFILES} )
-	endif()
+    endif()
     
     target_link_libraries(${TEST_MAIN} ${GTEST_LIBRARIES} graph Threads::Threads ${TORCH_LIBRARIES})
     add_custom_target(gtest COMMAND "${PROJECT_BINARY_DIR}/${TEST_MAIN}" DEPENDS ${TEST_MAIN})
-
+    
     # Add a standard make target 'test' that runs the tests under CTest (only as an alt. to gtest).
     include(CTest)
     enable_testing()
     add_test(unit_tests ${PROJECT_BINARY_DIR}/${TEST_MAIN})
 endif()
-
-
+    
+    
 # --------------------------------------------------------------------------------
 #                              Trainer build.
 # --------------------------------------------------------------------------------
-
+    
 if(${BUILD_TRAINER})
     message(STATUS "Building Trainer.")
-
-    add_executable(trainer traning_main.cpp)
+    
+    
+    add_executable(trainer training_main.cpp)
     add_dependencies(trainer graph)
 
-    target_link_libraries(trainer graph  ${TORCH_LIBRARIES})
+    target_link_libraries(trainer graph ${TORCH_LIBRARIES})
 endif()
 

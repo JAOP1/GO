@@ -12,7 +12,7 @@
 #include <vector>
 
 using Action = int;
-using vertex = std::int64_t;
+using vertex = int;
 
 
 //----------------------------------------------------------------------------------

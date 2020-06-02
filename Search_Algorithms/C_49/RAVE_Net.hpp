@@ -3,6 +3,7 @@
 #include "../Include/BoardGame.hpp"
 #include "../Include/Extra/External/tqdm.h"
 #include "../Include/Extra/hash_utilities.hpp"
+#include <torch/torch.h>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -15,6 +16,22 @@
 using Action = int;
 using vertex = std::int64_t;
 
+int get_random_action(torch::Tensor prob_ , int num_actions)
+{
+  double value = (double) rand() / RAND_MAX;
+
+  double accumulative_result = 0.0;
+  for(int  i = 0; i < num_actions-1;++i)
+  {
+    accumulative_result += prob_[i].item<double>();
+    if(value <= accumulative_result)
+      return i;
+  }
+  //Pass action.
+  return -1;
+}
+//----------------------------------------------------------------------------------
+// Data structure.
 //----------------------------------------------------------------------------------
 struct RAVE_Map
 {
@@ -142,20 +159,28 @@ private:
 
 int RAVE_Node::objectCount = 0;
 
+//----------------------------------------------------------------------------------
+// RAVE declaration.
+//----------------------------------------------------------------------------------
+
+
+template< class Net_architect , class encoder>
 class MC_RAVE
 {
 public:
     MC_RAVE(const BoardGame& current_board,
-            const Net_class& Net,
-            int num_simulation,
+            Net_architect& Net,
+            encoder& encode,
             int num_times,
             char player,
+            int num_simulation = 30,
             int depth = 10)
         : simulation_num(num_simulation)
         , times_to_repeat(num_times)
         , player_(player)
         , depth_(depth)
         , Net_(Net)
+        , encoder_(encode)
     {
         root = std::make_shared<RAVE_Node>(current_board,
                                            -1,
@@ -190,6 +215,17 @@ public:
             is_unknown = true;
     }
 
+    void reset_tree()
+    {
+        is_unknown = true;
+    }
+
+    void set_player(char player)
+    {
+        player_ = player;
+    }
+
+
     // This give you probabilities vector.
     std::vector<double> get_probabilities_current_state() const;
 
@@ -198,11 +234,13 @@ private:
     int simulation_num;
     int times_to_repeat;
     RAVE_Map simulation_stats;
-    Network_ char player_;
+    char player_;
     int depth_;
     int Actions_space = -1;
 
     // Local information.
+    Net_architect Net_;
+    encoder encoder_;
     bool is_unknown = true;
     std::shared_ptr<RAVE_Node> root;
 
@@ -223,6 +261,12 @@ private:
 
     std::vector<Action> simulation_recording(int num_steps, BoardGame state);
 };
+
+
+//----------------------------------------------------------------------------------
+// Public RAVE functions.
+//----------------------------------------------------------------------------------
+
 
 Action MC_RAVE::search(const BoardGame& current_board)
 {
@@ -261,6 +305,38 @@ Action MC_RAVE::search(const BoardGame& current_board)
 
     return node->action();
 }
+
+std::vector<double> MC_RAVE::get_probabilities_current_state() const
+{
+    std::vector<double> probabilities(Actions_space + 1, 0);
+    int id, total;
+    double total_visits_counter = 0;
+
+    for (std::shared_ptr<RAVE_Node>& child : root->children())
+    {
+        id = child->action();
+        if (id == -1)
+            id = probabilities.size() - 1;
+
+        total = child->num_visits();
+        probabilities[id] = total;
+        total_visits_counter += total;
+    }
+
+    // Implica que si tiene algún hijo.
+    if (total_visits_counter)
+    {
+        for (int i = 0; i < probabilities.size(); ++i)
+            probabilities[i] /= total_visits_counter;
+    }
+
+    return probabilities;
+}
+
+//----------------------------------------------------------------------------------
+// Private RAVE functions.
+//----------------------------------------------------------------------------------
+
 
 double MC_RAVE::Simulations_by_RAVE(std::shared_ptr<RAVE_Node>& node)
 {
@@ -373,7 +449,15 @@ std::vector<Action> MC_RAVE::simulation_recording(int num_steps, BoardGame state
     std::vector<Action> made_actions;
     for (int i = 0; i < 60 && !state.is_complete(); ++i)
     {
-        Action cell = state.random_action();
+        int player = (state.player_status() == 'B'? 0:1);
+        auto encoded_state = encoder_.Encode_data(state.show_current_state() ,
+                                                  state.get_available_sample_cells(1.0),
+                                                  player);
+
+        auto net_output = Net_.forward(encoded_state); 
+
+        Action cell = get_random_action(net_output , state.Board.num_vertices() + 1);
+
         made_actions.push_back(cell);
 
         state.make_action(cell);
@@ -383,29 +467,3 @@ std::vector<Action> MC_RAVE::simulation_recording(int num_steps, BoardGame state
     return made_actions;
 }
 
-std::vector<double> MC_RAVE::get_probabilities_current_state() const
-{
-    std::vector<double> probabilities(Actions_space + 1, 0);
-    int id, total;
-    double total_visits_counter = 0;
-
-    for (std::shared_ptr<RAVE_Node>& child : root->children())
-    {
-        id = child->action();
-        if (id == -1)
-            id = probabilities.size() - 1;
-
-        total = child->num_visits();
-        probabilities[id] = total;
-        total_visits_counter += total;
-    }
-
-    // Implica que si tiene algún hijo.
-    if (total_visits_counter)
-    {
-        for (int i = 0; i < probabilities.size(); ++i)
-            probabilities[i] /= total_visits_counter;
-    }
-
-    return probabilities;
-}
