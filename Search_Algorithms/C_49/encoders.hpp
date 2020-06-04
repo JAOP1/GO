@@ -177,7 +177,9 @@ public:
     // This two parameters give you the current state.
     torch::Tensor Encode_data(const std::vector<char>& state,
                               const std::vector<vertex>& valid_actions,
-                              int player)
+                              int player,
+                              bool is_one_sample = false
+                              )
     {
         set_player_planes();
         Update_pieces(state);
@@ -211,6 +213,11 @@ public:
         data[ind_black_] = plane_black;
         data[2] = plane_valid_actions;
 
+        if(is_one_sample)
+        {
+            //sample num , channels , sequence length.
+            data = data.view({1,3,G.num_vertices() * G.num_vertices()});
+        }
         return data;
     }
 

@@ -86,6 +86,7 @@ void train_model(std::string ModelPath,
 
     Model.to(device);
     Model_tmp.to(device);
+    Model_tmp.eval();
 
     Encoder Encoder_(G.Board);
     torch::optim::SGD optimizer(Model.parameters(), torch::optim::SGDOptions(0.01).momentum(0.5));
@@ -94,12 +95,14 @@ void train_model(std::string ModelPath,
     int valor_ini = 2;
     while (valor_ini--)
     {
-
+        std::cout<<"Generando juegos."<<std::endl;
         generate_games<search_type,Encoder>(/*Path_to_save = */ DataPath,
                        /*total_records = */ games,
                        /*Model = */ Model_tmp,
                        /*BoardGame = */ G,
                        /*Encoder*/ Encoder_);
+
+        std::cout<<"Creando conjunto de datos."<<std::endl;
         auto data = get_data_games<Encoder>(/*Path_to_load=*/DataPath,
                                    /*Encoder= */ Encoder_); // This return a
                                                             // torch example vector.
@@ -112,18 +115,22 @@ void train_model(std::string ModelPath,
           
         auto DataLoader =
           torch::data::make_data_loader(Dataset, sampler, Batch_size);
-
+          
+        std::cout<<"Entrenar red neuronal."<<std::endl;
         for (size_t epoch_ = 1; epoch_ <= Num_epoch; ++epoch_)
             train_one_epoch(Model, *DataLoader, device, optimizer);
 
         
-        search_type current(G , Model , Encoder_, 80 , 'B');
-        search_type last( G , Model_tmp , Encoder_ , 80 , 'W');
-        
+        search_type current(G , Model , Encoder_, 60 , 'B');
+        search_type last( G , Model_tmp , Encoder_ , 60 , 'W');
+        std::cout<<"Comparar progreso."<<std::endl;
         if (evaluate_accuracy<search_type , search_type>(current , last, G, 30) >= .6)
         {
+            std::cout<<"Obtuvo exito, ha mejorado el modelo"<<std::endl;
             save_net<Network_evaluator>(ModelPath , Model);
             load_net<Network_evaluator>(ModelPath , Model_tmp);
+            Model_tmp.to(device);
+            Model_tmp.eval();
         }
 
     }

@@ -42,15 +42,14 @@ using element = torch::data::Example<torch::Tensor, torch::Tensor>;
 int main(int argc, char** argv)
 {
 
-    // Esto es para proobar Ggg.
     CLI::App app{"---- Go Trainer ----"};
 
     std::string GraphFile = ""; // Train algorithm for this graph.
     std::string ModelName; // Load neural model.
     std::string selection_mode = "UCT";
-    int batch = 80; // Parameters for trainer.
-    int epoch = 10;
-    int Num_games = 100; // Number of generated games.
+    int batch = 2; // Parameters for trainer.
+    int epoch = 1;
+    int Num_games = 3; // Number of generated games.
 
     app.add_option("-i", GraphFile, "Load Graph to train.(needed)");
     app.add_option("-b", batch, "Batch size.");
@@ -79,17 +78,20 @@ int main(int argc, char** argv)
         std::vector<std::string> v;
         split(GraphFile, '.', v);
 
-        std::string directory_path = std::filesystem::current_path();
-        std::string ModelPath = directory_path +
-          "../Search_Algorithms/C_49/Models/Model_" + v[0] + ".pt";
-
-        std::string DataPath = directory_path +
-          "../Search_Algorithms/C_49/Data/Data_" + v[0] + ".json";
-
         std::tuple<Graph, std::vector<graph_position>> graph_ =
           get_json_to_graph_GUI<graph_position>(GraphFile);
         Graph G = std::get<0>(graph_);
         BoardGame BG(G);
+
+        std::string directory_path = std::filesystem::current_path();
+        std::string ModelPath = directory_path +
+          "/../Search_Algorithms/C_49/Models/Model_" + v[0] + ".pt";
+        std::cout<<"Model saved in: "<<ModelPath<<std::endl;
+
+        std::string DataPath = directory_path +
+          "/../Search_Algorithms/C_49/Data/Data_" + v[0] + ".json";
+
+        std::cout<<"Data saved in: "<<DataPath<<std::endl;
 
         if(selection_mode == "UCT")
           train_model<MCTS_Net<Network_evaluator,SimpleEncoder1d >,SimpleEncoder1d>(ModelPath, DataPath, BG, Num_games, batch, epoch, device);
@@ -98,7 +100,8 @@ int main(int argc, char** argv)
     }
     catch (const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cout <<"Invalid graph file."<< std::endl;
+        std::cerr<<e.what();
     }
 
 
@@ -130,13 +133,13 @@ int main(int argc, char** argv)
   auto vector_torch_planes_1d = encoder1d.Encode_episode<game>(D);
 
   
-  std::cout<<"Resultado con encoder 2d: "<<std::endl;
-  std::cout<<vector_torch_planes_2d[1].data<<std::endl;
-  std::cout<<vector_torch_planes_2d[1].target<<std::endl;
+  //std::cout<<"Resultado con encoder 2d: "<<std::endl;
+  //std::cout<<vector_torch_planes_2d[1].data<<std::endl;
+  //std::cout<<vector_torch_planes_2d[1].target<<std::endl;
   
-  std::cout<<"Resultado con encoder 1d:"<<std::endl;
-  std::cout<<vector_torch_planes_1d[1].data<<std::endl;
-  std::cout<<vector_torch_planes_1d[1].target<<std::endl;
+  //std::cout<<"Resultado con encoder 1d:"<<std::endl;
+  //std::cout<<vector_torch_planes_1d[1].data<<std::endl;
+  //std::cout<<vector_torch_planes_1d[1].target<<std::endl;
 
   
   torch::data::samplers::RandomSampler sampler(vector_torch_planes_1d.size());
@@ -144,14 +147,27 @@ int main(int argc, char** argv)
   auto data_loader = torch::data::make_data_loader(F, sampler, 2);
 
   std::cout<<"He llegado a la parte de la red neuronal."<<std::endl;
-  Network_evaluator NN(4);
+  Network_evaluator NN;
   NN.to(torch::kCUDA);
   NN.eval();
 
+  MCTS_Net agente(BG, NN,encoder1d ,20, 'B');
+  std::cout<<agente.search(BG)<<std::endl;
+  //torch::Tensor input = encoder1d.Encode_data(D.states[0], D.valid_actions[0], 0);
+  
+  
+  //input = input.view({1,3,625});
+  //auto input_cud = input.to(torch::kCUDA);
+ 
+  //auto resultado = NN.forward(input_cud);
+  //std::cout<<resultado[0]<<std::endl;
+  //std::cout<<resultado[0][0].item<double>()<<std::endl;
+ */
+/*
   for (const auto& batch : *data_loader) {
     auto data = batch.data.to(torch::kCUDA), targets = batch.target.to(torch::kCUDA);
     
-    //std::cout<<data.sizes()<<std::endl;
+    std::cout<<data.sizes()<<std::endl;
     //std::cout<<targets.sizes()<<std::endl;
     auto output = NN.forward(data);
     std::cout<<output.sizes()<<std::endl;

@@ -6,9 +6,9 @@ using vertex = int;
 struct game
 {
     explicit game() {}
-    explicit game(std::vector<std::vector<double>>& prob,
-                  std::vector<std::vector<vertex>>& valid_actions_,
-                  std::vector<std::vector<char>>& states_,
+    explicit game(std::vector<std::vector<double>> prob,
+                  std::vector<std::vector<vertex>> valid_actions_,
+                  std::vector<std::vector<char>> states_,
                   int black_reward_)
 
         : states(states_)

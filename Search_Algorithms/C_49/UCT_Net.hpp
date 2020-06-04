@@ -21,7 +21,7 @@ int get_random_action_MCTS(torch::Tensor prob_ , int num_actions)
   double accumulative_result = 0.0;
   for(int  i = 0; i < num_actions-1;++i)
   {
-    accumulative_result += prob_[i].item<double>();
+    accumulative_result += prob_[0][i].item<double>();
     if(value <= accumulative_result)
       return i;
   }
@@ -112,19 +112,21 @@ private:
 //----------------------------------------------------------------------------------
 // MCTS declaration.
 //----------------------------------------------------------------------------------
+//NOTA: Ahorita no he modificado el parametro. Así que todo lo manda a CUDA...
+
 
 template< class Net_architect , class encoder>
 class MCTS_Net
 {
 public:
     explicit MCTS_Net(const BoardGame& current_board,
-                  Net_architect& Net,
+                  Net_architect Net,
                   encoder& encode,
                   int num_times,
                   char player,
                   int num_simulation = 5,
-                  bool do_memoization = true,
-                  int depth = 10)
+                  bool do_memoization = false,
+                  int depth = 3)
         :
 
           simulation_num(num_simulation)
@@ -136,6 +138,7 @@ public:
         , encoder_(encode)
     {
         root = std::make_shared<Node>(current_board, -1, 0, nullptr);
+        Net_.to(torch::kCUDA);
         Net_.eval();
     }
 
@@ -408,14 +411,17 @@ std::shared_ptr<Node> MCTS_Net<  Net_architect ,  encoder>::child_highest_confid
 template< class Net_architect , class encoder>
 double MCTS_Net<  Net_architect ,  encoder>::get_reward_from_one_simulation(int num_steps, BoardGame state)
 {
-    for (int i = 0; i < 60 && !state.is_complete(); ++i)
+    for (int i = 0; i < 30 && !state.is_complete(); ++i)
     {
         int player = (state.player_status() == 'B'? 0:1);
+
         auto encoded_state = encoder_.Encode_data(state.show_current_state() ,
                                                   state.get_available_sample_cells(1.0),
-                                                  player);
-
-        auto net_output = Net_.forward(encoded_state); 
+                                                  player,
+                                                  true);
+        
+        auto input = encoded_state.to(torch::kCUDA);
+        auto net_output = Net_.forward(input); 
 
         Action cell = get_random_action_MCTS(net_output , state.Board.num_vertices() + 1);
         state.make_action(cell);

@@ -18,7 +18,7 @@ struct Network_evaluator : torch::nn::Module
         /*Output con2 = {num_samples, 10, 10}*/
         fc1(3090 , 1540),
         fc2(1540,360),
-        fc3(360,25)
+        fc3(360,26)
     {
         // register_module() is needed if we want to use the parameters() method
         // later on
@@ -32,13 +32,13 @@ struct Network_evaluator : torch::nn::Module
     torch::Tensor forward(torch::Tensor x)
     {
         x = torch::relu(torch::max_pool1d(conv1->forward(x), 2));
-        std::cout<<x.sizes()<<std::endl;
+        //std::cout<<x.sizes()<<std::endl;
         x = torch::relu(conv2->forward(x));
-        std::cout<<x.sizes()<<std::endl;
+        //std::cout<<x.sizes()<<std::endl;
         
         int num_samples = x.sizes()[0];
         x = x.view({num_samples,3090});
-        std::cout<<x.sizes()<<std::endl;
+        //std::cout<<x.sizes()<<std::endl;
         x = torch::relu(fc1->forward(x));
         x = torch::dropout(x, /*p=*/0.5, /*training=*/is_training());
         x = torch::relu(fc2->forward(x));
@@ -49,6 +49,7 @@ struct Network_evaluator : torch::nn::Module
 
     torch::nn::Conv1d conv1,conv2;
     torch::nn::Linear fc1 ,fc2,fc3;
+    
 
 };
 //TORCH_MODULE(Network_evaluetor);
