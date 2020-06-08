@@ -94,7 +94,7 @@ private:
         return x;
     }
 
-    mutable std::vector<size_type> num_elements_in_component;
     mutable std::vector<index_type> P;
     size_type m_num_components;
+    mutable std::vector<size_type> num_elements_in_component;
 };

@@ -131,14 +131,14 @@ private:
     void find_alive_groups(std::vector<char>& pieces_color_) const;
 
     // Variables of game
+    std::vector<board_node> pieces; // Piezas en el tablero.
+    disjoint_sets groups;
+    std::vector<std::uint64_t> last_states;
+    double points_by_white = 0.0;
+    double points_by_black = 0.0;
+    Zebrist_Hash hashing;
     std::vector<player> players = {'B', 'W'};
     int current_player = 0;
     std::vector<bool> resigned_player = {false, false}; // Si pasó un jugador.
-    std::vector<board_node> pieces; // Piezas en el tablero.
-    disjoint_sets groups;
-    double points_by_white = 0.0;
-    double points_by_black = 0.0;
 
-    Zebrist_Hash hashing;
-    std::vector<std::uint64_t> last_states;
 };

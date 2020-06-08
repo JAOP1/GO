@@ -58,6 +58,6 @@ public:
     int size() const { return hash_array.size(); }
 
 private:
-    std::mt19937_64 gen;
     std::vector<std::uint64_t> hash_array;
+    std::mt19937_64 gen;
 };
