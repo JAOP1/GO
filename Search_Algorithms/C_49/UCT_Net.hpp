@@ -1,8 +1,4 @@
 #pragma once
-#include "../../Include/BoardGame.hpp"
-#include "../../Include/Extra/External/tqdm.h"
-#include "../../Include/Extra/hash_utilities.hpp"
-#include <torch/torch.h>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -12,22 +8,14 @@
 #include <utility>
 #include <vector>
 #include <cstdlib> 
+#include <torch/torch.h>
+#include "torch_utils.hpp"
+#include "../../Include/BoardGame.hpp"
+#include "../../Include/Extra/External/tqdm.h"
+#include "../../Include/Extra/hash_utilities.hpp"
 
 using Action = int;
-int get_random_action_MCTS(torch::Tensor prob_ , int num_actions)
-{
-  double value = (double) rand() / RAND_MAX;
 
-  double accumulative_result = 0.0;
-  for(int  i = 0; i < num_actions-1;++i)
-  {
-    accumulative_result += prob_[0][i].item<double>();
-    if(value <= accumulative_result)
-      return i;
-  }
-  //Pass action.
-  return -1;
-}
 
 //----------------------------------------------------------------------------------
 // Data structure.
@@ -124,9 +112,9 @@ public:
                   encoder& encode,
                   int num_times,
                   char player,
-                  int num_simulation = 5,
+                  int num_simulation = 1, //No cambiar!!
                   bool do_memoization = false,
-                  int depth = 3)
+                  int depth = 10)
         :
 
           simulation_num(num_simulation)
@@ -138,7 +126,8 @@ public:
         , encoder_(encode)
     {
         root = std::make_shared<Node>(current_board, -1, 0, nullptr);
-        Net_.to(torch::kCUDA);
+        device = get_device();
+        Net_.to(device);
         Net_.eval();
     }
 
@@ -195,6 +184,7 @@ private:
     std::shared_ptr<Node> root;
     Net_architect Net_;
     encoder encoder_;
+    torch::Device device;
 
     std::shared_ptr<Node> child_highest_confidence(std::shared_ptr<Node>& node,
                                                    int max_min_val);
@@ -209,7 +199,7 @@ private:
 
     std::shared_ptr<Node> Select(std::shared_ptr<Node> node);
 
-    double get_reward_from_one_simulation(int num_steps, BoardGame state);
+    double get_reward_from_one_simulation(const BoardGame& state);
 };
 
 //----------------------------------------------------------------------------------
@@ -408,33 +398,24 @@ std::shared_ptr<Node> MCTS_Net<  Net_architect ,  encoder>::child_highest_confid
     return child_highest_confidence_;
 }
 
+//Falta por hacer unos cambios!!!
 template< class Net_architect , class encoder>
-double MCTS_Net<  Net_architect ,  encoder>::get_reward_from_one_simulation(int num_steps, BoardGame state)
+double MCTS_Net<  Net_architect ,  encoder>::get_reward_from_one_simulation(const BoardGame& state)
 {
-    for (int i = 0; i < 30 && !state.is_complete(); ++i)
-    {
-        int player = (state.player_status() == 'B'? 0:1);
-
-        auto encoded_state = encoder_.Encode_data(state.show_current_state() ,
+    
+    int player = (state.player_status() == 'B'? 0:1);
+    int size = state.Board.num_vertices() +1;
+    auto encoded_state = encoder_.Encode_data(state.show_current_state() ,
                                                   state.get_available_sample_cells(1.0),
                                                   player,
                                                   true);
         
-        auto input = encoded_state.to(torch::kCUDA);
-        auto net_output = Net_.forward(input); 
+    auto input = encoded_state.to(device);
+    torch::Tensor net_output = Net_.forward(input); 
+    double result = net_output[0][size].item<double>(); // This say you who wins.
 
-        Action cell = get_random_action_MCTS(net_output , state.Board.num_vertices() + 1);
-        state.make_action(cell);
-
-        //------------------------ nuevo --------------------------------
-        auto vstate = state.show_current_state();
-        if (do_memoization_)
-        {
-            auto iter = global_information.find(vstate);
-            if (iter != global_information.end())
-                return iter->second;
-        }
-        //--------------------------------------------------------------
-    }
-    return state.reward(player_);
+    if(player)
+        result *= -1;
+        
+    return result;
 }

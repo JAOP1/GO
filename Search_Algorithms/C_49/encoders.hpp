@@ -119,8 +119,8 @@ private:
 
     void Update_pieces(const std::vector<char>& state)
     {
-
-        for (int v = 0; v < state.size(); ++v)
+        int leght = state.size();
+        for (int v = 0; v < leght; ++v)
         {
             if (state[v] == 'B')
                 update_action_to(AdjMatrix_Black, v, 1);
@@ -248,8 +248,8 @@ private:
 
     void Update_pieces(const std::vector<char>& state)
     {
-
-        for (int v = 0; v < state.size(); ++v)
+        int leght = state.size();
+        for (int v = 0; v < leght; ++v)
         {
             if (state[v] == 'B')
                 update_action_to(AdjMatrix_Black, v, 1);

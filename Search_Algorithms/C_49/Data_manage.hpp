@@ -37,6 +37,7 @@ struct GameDataSet: torch::data::datasets::BatchDataset<GameDataSet, std::vector
     std::vector<element> dataset;
 };
 
+
 template<class search_type, class Encoder>
 game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
 {
