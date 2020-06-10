@@ -7,10 +7,11 @@
 class disjoint_sets
 {
 public:
-    using size_type = std::int64_t;
-    using index_type = std::int64_t;
+    using size_type = int;
+    using index_type = int;
 
-    explicit disjoint_sets(index_type n) : P(n), m_num_components(n)
+    explicit disjoint_sets(index_type n)
+        : P(n), m_num_components(n), num_elements_in_component(n, 1)
     {
         std::iota(P.begin(), P.end(), 0L);
     }
@@ -32,26 +33,31 @@ public:
     void reset(size_type n_vertices)
     {
         P.clear();
+        num_elements_in_component.clear();
         P.resize(n_vertices);
+        num_elements_in_component.resize(n_vertices, 1);
         std::iota(P.begin(), P.end(), 0L);
         m_num_components = n_vertices;
     }
 
-    void reset()
+    void reset_parent(int x)
     {
-        std::iota(P.begin(), P.end(), 0);
-        m_num_components = size();
+        P[x] = x;
+        num_elements_in_component[x] = 1;
     }
-
-    void reset_parent(int x) { P[x] = x;}
 
     void merge(index_type a, index_type b)
     {
         index_type ra = find_root(a);
+        index_type root_b = find_root(b);
+
         index_type rb = set_P(b, ra);
 
         if (ra != rb)
+        {
             --m_num_components;
+            num_elements_in_component[ra] += num_elements_in_component[root_b];
+        }
     }
 
     bool are_in_same_connected_component(index_type a, index_type b) const
@@ -59,12 +65,17 @@ public:
         return find_root(a) == find_root(b);
     }
 
-
     size_type num_components() const { return m_num_components; }
 
-    index_type size() const { return P.size(); }
+    size_type get_num_elements_in_component(index_type x) const
+    {
+        index_type root_component = find_root(x);
+        return num_elements_in_component[root_component];
+    }
 
-  //  std::vector<index_type> parents() { return P; }
+    index_type size() const { return num_elements_in_component.size(); }
+
+    //  std::vector<index_type> parents() { return P; }
     std::vector<index_type>& parents() const { return P; }
 
     void parent(index_type node) { P[node] = node; }
@@ -85,4 +96,5 @@ private:
 
     mutable std::vector<index_type> P;
     size_type m_num_components;
+    mutable std::vector<size_type> num_elements_in_component;
 };

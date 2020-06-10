@@ -1,5 +1,4 @@
 #pragma once
-
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -24,7 +23,7 @@ class Graph
 public:
     using size_type = std::int64_t;
 
-    using Vertex = std::int64_t;
+    using Vertex = int;
 
     enum WORKAROUND_UNTIL_CPP17
     {
@@ -246,3 +245,12 @@ private:
     std::vector<neighbor_list> m_graph{};
     bool m_neighbors_sorted{false};
 };
+
+namespace graphs
+{
+// Specific graph structures.
+
+Graph Grid(int n, int m);
+
+Graph Complete(int n);
+} // namespace graphs

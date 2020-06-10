@@ -1,6 +1,6 @@
 
 #pragma once
-#include "../BoardGame.hpp"
+#include "../../BoardGame.hpp"
 #include <limits>
 #include <string>
 #include <vector>
