@@ -7,16 +7,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 set(CMAKE_PREFIX_PATH "/home/dell/libtorch/") #Change to real path of libtorch.
 
+#Esto es para instalar la versión de libtorch en el proyecto.
 #list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
-find_package(SFML 2 REQUIRED network audio graphics window system)
-#find_package(Torch QUIET PATHS "${CMAKE_SOURCE_DIR}/libtorch")
-find_package(Torch REQUIRED)
-
+#find_package(Torch QUIET PATHS "${CMAKE_SOURCE_DIR}/libtorch") #Si lo encuentra...
 #if(NOT Torch_FOUND)
 #    unset(Torch_FOUND)
 #    include(download_libtorch)
 #endif()
+
+find_package(SFML 2 REQUIRED network audio graphics window system)
+find_package(Torch REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
@@ -65,7 +65,7 @@ if (${BUILD_VISUALIZER})
     add_dependencies(visualizer graph)
     
     target_link_libraries(visualizer graph   sfml-graphics sfml-window sfml-system)
-    target_link_libraries(visualizer ${TORCH_LIBRARIES})
+    #target_link_libraries(visualizer ${TORCH_LIBRARIES})
     
     
     

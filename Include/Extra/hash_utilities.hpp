@@ -13,8 +13,8 @@ struct polynomial_hash
         ll x = 31;
         ll p = 1000000007;
         ll result = 0;
-
-        for (ll v = 0; v < pieces.size(); ++v)
+        int leght = pieces.size();
+        for (ll v = 0; v < leght; ++v)
         {
             ll color = 0;
             if (pieces[v] == 'B')
