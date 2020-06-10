@@ -21,6 +21,8 @@ Encoder para redes convolucionales 2d.
 class SimpleEncoder2d
 {
 public:
+    SimpleEncoder2d(){}
+
     SimpleEncoder2d(const Graph& BG) : G(BG) {}
 
     // Solo funciona si le mandas todos los estados del juego. (Mira la
@@ -147,6 +149,8 @@ Encoder con planos en 1d.
 class SimpleEncoder1d
 {
 public:
+    SimpleEncoder1d(){}
+
     SimpleEncoder1d(const Graph& BG) : G(BG) {}
 
     // Solo funciona si le mandas todos los estados del juego. (Mira la

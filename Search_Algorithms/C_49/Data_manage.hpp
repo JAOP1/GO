@@ -47,8 +47,8 @@ game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
     std::vector<int> valid_actions;
     int action;
 
-    search_type Black(BG , Model , encoder_ , 20, 'B'); 
-    search_type White(BG, Model, encoder_ , 20 , 'W'); 
+    search_type Black(BG , Model , encoder_ , 100, 'B'); 
+    search_type White(BG, Model, encoder_ , 100 , 'W'); 
 
     for (int move = 0; move < 70 && !BG.is_complete(); ++move)
     {
