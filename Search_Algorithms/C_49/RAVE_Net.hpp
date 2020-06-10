@@ -23,7 +23,7 @@ int get_random_action(torch::Tensor prob_ , int num_actions)
   double accumulative_result = 0.0;
   for(int  i = 0; i < num_actions-1;++i)
   {
-    accumulative_result += prob_[i].item<double>();
+    accumulative_result += prob_[0][i].item<double>();
     if(value <= accumulative_result)
       return i;
   }

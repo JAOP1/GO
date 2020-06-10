@@ -1,10 +1,11 @@
 #pragma once
 #include <torch/torch.h>
 #include "UCT_Net.hpp"
-#include "RAVE_Net.hpp"
+//#include "RAVE_Net.hpp" //No he implementado nada de RAVE! D:
 #include "Net_Class.hpp"
 #include "encoders.hpp"
 #include "Data_manage.hpp"
+#include "torch_utils.hpp"
 #include <string>
 #include <filesystem>
 
@@ -12,38 +13,27 @@
 size_t dataset_size;
 
 
-template<class Net_archictec>
-void load_net(std::string Path , Net_archictec& Model)
-{
-    if (std::filesystem::exists(Path))
-    {
-        auto load_model_ptr = std::make_shared<Net_archictec>();
-        torch::load(load_model_ptr, Path);
-        Model = *load_model_ptr;
-    }
-}
-
-template<class Net_archictec>
-void save_net(std::string Path , Net_archictec& Model)
-{
-    auto save_model_ptr = std::make_shared<Net_archictec>(Model);
-    torch::save(save_model_ptr, Path);
-}
-
 // Aqui probar cosas. (Falta por hacer!)
 template <typename loss>
 loss calculate_loss(torch::Tensor& data, torch::Tensor target)
 {
-    auto output1 = torch::nll_loss(data, target);
-    return output1;
+    int policy_vector_leght = target.sizes()[1];
+    torch::Tensor policy_target = target.index({Slice() , Slice(None, policy_vector_leght-1)});
+    torch::Tensor value_target = target.index({Slice() , policy_vector_leght-1});
+    torch::Tensor policy_data = data.index({Slice() , Slice(None , policy_vector_leght -1)});
+    torch::Tensor value_data = data.index({Slice() , policy_vector_leght -1}); 
+
+    auto output1 = torch::nn::functional::binary_cross_entropy(policy_data,policy_target);
+    auto output2 = torch::nn::functional::mse_loss(value_data, value_target);
+    return output1 + output2;
 }
 
 template <typename DataLoader>
 void train_one_epoch(Network_evaluator& model,
                      DataLoader& loader,
-                     torch::Device device,
                      torch::optim::Optimizer& optimizer)
 {
+    auto device = nn_utils::get_device();
 
     model.train();
     size_t batch_idx = 0;
@@ -76,13 +66,15 @@ void train_model(std::string ModelPath,
                  int games,
                  int Batch_size,
                  int Num_epoch,
-                 torch::Device device)
+                 nn_utils::neural_options& options_
+                 )
 {
-    Network_evaluator Model;
-    Network_evaluator Model_tmp;
+    Network_evaluator Model(options_);
+    Network_evaluator Model_tmp(options_);
     
-    load_net<Network_evaluator>(ModelPath , Model);
-    load_net<Network_evaluator>(ModelPath, Model_tmp);
+    nn_utils::load_net<Network_evaluator>(ModelPath , Model,options_);
+    nn_utils::load_net<Network_evaluator>(ModelPath, Model_tmp,options_);
+    auto device = nn_utils::get_device();
 
     Model.to(device);
     Model_tmp.to(device);
@@ -116,19 +108,19 @@ void train_model(std::string ModelPath,
         auto DataLoader =
           torch::data::make_data_loader(Dataset, sampler, Batch_size);
           
-        std::cout<<"Entrenar red neuronal."<<std::endl;
-        for (size_t epoch_ = 1; epoch_ <= Num_epoch; ++epoch_)
-            train_one_epoch(Model, *DataLoader, device, optimizer);
+        std::cout<<"Training net by "<<Num_epoch<<" epochs."<<std::endl;
+        for (int epoch_ = 1; epoch_ <= Num_epoch; ++epoch_)
+            train_one_epoch(Model, *DataLoader, optimizer);
 
         
         search_type current(G , Model , Encoder_, 60 , 'B');
         search_type last( G , Model_tmp , Encoder_ , 60 , 'W');
-        std::cout<<"Comparar progreso."<<std::endl;
+        std::cout<<"Compare progress."<<std::endl;
         if (evaluate_accuracy<search_type , search_type>(current , last, G, 30) >= .6)
         {
             std::cout<<"Obtuvo exito, ha mejorado el modelo"<<std::endl;
-            save_net<Network_evaluator>(ModelPath , Model);
-            load_net<Network_evaluator>(ModelPath , Model_tmp);
+            nn_utils::save_net<Network_evaluator>(ModelPath , Model);
+            nn_utils::load_net<Network_evaluator>(ModelPath , Model_tmp,options_);
             Model_tmp.to(device);
             Model_tmp.eval();
         }
