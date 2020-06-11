@@ -25,4 +25,11 @@ The board are represented by graph.
   ./visualizer
   ```
 
+**Bugs**
+- [ ] Compiler doesn't identify SFML functions when include libtorch.
+ 
+
+**Notes:**
+* Currently working it.
+* forgive me, but some comments are in spanish.
 
