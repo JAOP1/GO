@@ -27,7 +27,7 @@ The board are represented by graph.
 
 **Bugs**
 - [ ] Compiler doesn't identify SFML functions when include libtorch.
- 
+- [ ] Generate issues Gtest with libtorch.  
 
 **Notes:**
 * Currently working it.
