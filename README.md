@@ -23,7 +23,7 @@ The board are represented by graph.
 
   And finally, we only execute.
   ```
-  ./visualizer
+  ./visualizer --help 
   ```
   Important, You have to change the settings in cmakefile. Enable Build visualizer and change off Build trainer.
 
