@@ -26,6 +26,14 @@ The board are represented by graph.
   ./visualizer --help 
   ```
   Important, You have to change the settings in cmakefile. Enable Build visualizer and change off Build trainer.
+  
+## Training phase
+Enable only Buid trainer and you have to do same process. 
+  ```
+  ./trainer --help
+  ```
+
+
 
 **Bugs**
 - [ ] Compiler doesn't identify SFML functions when include libtorch.
