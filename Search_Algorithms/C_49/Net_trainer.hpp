@@ -37,21 +37,20 @@ void train_one_epoch(Network_evaluator& model,
     auto device = nn_utils::get_device();
 
     model.train();
-    //size_t batch_idx = 0;
+    // size_t batch_idx = 0;
     for (auto& batch : loader)
     {
         auto data = batch.data.to(device);
         auto targets = batch.target.to(device);
         optimizer.zero_grad();
         torch::Tensor output = model.forward(data);
-        //std::cout<<"Pasando los datos por el modelo"<<std::endl;
+        // std::cout<<"Pasando los datos por el modelo"<<std::endl;
         torch::Tensor loss = calculate_loss<torch::Tensor>(output, targets);
-        //std::cout <<"Se ha calculado el error"<<std::endl;
+        // std::cout <<"Se ha calculado el error"<<std::endl;
         loss.backward();
-        //std::cout<<"backward terminado"<<std::endl;
+        // std::cout<<"backward terminado"<<std::endl;
         optimizer.step();
-        //std::cout<<"optimizador"<<std::endl;
-        
+        // std::cout<<"optimizador"<<std::endl;
     }
 }
 
@@ -65,7 +64,7 @@ void train_model(std::string ModelPath,
                  int Num_epoch,
                  nn_utils::neural_options& options_)
 {
-    
+
     Network_evaluator Model(options_);
     Network_evaluator Model_tmp(options_);
 

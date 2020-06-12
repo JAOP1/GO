@@ -5,8 +5,8 @@
 #include "GraphGUI.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Font.hpp>
-#include <SFML/System/String.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/System/String.hpp>
 #include <iostream>
 #include <string>
 #include <vector>

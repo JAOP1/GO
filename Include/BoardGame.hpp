@@ -140,5 +140,4 @@ private:
     std::vector<player> players = {'B', 'W'};
     int current_player = 0;
     std::vector<bool> resigned_player = {false, false}; // Si pasó un jugador.
-
 };

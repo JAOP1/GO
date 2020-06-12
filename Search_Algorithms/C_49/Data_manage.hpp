@@ -67,7 +67,7 @@ game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
         }
         Black.fit_precompute_tree(action);
         White.fit_precompute_tree(action);
-        std::cout<<"Accion tomada "<<action<<std::endl;
+        std::cout << "Accion tomada " << action << std::endl;
         valid_actions = BG.get_available_sample_cells(1.0);
         BG.make_action(action);
 
@@ -89,9 +89,9 @@ void generate_games(std::string path,
     std::vector<game> episodes;
     for (int i = 0; i < games; ++i)
     {
-        std::cout<<"Generating game "<<i<<std::endl;
+        std::cout << "Generating game " << i << std::endl;
         episodes.push_back(get_episode<search_type, Encoder>(Model, BG, encoder_));
-        std::cout<<"-------------------------------"<<std::endl;
+        std::cout << "-------------------------------" << std::endl;
     }
 
     save_games_recordings_to_json(path, episodes);

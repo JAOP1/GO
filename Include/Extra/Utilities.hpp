@@ -23,8 +23,6 @@ void split(const std::string& s, char c, std::vector<std::string>& v)
     }
 }
 
-
-
 template <class search_algorithm1, class search_algorithm2>
 bool is_winner(search_algorithm1& player1,
                search_algorithm2& player2,
@@ -75,27 +73,27 @@ double evaluate_accuracy(search_algorithm1& player1,
     std::cout
       << "Evaluamos el número de veces que gana el algoritmo 1 contra el otro."
       << std::endl;
-    int mitad =(int)games_played/2;
+    int mitad = (int)games_played/2;
 
-    //Primer parte el player1 es jugador negro. 
+    // Primer parte el player1 es jugador negro.
     player1.set_player('B');
     player2.set_player('W');
-       
+
     for (int i = 0; i < mitad; ++i)
     {
-        //std::cout << "Game number " << i << std::endl;
+        // std::cout << "Game number " << i << std::endl;
         if (is_winner(player1, player2, board))
             win_rate++;
         player1.reset_tree();
         player2.reset_tree();
     }
 
-    //Segunda parte el player1 es jugador blanco.
+    // Segunda parte el player1 es jugador blanco.
     player1.set_player('W');
     player2.set_player('B');
-    for(int i = 0; i < mitad;++i)
+    for (int i = 0; i < mitad; ++i)
     {
-        if(!is_winner(player2 , player1 , board))
+        if (!is_winner(player2, player1, board))
             win_rate++;
         player1.reset_tree();
         player2.reset_tree();

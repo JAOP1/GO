@@ -77,7 +77,7 @@ int main(int argc, char** argv)
         // TODO: Crear un archivo para todas las configuraciones de arquitectura.
         nn_utils::neural_options options_({{3, 5, 3}, {5, 10, 3}},
                                           {{6210, 1540}, {1540, 360}, {360, 27}});
-        //torch::autograd::AnomalyMode::set_enabled(true); //NO sé como usar...
+        // torch::autograd::AnomalyMode::set_enabled(true); //NO sé como usar...
         if (selection_mode == "UCT")
             train_model<MCTS_Net<Network_evaluator, SimpleEncoder1d>,
                         SimpleEncoder1d>(/*Model_Path=*/ModelPath,

@@ -30,7 +30,6 @@ int get_random_action(std::vector<double>& prob_, int num_actions)
     return -1;
 }
 
-
 //----------------------------------------------------------------------------------
 // Data structure.
 //----------------------------------------------------------------------------------
@@ -281,10 +280,11 @@ Action MCTS_Net<Net_architect, encoder>::search(const BoardGame& current_board)
     }
     bar.finish();
 
-    //auto node = child_highest_confidence(root, 1);
-    //return node->action();
+    // auto node = child_highest_confidence(root, 1);
+    // return node->action();
     auto prob_actions = get_probabilities_current_state();
-    return get_random_action(prob_actions ,current_board.Board.num_vertices() + 1 );
+    return get_random_action(prob_actions,
+                             current_board.Board.num_vertices() + 1);
 }
 
 template <class Net_architect, class encoder>

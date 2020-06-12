@@ -4,9 +4,8 @@
 #include "../Include/Extra/Utilities.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/System/String.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/System/String.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -15,7 +14,6 @@
 #define INVALID_VERTEX -1
 using vertex = int;
 
-
 double distance(const sf::Vector2i& A, const sf::Vector2i& B)
 {
     double X = std::pow(A.x - B.x, 2);
@@ -23,7 +21,6 @@ double distance(const sf::Vector2i& A, const sf::Vector2i& B)
 
     return std::sqrt(X + Y);
 }
-
 
 struct Graph_inf
 {

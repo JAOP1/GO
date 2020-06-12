@@ -65,9 +65,9 @@ struct Network_evaluator : torch::nn::Module
 
         x = linear_layers[num_linear - 1]->forward(x);
         x.index_put_({Slice(), Slice(None, output_size - 1)},
-                     torch::softmax(x.index(
-                                      {Slice(), Slice(None, output_size - 1)}).clone(),
-                                    -1));
+                     torch::softmax(
+                       x.index({Slice(), Slice(None, output_size - 1)}).clone(),
+                       -1));
 
         x.index_put_({Slice(), output_size - 1},
                      torch::tanh(x.index({Slice(), output_size - 1}).clone()));
