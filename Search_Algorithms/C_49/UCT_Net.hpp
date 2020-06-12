@@ -1,20 +1,34 @@
 #pragma once
-#include <algorithm>
-#include <cmath>
-#include <limits>
-#include <memory>
-#include <stack>
-#include <unordered_map>
-#include <utility>
-#include <vector>
-#include <cstdlib> 
-#include <torch/torch.h>
-#include "torch_utils.hpp"
 #include "../../Include/BoardGame.hpp"
 #include "../../Include/Extra/External/tqdm.h"
 #include "../../Include/Extra/hash_utilities.hpp"
+#include "torch_utils.hpp"
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <limits>
+#include <memory>
+#include <stack>
+#include <torch/torch.h>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 using Action = int;
+int get_random_action(std::vector<double>& prob_, int num_actions)
+{
+    double value = (double)rand()/RAND_MAX;
+
+    double accumulative_result = 0.0;
+    for (int i = 0; i < num_actions - 1; ++i)
+    {
+        accumulative_result += prob_[i];
+        if (value <= accumulative_result)
+            return i;
+    }
+    // Pass action.
+    return -1;
+}
 
 
 //----------------------------------------------------------------------------------
@@ -100,24 +114,23 @@ private:
 //----------------------------------------------------------------------------------
 // MCTS declaration.
 //----------------------------------------------------------------------------------
-//NOTA: Ahorita no he modificado el parametro. Así que todo lo manda a CUDA...
+// NOTA: Ahorita no he modificado el parametro. Así que todo lo manda a CUDA...
 
-
-template< class Net_architect , class encoder>
+template <class Net_architect, class encoder>
 class MCTS_Net
 {
 public:
     explicit MCTS_Net(const BoardGame& current_board,
-                  Net_architect Net,
-                  encoder& Encoder,
-                  int num_times,
-                  char player,
-                  int num_simulation = 1, //No cambiar!!
-                  bool do_memoization = false
-                  /*int depth = 10*/)
+                      Net_architect Net,
+                      encoder& Encoder,
+                      int num_times,
+                      char player,
+                      int num_simulation = 1, // No cambiar!!
+                      bool do_memoization = false
+                      /*int depth = 10*/)
         :
 
-          simulation_num(num_simulation)
+        simulation_num(num_simulation)
         , times_to_repeat(num_times)
         , player_(player)
         , do_memoization_(do_memoization) // nuevo
@@ -126,10 +139,10 @@ public:
         , encoder_(Encoder)
     {
         root = std::make_shared<Node>(current_board, -1, 0, nullptr);
-        //device = get_device();
-        //encoder_ = encoder(current_board.Board);
-        //Net_ = Net_architect(options_);
-        //load_net<Net_architect>(Net_Path , Net_);
+        // device = get_device();
+        // encoder_ = encoder(current_board.Board);
+        // Net_ = Net_architect(options_);
+        // load_net<Net_architect>(Net_Path , Net_);
         Net_.to(nn_utils::get_device());
         Net_.eval();
     }
@@ -156,16 +169,9 @@ public:
             is_unknown = true;
     }
 
+    void reset_tree() { is_unknown = true; }
 
-    void reset_tree()
-    {
-        is_unknown = true;
-    }
-
-    void set_player(char player)
-    {
-        player_ = player;
-    }
+    void set_player(char player) { player_ = player; }
 
     std::vector<double> get_probabilities_current_state() const;
 
@@ -175,7 +181,7 @@ private:
     int times_to_repeat;
     char player_;
     bool do_memoization_; // nuevo
-    //int depth_;
+    // int depth_;
     int Actions_space = -1;
 
     // Local information.
@@ -187,7 +193,7 @@ private:
     std::shared_ptr<Node> root;
     Net_architect Net_;
     encoder encoder_;
-    //torch::Device device;
+    // torch::Device device;
 
     std::shared_ptr<Node> child_highest_confidence(std::shared_ptr<Node>& node,
                                                    int max_min_val);
@@ -209,8 +215,8 @@ private:
 // Public MCTS functions.
 //----------------------------------------------------------------------------------
 
-template< class Net_architect , class encoder>
-Action MCTS_Net<  Net_architect ,  encoder>::search(const BoardGame& current_board)
+template <class Net_architect, class encoder>
+Action MCTS_Net<Net_architect, encoder>::search(const BoardGame& current_board)
 {
     if (is_unknown)
     {
@@ -275,12 +281,15 @@ Action MCTS_Net<  Net_architect ,  encoder>::search(const BoardGame& current_boa
     }
     bar.finish();
 
-    auto node = child_highest_confidence(root, 1);
-    return node->action();
+    //auto node = child_highest_confidence(root, 1);
+    //return node->action();
+    auto prob_actions = get_probabilities_current_state();
+    return get_random_action(prob_actions ,current_board.Board.num_vertices() + 1 );
 }
 
-template< class Net_architect , class encoder>
-std::vector<double> MCTS_Net<  Net_architect ,  encoder>::get_probabilities_current_state() const
+template <class Net_architect, class encoder>
+std::vector<double>
+MCTS_Net<Net_architect, encoder>::get_probabilities_current_state() const
 {
     std::vector<double> probabilities(Actions_space + 1, 0); // Por el pasar.
     int id, total;
@@ -310,19 +319,18 @@ std::vector<double> MCTS_Net<  Net_architect ,  encoder>::get_probabilities_curr
 //----------------------------------------------------------------------------------
 // Private MCTS functions.
 //----------------------------------------------------------------------------------
-template< class Net_architect , class encoder>
-double MCTS_Net<  Net_architect ,  encoder>::Simulation(std::shared_ptr<Node> node)
+template <class Net_architect, class encoder>
+double MCTS_Net<Net_architect, encoder>::Simulation(std::shared_ptr<Node> node)
 {
     double reward = get_reward_from_one_simulation(node->state());
-    
 
     return reward;
 }
 
-template< class Net_architect , class encoder>
-void MCTS_Net<  Net_architect ,  encoder>::Backpropagation(std::shared_ptr<Node> leaf,
-                           const double reward,
-                           const int num_visits)
+template <class Net_architect, class encoder>
+void MCTS_Net<Net_architect, encoder>::Backpropagation(std::shared_ptr<Node> leaf,
+                                                       const double reward,
+                                                       const int num_visits)
 {
     leaf->update_stats(reward, num_visits);
     if (leaf->is_root())
@@ -337,12 +345,12 @@ void MCTS_Net<  Net_architect ,  encoder>::Backpropagation(std::shared_ptr<Node>
     node->update_stats(reward, num_visits);
 }
 
-template< class Net_architect , class encoder>
-void MCTS_Net<  Net_architect ,  encoder>::Expand(std::shared_ptr<Node>& node)
+template <class Net_architect, class encoder>
+void MCTS_Net<Net_architect, encoder>::Expand(std::shared_ptr<Node>& node)
 {
-    //Para no seguir explorando.
-    //int real_height = node->get_height() - root->get_height();
-    //if (real_height > depth_)
+    // Para no seguir explorando.
+    // int real_height = node->get_height() - root->get_height();
+    // if (real_height > depth_)
     //    return;
 
     BoardGame state = node->state();
@@ -353,8 +361,9 @@ void MCTS_Net<  Net_architect ,  encoder>::Expand(std::shared_ptr<Node>& node)
         node->add_child(v);
 }
 
-template< class Net_architect , class encoder>
-std::shared_ptr<Node> MCTS_Net<  Net_architect ,  encoder>::Select(std::shared_ptr<Node> node)
+template <class Net_architect, class encoder>
+std::shared_ptr<Node> MCTS_Net<Net_architect, encoder>::Select(
+  std::shared_ptr<Node> node)
 {
     std::shared_ptr<Node> current = node;
     int max_min = 1;
@@ -368,9 +377,9 @@ std::shared_ptr<Node> MCTS_Net<  Net_architect ,  encoder>::Select(std::shared_p
     return current;
 }
 
-template< class Net_architect , class encoder>
-std::shared_ptr<Node> MCTS_Net<  Net_architect ,  encoder>::child_highest_confidence(std::shared_ptr<Node>& node,
-                                                     int max_min_val)
+template <class Net_architect, class encoder>
+std::shared_ptr<Node> MCTS_Net<Net_architect, encoder>::child_highest_confidence(
+  std::shared_ptr<Node>& node, int max_min_val)
 {
     double confidence = std::numeric_limits<double>::lowest();
     double tmp_confidence;
@@ -398,25 +407,27 @@ std::shared_ptr<Node> MCTS_Net<  Net_architect ,  encoder>::child_highest_confid
     return child_highest_confidence_;
 }
 
-//Falta por hacer unos cambios!!!
-template< class Net_architect , class encoder>
-double MCTS_Net<  Net_architect ,  encoder>::get_reward_from_one_simulation(const BoardGame& state)
+// Falta por hacer unos cambios!!!
+template <class Net_architect, class encoder>
+double MCTS_Net<Net_architect, encoder>::get_reward_from_one_simulation(
+  const BoardGame& state)
 {
-    
-    int player = (state.player_status() == 'B'? 0:1);
-    int size = state.Board.num_vertices() +1;
-    auto encoded_state = encoder_.Encode_data(state.show_current_state() ,
-                                                  state.get_available_sample_cells(1.0),
-                                                  player,
-                                                  true);
-        
+
+    int player = (state.player_status() == 'B' ? 0 : 1);
+    int size = state.Board.num_vertices() + 1;
+    auto encoded_state =
+      encoder_.Encode_data(state.show_current_state(),
+                           state.get_available_sample_cells(1.0),
+                           player,
+                           true);
+
     auto input = encoded_state.to(nn_utils::get_device());
-    torch::Tensor net_output = Net_.forward(input); 
+    torch::Tensor net_output = Net_.forward(input);
     double result = net_output[0][size].item<double>(); // This say you who wins.
 
-    //perspectiva del otro jugador.
-    if(state.player_status() != player_)
+    // perspectiva del otro jugador.
+    if (state.player_status() != player_)
         result *= -1;
-        
+
     return result;
 }

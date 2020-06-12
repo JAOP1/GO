@@ -14,7 +14,6 @@
 using Action = int;
 using vertex = int;
 
-
 //----------------------------------------------------------------------------------
 // Rave data structure.
 //----------------------------------------------------------------------------------
@@ -149,8 +148,6 @@ int RAVE_Node::objectCount = 0;
 // MCTS RAVE declaration.
 //----------------------------------------------------------------------------------
 
-
-
 class MC_RAVE
 {
 public:
@@ -197,16 +194,9 @@ public:
             is_unknown = true;
     }
 
-    
-    void reset_tree()
-    {
-        is_unknown = true;
-    }
+    void reset_tree() { is_unknown = true; }
 
-    void set_player(char player)
-    {
-        player_ = player;
-    }
+    void set_player(char player) { player_ = player; }
 
     // This give you probabilities vector.
     std::vector<double> get_probabilities_current_state() const;
@@ -242,11 +232,9 @@ private:
     std::vector<Action> simulation_recording(int num_steps, BoardGame state);
 };
 
-
 //----------------------------------------------------------------------------------
 // Rave public functions.
 //----------------------------------------------------------------------------------
-
 
 Action MC_RAVE::search(const BoardGame& current_board)
 {
@@ -286,7 +274,6 @@ Action MC_RAVE::search(const BoardGame& current_board)
     return node->action();
 }
 
-
 std::vector<double> MC_RAVE::get_probabilities_current_state() const
 {
     std::vector<double> probabilities(Actions_space + 1, 0);
@@ -313,7 +300,6 @@ std::vector<double> MC_RAVE::get_probabilities_current_state() const
 
     return probabilities;
 }
-
 
 //----------------------------------------------------------------------------------
 // Rave private functions.
@@ -439,4 +425,3 @@ std::vector<Action> MC_RAVE::simulation_recording(int num_steps, BoardGame state
 
     return made_actions;
 }
-

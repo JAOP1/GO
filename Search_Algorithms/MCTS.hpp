@@ -140,15 +140,9 @@ public:
             is_unknown = true;
     }
 
-    void reset_tree()
-    {
-        is_unknown = true;
-    }
+    void reset_tree() { is_unknown = true; }
 
-    void set_player(char player)
-    {
-        player_ = player;
-    }
+    void set_player(char player) { player_ = player; }
 
     std::vector<double> get_probabilities_current_state() const;
 

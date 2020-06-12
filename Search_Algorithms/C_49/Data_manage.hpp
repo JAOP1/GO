@@ -2,19 +2,21 @@
 #include "../../Include/BoardGame.hpp"
 #include "../../Include/Extra/Graph.hpp"
 #include "../../Include/Extra/json_manage.hpp"
-#include "game_structure.hpp"
 #include "Net_Class.hpp"
 #include "encoders.hpp"
-#include <torch/torch.h>
+#include "game_structure.hpp"
 #include <iostream>
 #include <numeric>
+#include <torch/torch.h>
 #include <tuple>
 #include <vector>
 
 using element = torch::data::Example<torch::Tensor, torch::Tensor>;
 
 // Estructura para recolectar los datos.
-struct GameDataSet: torch::data::datasets::BatchDataset<GameDataSet, std::vector<element>, std::vector<size_t>>
+struct GameDataSet
+    : torch::data::datasets::
+        BatchDataset<GameDataSet, std::vector<element>, std::vector<size_t>>
 {
 
     explicit GameDataSet(std::vector<element>& sample) : dataset(sample) {}
@@ -37,8 +39,7 @@ struct GameDataSet: torch::data::datasets::BatchDataset<GameDataSet, std::vector
     std::vector<element> dataset;
 };
 
-
-template<class search_type, class Encoder>
+template <class search_type, class Encoder>
 game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
 {
     game episode;
@@ -47,8 +48,8 @@ game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
     std::vector<int> valid_actions;
     int action;
 
-    search_type Black(BG , Model , encoder_ , 100, 'B'); 
-    search_type White(BG, Model, encoder_ , 100 , 'W'); 
+    search_type Black(BG, Model, encoder_, 100, 'B');
+    search_type White(BG, Model, encoder_, 100, 'W');
 
     for (int move = 0; move < 70 && !BG.is_complete(); ++move)
     {
@@ -66,7 +67,7 @@ game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
         }
         Black.fit_precompute_tree(action);
         White.fit_precompute_tree(action);
-
+        std::cout<<"Accion tomada "<<action<<std::endl;
         valid_actions = BG.get_available_sample_cells(1.0);
         BG.make_action(action);
 
@@ -78,18 +79,19 @@ game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
     return episode;
 }
 
-template<class search_type,class Encoder>
+template <class search_type, class Encoder>
 void generate_games(std::string path,
                     int games,
                     Network_evaluator& Model,
                     BoardGame& BG,
-                    Encoder& encoder_
-                    )
+                    Encoder& encoder_)
 {
     std::vector<game> episodes;
     for (int i = 0; i < games; ++i)
     {
-        episodes.push_back(get_episode<search_type,Encoder>(Model, BG, encoder_));
+        std::cout<<"Generating game "<<i<<std::endl;
+        episodes.push_back(get_episode<search_type, Encoder>(Model, BG, encoder_));
+        std::cout<<"-------------------------------"<<std::endl;
     }
 
     save_games_recordings_to_json(path, episodes);
