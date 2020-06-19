@@ -1,14 +1,14 @@
 #pragma once
-#include "torch_utils.hpp"
+#include "../torch_utils.hpp"
 #include <string>
 #include <torch/torch.h>
 #include <vector>
 /*
-Esta es una red neuronal convolucional 1d para cualquier grafo.
-Nota: tienes que especifiar el número de capas.
+Esta es una red neuronal convolucional 1d.
+Nota: tienes que especifiar el número de capas. (mira neural_options)
 */
 using namespace torch::indexing;
-// using json = nlohmann::json;
+
 
 struct Network_evaluator : torch::nn::Module
 {
