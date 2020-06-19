@@ -1,11 +1,17 @@
 #pragma once
-
 #include "NumberTheory.hpp"
+#include "../BoardGame.hpp"
 #include <algorithm>
 #include <cmath>
 #include <random>
 #include <unordered_map>
 #include <vector>
+
+/*
+Funciones que son utiles en alguna parte del código,
+pero no corresponden a ningun otro archivo... 
+*/
+
 
 void split(const std::string& s, char c, std::vector<std::string>& v)
 {
@@ -23,8 +29,6 @@ void split(const std::string& s, char c, std::vector<std::string>& v)
     }
 }
 
-
-
 template <class search_algorithm1, class search_algorithm2>
 bool is_winner(search_algorithm1& player1,
                search_algorithm2& player2,
@@ -32,7 +36,6 @@ bool is_winner(search_algorithm1& player1,
 {
 
     auto first_to_play = board.player_status();
-    auto second_to_play = (first_to_play == 'B' ? 'W' : 'B');
 
     // Para que no realicen la misma acción siempre.
     board.make_action(board.random_action());
@@ -61,41 +64,53 @@ bool is_winner(search_algorithm1& player1,
 
         board.make_action(action);
     }
-
-    return board.reward(second_to_play) < board.reward(first_to_play);
+    if(board.reward('B') == 1)
+        return true;
+    return false;
 }
 
 template <class search_algorithm1, class search_algorithm2>
 double evaluate_accuracy(search_algorithm1& player1,
                          search_algorithm2& player2,
-                         BoardGame& board,
+                         BoardGame board,
                          int games_played)
 {
     double win_rate = 0.0;
-    std::cout
-      << "Evaluamos el número de veces que gana el algoritmo 1 contra el otro."
-      << std::endl;
-    int mitad =(int)games_played/2;
+    //std::cout
+    //  << "Evaluamos el número de veces que gana el algoritmo 1 contra el otro."
+    //  << std::endl;
+    int mitad = (int)games_played/2;
 
-    //Primer parte el player1 es jugador negro. 
+    // Primer parte el player1 es jugador negro.
     player1.set_player('B');
     player2.set_player('W');
-       
+    std::cout<<"primer juego"<<std::endl;
     for (int i = 0; i < mitad; ++i)
     {
-        //std::cout << "Game number " << i << std::endl;
+        std::cout << "Game number " << i << std::endl;
+        for(auto e : board.show_current_state())
+            std::cout<<e<<" ";
+        std::cout<<std::endl;
         if (is_winner(player1, player2, board))
             win_rate++;
         player1.reset_tree();
         player2.reset_tree();
     }
 
-    //Segunda parte el player1 es jugador blanco.
+    // Segunda parte el player1 es jugador blanco.
     player1.set_player('W');
     player2.set_player('B');
-    for(int i = 0; i < mitad;++i)
+    player1.reset_tree();
+    player2.reset_tree();
+
+    for (int i = 0; i < mitad; ++i)
     {
-        if(!is_winner(player2 , player1 , board))
+
+        std::cout << "Game number " << i + mitad << std::endl;
+        for(auto e : board.show_current_state())
+            std::cout<<e<<" ";
+        std::cout<<std::endl;
+        if (!is_winner(player2, player1, board))
             win_rate++;
         player1.reset_tree();
         player2.reset_tree();
@@ -104,3 +119,6 @@ double evaluate_accuracy(search_algorithm1& player1,
     win_rate *= (1.0/games_played);
     return win_rate;
 }
+
+
+

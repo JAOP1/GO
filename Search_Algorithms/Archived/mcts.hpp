@@ -131,12 +131,12 @@ Action mcts::search(const BoardGame& current_board)
         std::cout << '*';
 =======
 <<<<<<< HEAD
-        std::cout<<"Step "<<i<<" of "<<times_to_repeat<<std::endl;
-        std::cout<<"Size tree "<<tree_size<<std::endl;
+        std::cout << "Step " << i << " of " << times_to_repeat << std::endl;
+        std::cout << "Size tree " << tree_size << std::endl;
 =======
 
-        std::cout<<"Step "<<i <<" of "<<times_to_repeat<<std::endl;
-        std::cout<<"Current size of tree "<<tree_size<<std::endl;
+        std::cout << "Step " << i << " of " << times_to_repeat << std::endl;
+        std::cout << "Current size of tree " << tree_size << std::endl;
         
 >>>>>>> 0126554cfc67a62004616659dc8b650097c9d326
 >>>>>>> master:GUI/Include/Search_Algorithms/MCTS.hpp
@@ -178,7 +178,8 @@ Action mcts::search(const BoardGame& current_board)
     }
     std::cout << ']' << std::endl;
 =======
-        //std::cout << "Tableros en memoria: " << global_information.size() << std::endl;
+        // std::cout << "Tableros en memoria: " << global_information.size() <<
+        // std::endl;
     }
 <<<<<<< HEAD
 =======
@@ -228,11 +229,12 @@ void mcts::Expand(Node& node)
     std::vector<vertex> actions_set = state.available_cells();
     tree_size += actions_set.size();
 =======
-    //std::vector<vertex> actions_set = state.get_available_sample_cells(get_pruning_portion());
+    // std::vector<vertex> actions_set =
+    // state.get_available_sample_cells(get_pruning_portion());
     std::vector<vertex> actions_set = state.get_available_sample_cells(1.0);
 
 >>>>>>> 0126554cfc67a62004616659dc8b650097c9d326
-    //std::cout << "Conjunto de acciones " << actions_set.size() << std::endl;
+    // std::cout << "Conjunto de acciones " << actions_set.size() << std::endl;
 >>>>>>> master:GUI/Include/Search_Algorithms/MCTS.hpp
     tree_size += actions_set.size();
 

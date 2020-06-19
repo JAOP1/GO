@@ -2,7 +2,6 @@
 #include "../../Include/BoardGame.hpp"
 #include "../../Include/Extra/Graph.hpp"
 #include "../../Include/Extra/json_manage.hpp"
-#include "Net_Class.hpp"
 #include "encoders.hpp"
 #include "game_structure.hpp"
 #include <iostream>
@@ -39,8 +38,8 @@ struct GameDataSet
     std::vector<element> dataset;
 };
 
-template <class search_type, class Encoder>
-game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
+template <class search_type, class Encoder, class NN>
+game get_episode(NN& Model, BoardGame BG, Encoder& encoder_)
 {
     game episode;
     std::vector<char> state;
@@ -67,7 +66,6 @@ game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
         }
         Black.fit_precompute_tree(action);
         White.fit_precompute_tree(action);
-        std::cout<<"Accion tomada "<<action<<std::endl;
         valid_actions = BG.get_available_sample_cells(1.0);
         BG.make_action(action);
 
@@ -79,22 +77,22 @@ game get_episode(Network_evaluator& Model, BoardGame BG, Encoder& encoder_)
     return episode;
 }
 
-template <class search_type, class Encoder>
+template <class search_type, class Encoder ,class NN>
 void generate_games(std::string path,
                     int games,
-                    Network_evaluator& Model,
-                    BoardGame& BG,
+                    NN& Model,
+                    const BoardGame& BG,
                     Encoder& encoder_)
 {
     std::vector<game> episodes;
     for (int i = 0; i < games; ++i)
     {
-        std::cout<<"Generating game "<<i<<std::endl;
-        episodes.push_back(get_episode<search_type, Encoder>(Model, BG, encoder_));
-        std::cout<<"-------------------------------"<<std::endl;
+        std::cout << "Generating game " << i << std::endl;
+        episodes.push_back(get_episode<search_type, Encoder,NN>(Model, BG, encoder_));
+        std::cout << "-------------------------------" << std::endl;
     }
 
-    save_games_recordings_to_json(path, episodes);
+    json_utils::save_games_recordings_to_json(path, episodes);
 }
 
 template <class encoder>
@@ -102,7 +100,7 @@ std::vector<element> get_data_games(std::string& DataPath, encoder& Encoder_)
 {
     std::vector<element> X;
 
-    std::vector<game> games_played = get_json_to_game_data<game>(DataPath);
+    std::vector<game> games_played = json_utils::get_json_to_game_data<game>(DataPath);
 
     for (game episode : games_played)
     {

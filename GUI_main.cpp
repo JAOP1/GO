@@ -8,8 +8,8 @@
 #include "Search_Algorithms/MCT_UCT_RAVE.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Font.hpp>
-#include <SFML/System/String.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/System/String.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
