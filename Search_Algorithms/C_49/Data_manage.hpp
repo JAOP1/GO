@@ -77,18 +77,16 @@ game get_episode(NN& Model, BoardGame BG, Encoder& encoder_)
     return episode;
 }
 
-template <class search_type, class Encoder ,class NN>
-void generate_games(std::string path,
-                    int games,
-                    NN& Model,
-                    const BoardGame& BG,
-                    Encoder& encoder_)
+template <class search_type, class Encoder, class NN>
+void generate_games(
+  std::string path, int games, NN& Model, const BoardGame& BG, Encoder& encoder_)
 {
     std::vector<game> episodes;
     for (int i = 0; i < games; ++i)
     {
         std::cout << "Generating game " << i << std::endl;
-        episodes.push_back(get_episode<search_type, Encoder,NN>(Model, BG, encoder_));
+        episodes.push_back(
+          get_episode<search_type, Encoder, NN>(Model, BG, encoder_));
         std::cout << "-------------------------------" << std::endl;
     }
 
@@ -100,7 +98,8 @@ std::vector<element> get_data_games(std::string& DataPath, encoder& Encoder_)
 {
     std::vector<element> X;
 
-    std::vector<game> games_played = json_utils::get_json_to_game_data<game>(DataPath);
+    std::vector<game> games_played = json_utils::get_json_to_game_data<game>(
+      DataPath);
 
     for (game episode : games_played)
     {

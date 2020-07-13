@@ -9,7 +9,6 @@ Nota: tienes que especifiar el número de capas. (mira neural_options)
 */
 using namespace torch::indexing;
 
-
 struct Network_evaluator : torch::nn::Module
 {
     Network_evaluator(nn_utils::neural_options& options)

@@ -1,17 +1,14 @@
-#pragma once 
+#pragma once
 #include "../torch_utils.hpp"
 #include <string>
 #include <torch/torch.h>
 #include <vector>
 
-
-
 using namespace torch::indexing;
-
 
 struct GridNetwork : torch::nn::Module
 {
-    GridNetwork(nn_utils::neural_options& options) : options_(options) 
+    GridNetwork(nn_utils::neural_options& options) : options_(options)
     {
         // Create convolutional layers.
         for (int i = 0; i < options_.num_convlayers(); ++i)
@@ -20,7 +17,8 @@ struct GridNetwork : torch::nn::Module
             conv_layers.emplace_back(
               torch::nn::Conv2dOptions(options_layer.in_channels,
                                        options_layer.out_channels,
-                                       options_layer.kernel_size).padding(1));
+                                       options_layer.kernel_size)
+                .padding(1));
             register_module("conv" + std::to_string(i), conv_layers[i]);
         }
         std::cout << "total convolutional layers created: " << conv_layers.size()
@@ -46,28 +44,27 @@ struct GridNetwork : torch::nn::Module
         // x = torch::relu(conv_layers[0]->forward(x));
         // std::cout<<x.sizes()<<std::endl;
 
-        
         for (int i = 0; i < num_conv; ++i)
         {
             x = conv_layers[i]->forward(x);
 
-            if(options_.pool_layer(i))
+            if (options_.pool_layer(i))
             {
-                std::cout<<"Max pool in "<<i<<" layer."<<std::endl;
-                x = torch::max_pool2d(x,2);
+                std::cout << "Max pool in " << i << " layer." << std::endl;
+                x = torch::max_pool2d(x, 2);
             }
 
             x = torch::relu(x);
 
-            //std::cout<<x.sizes()<<std::endl;
+            // std::cout<<x.sizes()<<std::endl;
         }
-    
+
         // Flattening.
         int num_samples = x.sizes()[0];
         x = x.view({num_samples, -1});
-        //std::cout<<x.sizes()<<std::endl;
+        // std::cout<<x.sizes()<<std::endl;
 
-        //The last one is different process.
+        // The last one is different process.
         for (int i = 0; i < num_linear - 1; ++i)
         {
             x = torch::relu(linear_layers[i]->forward(x));
@@ -75,14 +72,15 @@ struct GridNetwork : torch::nn::Module
         }
 
         x = linear_layers[num_linear - 1]->forward(x);
-        //Esto sería para una policy and value network.
+        // Esto sería para una policy and value network.
         // x.index_put_({Slice(), Slice(None, output_size - 1)},
         //              torch::softmax(
-        //                x.index({Slice(), Slice(None, output_size - 1)}).clone(),
-        //                -1));
+        //                x.index({Slice(), Slice(None, output_size -
+        //                1)}).clone(), -1));
 
         // x.index_put_({Slice(), output_size - 1},
-        //              torch::tanh(x.index({Slice(), output_size - 1}).clone()));
+        //              torch::tanh(x.index({Slice(), output_size -
+        //              1}).clone()));
 
         /*
         This will give us a vector with leght of all actions (include pass)
