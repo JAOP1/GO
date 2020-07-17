@@ -1,5 +1,5 @@
 #pragma once
-#include "../../Include/Extra/Graph.hpp"
+#include "../../../Include/Extra/Graph.hpp"
 #include <iostream>
 #include <torch/torch.h>
 #include <tuple>
@@ -43,7 +43,7 @@ public:
             auto data =
               Encode_data(G.states[i], G.valid_actions[i], current_player);
 
-            auto target = Encode_label(reward, G.probabilities[i]);
+            auto target = Encode_label(reward/*, G.probabilities[i]*/);
 
             game_recodings.emplace_back(data, target);
 
@@ -101,7 +101,7 @@ public:
         return data;
     }
 
-    torch::Tensor Encode_label(int reward, std::vector<double> prob)
+    torch::Tensor Encode_label(int reward /*, std::vector<double> prob*/)
     {
         double reward_ = (double)reward;
         std::vector<double> R = {reward_};
@@ -166,7 +166,7 @@ public:
             auto data =
               Encode_data(G.states[i], G.valid_actions[i], current_player);
 
-            auto target = Encode_label(reward, G.probabilities[i]);
+            auto target = Encode_label(reward , G.probabilities[i]);
 
             game_recodings.emplace_back(data, target);
 
@@ -224,7 +224,7 @@ public:
         return data;
     }
 
-    torch::Tensor Encode_label(int reward, std::vector<double> prob)
+    torch::Tensor Encode_label(int reward , std::vector<double> prob)
     {
         double reward_ = (double)reward;
         prob.push_back(reward_);

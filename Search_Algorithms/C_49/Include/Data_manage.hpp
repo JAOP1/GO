@@ -1,12 +1,12 @@
 #pragma once
-#include "../../Include/BoardGame.hpp"
-#include "../../Include/Extra/Graph.hpp"
-#include "../../Include/Extra/json_manage.hpp"
-#include "encoders.hpp"
+#include "../../../Include/BoardGame.hpp"
+#include "../../../Include/Extra/Graph.hpp"
+#include "../../../Include/Extra/json_manage.hpp"
+#include "../Encoders_classes/encoders.hpp"
 #include "game_structure.hpp"
+#include <torch/torch.h>
 #include <iostream>
 #include <numeric>
-#include <torch/torch.h>
 #include <tuple>
 #include <vector>
 
@@ -43,7 +43,7 @@ game get_episode(NN& Model, BoardGame BG, Encoder& encoder_)
 {
     game episode;
     std::vector<char> state;
-    std::vector<double> prob;
+    //std::vector<double> prob;
     std::vector<int> valid_actions;
     int action;
 
@@ -57,19 +57,20 @@ game get_episode(NN& Model, BoardGame BG, Encoder& encoder_)
         if (move%2)
         {
             action = White.search(BG);
-            prob = White.get_probabilities_current_state();
+            //prob = White.get_probabilities_current_state();
         }
         else
         {
             action = Black.search(BG);
-            prob = Black.get_probabilities_current_state();
+            //prob = Black.get_probabilities_current_state();
         }
         Black.fit_precompute_tree(action);
         White.fit_precompute_tree(action);
         valid_actions = BG.get_available_sample_cells(1.0);
         BG.make_action(action);
 
-        episode.add_game_state(prob, state, valid_actions);
+        //episode.add_game_state(prob, state, valid_actions);
+        episode.add_game_state(state,valid_actions);
     }
 
     episode.set_reward(BG.reward('B'));
@@ -106,6 +107,5 @@ std::vector<element> get_data_games(std::string& DataPath, encoder& Encoder_)
         auto encoded_states = Encoder_.Encode_episode(episode);
         X.insert(X.end(), encoded_states.begin(), encoded_states.end());
     }
-
     return X;
 }
