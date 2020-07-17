@@ -1,6 +1,6 @@
 #pragma once
-#include "NumberTheory.hpp"
 #include "../BoardGame.hpp"
+#include "NumberTheory.hpp"
 #include <algorithm>
 #include <cmath>
 #include <random>
@@ -9,9 +9,8 @@
 
 /*
 Funciones que son utiles en alguna parte del código,
-pero no corresponden a ningun otro archivo... 
+pero no corresponden a ningun otro archivo...
 */
-
 
 void split(const std::string& s, char c, std::vector<std::string>& v)
 {
@@ -64,7 +63,7 @@ bool is_winner(search_algorithm1& player1,
 
         board.make_action(action);
     }
-    if(board.reward('B') == 1)
+    if (board.reward('B') == 1)
         return true;
     return false;
 }
@@ -76,21 +75,19 @@ double evaluate_accuracy(search_algorithm1& player1,
                          int games_played)
 {
     double win_rate = 0.0;
-    //std::cout
-    //  << "Evaluamos el número de veces que gana el algoritmo 1 contra el otro."
+    // std::cout
+    //  << "Evaluamos el número de veces que gana el algoritmo 1 contra el
+    //  otro."
     //  << std::endl;
     int mitad = (int)games_played/2;
 
     // Primer parte el player1 es jugador negro.
     player1.set_player('B');
     player2.set_player('W');
-    std::cout<<"primer juego"<<std::endl;
+    std::cout << "primer juego" << std::endl;
     for (int i = 0; i < mitad; ++i)
     {
-        std::cout << "Game number " << i << std::endl;
-        for(auto e : board.show_current_state())
-            std::cout<<e<<" ";
-        std::cout<<std::endl;
+        std::cout<<"Game num: "<<i<<std::endl;
         if (is_winner(player1, player2, board))
             win_rate++;
         player1.reset_tree();
@@ -106,19 +103,15 @@ double evaluate_accuracy(search_algorithm1& player1,
     for (int i = 0; i < mitad; ++i)
     {
 
-        std::cout << "Game number " << i + mitad << std::endl;
-        for(auto e : board.show_current_state())
-            std::cout<<e<<" ";
-        std::cout<<std::endl;
+        std::cout <<"Game num: "<<i+mitad<<std::endl;
         if (!is_winner(player2, player1, board))
             win_rate++;
         player1.reset_tree();
         player2.reset_tree();
     }
+    std::cout<<"Total de juegos ganados: "<<win_rate<<std::endl;
+    
 
     win_rate *= (1.0/games_played);
     return win_rate;
 }
-
-
-

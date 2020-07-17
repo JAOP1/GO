@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 option(BUILD_VISUALIZER "Build visualizer (requires SFML and libtorch)" OFF)
 option(BUILD_TESTS "Build unit tests (requires gtest)" OFF)
 option(BUILD_TRAINER "Build trainer. (requires libtorch)" ON)
-
+option(BUILD_TESTING "Build testing functions and other stuff." ON)
 # --------------------------------------------------------------------------------
 #                         Locate files (no change needed).
 # --------------------------------------------------------------------------------
@@ -31,14 +31,18 @@ option(BUILD_TRAINER "Build trainer. (requires libtorch)" ON)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/GUI/
+    ${PROJECT_SOURCE_DIR}/GUI/Files/
     ${PROJECT_SOURCE_DIR}/Include/
     ${PROJECT_SOURCE_DIR}/Include/Extra/
     ${PROJECT_SOURCE_DIR}/Include/Extra/External/
     ${PROJECT_SOURCE_DIR}/Search_Algorithms/
     ${PROJECT_SOURCE_DIR}/Search_Algorithms/C_49/
+    ${PROJECT_SOURCE_DIR}/Search_Algorithms/C_49/NN_classes/
+    ${PROJECT_SOURCE_DIR}/Search_Algorithms/C_49/Encoders_classes/
+    ${PROJECT_SOURCE_DIR}/Search_Algorithms/C_49/Include/
     ${PROJECT_SOURCE_DIR}/Search_Algorithms/C_49/Models/
     ${PROJECT_SOURCE_DIR}/Search_Algorithms/C_49/Data/
-    ${PROJECT_SOURCE_DIR}/GUI/Files/
+    ${PROJECT_SOURCE_DIR}/Search_Algorithms/testing/
     ${PROJECT_SOURCE_DIR}/src/
     ${PROJECT_SOURCE_DIR}/tests/
     ${PROJECT_SOURCE_DIR}/Graphs/)
@@ -116,3 +120,14 @@ if(${BUILD_TRAINER})
     target_link_libraries(trainer graph ${TORCH_LIBRARIES})
 endif()
 
+# --------------------------------------------------------------------------------
+#                              Tester build.
+# --------------------------------------------------------------------------------
+
+if(${BUILD_TESTING})
+    message(STATUS "Building Testing.")
+    add_executable(tester testing_main.cpp)
+    add_dependencies(tester graph)
+
+    target_link_libraries(tester graph ${TORCH_LIBRARIES})
+endif()

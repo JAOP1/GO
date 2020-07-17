@@ -1,15 +1,12 @@
 #pragma once
-// #include "UCT_Net.hpp"
-// #include "Net_Class.hpp"
-// #include "encoders.hpp"
 #include "../../Include/Extra/Utilities.hpp"
-#include "Data_manage.hpp"
-#include "torch_utils.hpp"
+#include "Include/Data_manage.hpp"
+#include "Include/torch_utils.hpp"
+#include <torch/torch.h>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include <torch/torch.h>
 
 size_t dataset_size;
 
@@ -84,11 +81,14 @@ void train_model(std::string ModelPath,
     Model_tmp.to(device);
     Model_tmp.eval();
 
+    //Seleccionar el mejor optimizador....
     // torch::optim::SGD optimizer(Model.parameters(),
     //                             torch::optim::SGDOptions(0.01).momentum(0.5));
     torch::optim::Adam optimizer(Model.parameters(),
                                  torch::optim::AdamOptions(0.001));
+
     // Condición de paro. (Falta por hacer!)
+    //Actualmente se detiene cuando mejora el modelo 2 veces.
     int valor_ini = 2;
     while (valor_ini)
     {
@@ -101,11 +101,7 @@ void train_model(std::string ModelPath,
 
         std::cout << "Creando conjunto de datos." << std::endl;
         auto data = get_data_games<Encoder>(/*Path_to_load=*/DataPath,
-                                            /*Encoder= */ Encoder_); // This
-                                                                     // return a
-                                                                     // torch
-                                                                     // example
-                                                                     // vector.
+                                            /*Encoder= */ Encoder_); 
         dataset_size = data.size();
         std::cout << "Total de datos: " << dataset_size << std::endl;
         auto Dataset = GameDataSet(data).map(
