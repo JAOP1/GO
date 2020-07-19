@@ -16,15 +16,13 @@ class GridEncoder:
         if type(state) != np.ndarray:
             state = np.array(state)
 
-        if type(action_list) != np.ndarray:
-            action_list = np.array(action_list)
-
         valid_ = np.zeros(self.rows_*self.cols_)
         black_ = np.zeros(self.rows_*self.cols_)
         white_ = np.zeros(self.rows_*self.cols_)
 
         update_pieces(state , black_, white_)
-        valid_[action_list != -1] = 1
+        action_list.pop() #We delete pass action.
+        valid_[action_list] = 1
 
         data = torch.zeros((3, self.rows_, self.cols_))
 
@@ -53,7 +51,7 @@ class GridEncoder:
         reward = episode["black_reward"]
         current_player = 0
 
-        for i in range(episode.size()):
+        for i in range(len(episode["state"])):
             data = self.encode_data(episode["state"][i], episode["valid_actions"][i], current_player)
             target = self.encode_label(reward)
             recordings += [[data,target]]
