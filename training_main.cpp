@@ -88,7 +88,6 @@ int main(int argc, char** argv)
     }
     catch (const std::exception& e)
     {
-        std::cout << "Invalid graph file." << std::endl;
         std::cerr << e.what();
     }
 

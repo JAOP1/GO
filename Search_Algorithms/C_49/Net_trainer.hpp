@@ -120,12 +120,12 @@ void train_model(std::string ModelPath,
         for (int epoch_ = 1; epoch_ <= Num_epoch; ++epoch_)
             train_one_epoch(Model, *DataLoader, optimizer);
 
+        std::cout << "Compare progress." << std::endl;
         search_type current(G, Model, Encoder_, 60, 'B');
         search_type last(G, Model_tmp, Encoder_, 60, 'W');
-        current.eval();
-        last.eval();
-
-        std::cout << "Compare progress." << std::endl;
+        current.eval(); //Evaluation mode.
+        last.eval(); //Evaluation mode.
+        //If the model win more than 55%, it means that model has improved.
         if (evaluate_accuracy<search_type, search_type>(current, last, G, 30) >=
             .55)
         {
