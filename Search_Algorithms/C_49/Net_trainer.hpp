@@ -13,6 +13,11 @@ size_t dataset_size;
 template <typename loss>
 loss calculate_loss(torch::Tensor& data, torch::Tensor target)
 {
+    /*
+    Description:
+        Customize this function if you want change the measure.
+    */
+
     // It only works in policy and value network.
     // int policy_vector_leght = target.sizes()[1];
     // torch::Tensor policy_target = target.index(
@@ -46,6 +51,7 @@ void train_one_epoch(NN& model,
         auto data = batch.data.to(device);
         auto targets = batch.target.to(device);
         optimizer.zero_grad();
+        std::cout<<data.sizes()<<std::endl;
         torch::Tensor output = model.forward(data);
         torch::Tensor loss = calculate_loss<torch::Tensor>(output, targets);
         loss.backward();

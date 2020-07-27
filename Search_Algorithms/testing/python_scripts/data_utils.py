@@ -8,7 +8,7 @@ class DataStruct(Dataset):
         self.data_ = data
 
     def __getitem__(self,index):
-        return self.data_[index]
+        return self.data_[index][0], self.data_[index][1]
 
     def __len__(self):
         return len(self.data_)
@@ -22,7 +22,7 @@ def LoadDataset(path, encoder):
     data = []
     for i in range(json_data["Num_Games"]):
         data += encoder.encode_episode(json_data["Game "+str(i)])
-    print(data[:3])
+
     dataset = DataStruct(data)
 
     return dataset

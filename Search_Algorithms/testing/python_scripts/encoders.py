@@ -43,7 +43,7 @@ class GridEncoder:
         return data
         
     def encode_label(self, reward):
-        return torch.tensor([reward])
+        return torch.tensor([float(reward)])
 
     #Return a list of tensors.
     def encode_episode(self, episode):

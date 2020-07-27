@@ -41,6 +41,11 @@ struct GameDataSet
 template <class search_type, class Encoder, class NN>
 game get_episode(NN& Model, BoardGame BG, Encoder& encoder_)
 {
+    /*
+    Description:
+        Return a game episode using the current model
+        and the search method.
+    */
     game episode;
     std::vector<char> state;
     //std::vector<double> prob;
@@ -82,6 +87,11 @@ template <class search_type, class Encoder, class NN>
 void generate_games(
   std::string path, int games, NN& Model, const BoardGame& BG, Encoder& encoder_)
 {
+    /*
+    Description:
+        Create a game sample using our current model which 
+        is saved in the path.
+    */
     std::vector<game> episodes;
     for (int i = 0; i < games; ++i)
     {
@@ -97,6 +107,10 @@ void generate_games(
 template <class encoder>
 std::vector<element> get_data_games(std::string& DataPath, encoder& Encoder_)
 {
+    /*
+    Description:
+        Load every game recording saved in datapath.
+    */
     std::vector<element> X;
 
     std::vector<game> games_played = json_utils::get_json_to_game_data<game>(
