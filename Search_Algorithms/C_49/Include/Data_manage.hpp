@@ -112,10 +112,8 @@ std::vector<element> get_data_games(std::string& DataPath, encoder& Encoder_)
         Load every game recording saved in datapath.
     */
     std::vector<element> X;
-
     std::vector<game> games_played = json_utils::get_json_to_game_data<game>(
       DataPath);
-
     for (game episode : games_played)
     {
         auto encoded_states = Encoder_.Encode_episode(episode);

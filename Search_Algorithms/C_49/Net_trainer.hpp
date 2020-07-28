@@ -8,7 +8,6 @@
 #include <fstream>
 #include <string>
 
-size_t dataset_size;
 
 template <typename loss>
 loss calculate_loss(torch::Tensor& data, torch::Tensor target)
@@ -38,7 +37,8 @@ loss calculate_loss(torch::Tensor& data, torch::Tensor target)
 template <typename DataLoader, class NN>
 void train_one_epoch(NN& model,
                      DataLoader& loader,
-                     torch::optim::Optimizer& optimizer)
+                     torch::optim::Optimizer& optimizer,
+                     int data_size)
 {
     std::cout << "Training one epoch." << std::endl;
     auto device = nn_utils::get_device();
@@ -60,7 +60,7 @@ void train_one_epoch(NN& model,
         test_loss += loss.item<double>();
     }
 
-    test_loss /= dataset_size;
+    test_loss /= data_size;
     std::cout << "Average loss= " << test_loss << std::endl;
 }
 
@@ -108,8 +108,7 @@ void train_model(std::string ModelPath,
         std::cout << "Creando conjunto de datos." << std::endl;
         auto data = get_data_games<Encoder>(/*Path_to_load=*/DataPath,
                                             /*Encoder= */ Encoder_); 
-        dataset_size = data.size();
-        std::cout << "Total de datos: " << dataset_size << std::endl;
+        std::cout << "Total de datos: " << data.size() << std::endl;
         auto Dataset = GameDataSet(data).map(
           torch::data::transforms::Stack<>()); // Transform the dataset in
                                                // understable form for torch.
@@ -124,13 +123,14 @@ void train_model(std::string ModelPath,
 
         std::cout << "Training net by " << Num_epoch << " epochs." << std::endl;
         for (int epoch_ = 1; epoch_ <= Num_epoch; ++epoch_)
-            train_one_epoch(Model, *DataLoader, optimizer);
+            train_one_epoch(Model, *DataLoader, optimizer, data.size());
 
         std::cout << "Compare progress." << std::endl;
         search_type current(G, Model, Encoder_, 60, 'B');
         search_type last(G, Model_tmp, Encoder_, 60, 'W');
         current.eval(); //Evaluation mode.
         last.eval(); //Evaluation mode.
+        
         //If the model win more than 55%, it means that model has improved.
         if (evaluate_accuracy<search_type, search_type>(current, last, G, 30) >=
             .55)
@@ -143,6 +143,7 @@ void train_model(std::string ModelPath,
             valor_ini--; // If the model improve twice, we stop...
 
             // Save when model improve.
+            //Archivo que escribe en que momento mejoró el modelo.
             std::ofstream changelog;
             std::string dir_path = std::filesystem::current_path();
             std::string file_path = "/../Search_Algorithms/C_49/changelog.txt";

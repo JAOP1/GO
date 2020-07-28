@@ -47,7 +47,7 @@ public:
 
             game_recodings.emplace_back(data, target);
 
-            reward *= -1;
+            reward *= -1; 
             current_player ^= 1;
         }
 

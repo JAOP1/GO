@@ -4,8 +4,8 @@
 #include "Include/Extra/External/CLI11.hpp"
 #include "Include/Extra/Graph.hpp"
 #include "Include/Extra/json_manage.hpp"
-#include "Search_Algorithms/MCTS.hpp"
-#include "Search_Algorithms/MCT_UCT_RAVE.hpp"
+#include "Search_Algorithms/Standard_Engines/MCTS.hpp"
+#include "Search_Algorithms/Standard_Engines/MCT_UCT_RAVE.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
         if (input_file != "")
         {
             std::tuple<Graph, std::vector<sf::Vector2i>> graph_GUI =
-              get_json_to_graph_GUI<sf::Vector2i>(input_file);
+              json_utils::get_json_to_graph_GUI<sf::Vector2i>(input_file);
             std::vector<sf::Vector2i> arr = std::get<1>(graph_GUI);
             Graph G = std::get<0>(graph_GUI);
 

@@ -74,7 +74,7 @@ int main(int argc, char** argv)
         // TODO: Crear un archivo para todas las configuraciones de arquitectura.
         nn_utils::neural_options options_({{3, 5, 3}, {5, 5, 3}, {5, 5, 2}},
                                           {{180, 90}, {90, 45}, {45, 1}});
-        GridEncoder2d encoder_(BG.Board, 5, 5);
+        GridEncoder2d encoder_(BG.Board, 5, 5); //Esto es caso especifico, corregir!
 
         train_model<MCTS_Net<GridNetwork, GridEncoder2d>, GridEncoder2d, GridNetwork>(
           /*Model_Path=*/ModelPath,
