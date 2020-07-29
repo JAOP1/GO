@@ -50,7 +50,7 @@ struct GridNetwork : torch::nn::Module
 
             if (options_.pool_layer(i))
             {
-                std::cout << "Max pool in " << i << " layer." << std::endl;
+                // std::cout << "Max pool in " << i << " layer." << std::endl;
                 x = torch::max_pool2d(x, 2);
             }
 

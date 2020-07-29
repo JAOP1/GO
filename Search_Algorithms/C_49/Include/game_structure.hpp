@@ -8,12 +8,12 @@ struct game
     explicit game() {}
     explicit game(
                 //std::vector<std::vector<double>> prob,
-                  std::vector<std::vector<vertex>> valid_actions_,
                   std::vector<std::vector<char>> states_,
+                  std::vector<std::vector<vertex>> valid_actions_,
                   int black_reward_)
 
         : states(states_)
-        //, probabilities(prob)
+        //, probabilities(prob)Game
         , valid_actions(valid_actions_)
         , black_reward(black_reward_)
     {}

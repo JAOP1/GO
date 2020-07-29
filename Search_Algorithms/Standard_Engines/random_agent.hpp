@@ -12,11 +12,6 @@ se mantiene.
 class Random_agent
 {
 public:
-    //Ignora todos los parametros... 
-    explicit Random_agent(BoardGame& BG,std::vector<double> num2,std::vector<int>& total_actions_,int sim, char player ):
-     total_actions(total_actions_.size()),
-     player_(player)
-     {}
     
     explicit Random_agent(int total_actions_, char player): total_actions(total_actions_) , player_(player) {}
     

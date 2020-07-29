@@ -51,7 +51,6 @@ void train_one_epoch(NN& model,
         auto data = batch.data.to(device);
         auto targets = batch.target.to(device);
         optimizer.zero_grad();
-        std::cout<<data.sizes()<<std::endl;
         torch::Tensor output = model.forward(data);
         torch::Tensor loss = calculate_loss<torch::Tensor>(output, targets);
         loss.backward();
@@ -99,14 +98,14 @@ void train_model(std::string ModelPath,
     while (valor_ini)
     {
         std::cout << "Generando juegos." << std::endl;
-        generate_games<search_type, Encoder, NN>(/*Path_to_save = */ DataPath,
+        game_utils::generate_games<search_type, Encoder, NN>(/*Path_to_save = */ DataPath,
                                                  /*total_records = */ games,
                                                  /*Model = */ Model_tmp,
                                                  /*BoardGame = */ G,
                                                  /*Encoder*/ Encoder_);
 
         std::cout << "Creando conjunto de datos." << std::endl;
-        auto data = get_data_games<Encoder>(/*Path_to_load=*/DataPath,
+        auto data = game_utils::get_data_games<Encoder>(/*Path_to_load=*/DataPath,
                                             /*Encoder= */ Encoder_); 
         std::cout << "Total de datos: " << data.size() << std::endl;
         auto Dataset = GameDataSet(data).map(
