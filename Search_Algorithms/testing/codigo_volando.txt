@@ -1,0 +1,87 @@
+    //Código prueba... Al rato lo guardo en algun lado :o 
+    
+    //Comparar nuestro algoritmos contra el azar...
+    //int rows = 4; int columns = 4; 
+    //Graph G = graphs::Grid(rows,   columns); 
+
+    // std::tuple<Graph, std::vector<graph_position>> graph_ =
+    //       json_utils::get_json_to_graph_GUI<graph_position>("grid5.json");
+
+    // Graph G = std::get<0>(graph_);
+    // BoardGame BG(G); 
+    // GridEncoder2d encoder(G,/*rows=*/5,/*cols=*/5);
+    // nn_utils::neural_options options_({{3, 5, 3}, {5, 5, 3}, {5, 5, 2}},
+    //                                        {{180, 90}, {90, 45}, {45, 1}});
+ 
+    // GridNetwork NN(options_);
+    // std::string directory_path = std::filesystem::current_path();
+    // std::string ModelPath = directory_path +"/../Search_Algorithms/C_49/Models/Model_grid5.pt";
+    // load_net(ModelPath , NN, options_);
+    // MCTS_Net<GridNetwork, GridEncoder2d>
+    // Agente1(BG,NN,encoder,120,'B'); 
+    // Agente1.eval();
+    // Random_agent aleatorio;
+    // auto resultado =
+    // evaluate_accuracy<MCTS_Net<GridNetwork, GridEncoder2d> ,
+    // Random_agent>(Agente1 , aleatorio, BG, 30); 
+    // std::cout<<"porcentaje ganado: "<<resultado<<std::endl;
+
+
+    //   //Código para probar red neuronal para grafos en malla... (en lo
+    //   mientras) int rows = 4; int columns = 4; Graph G = graphs::Grid(rows,
+    //   columns); BoardGame BG(G); game D; GridEncoder2d
+    //   encoder(G,/*rows=*/5,/*cols=*/5);
+
+    //   std::vector<vertex> actions = BG.get_available_sample_cells(1.0);
+    //   D.add_game_state({0.25, 0.25, 0.25, 0.25}, BG.show_current_state(),
+    // actions);
+
+    //   BG.make_action(0);
+    //   actions = BG.get_available_sample_cells(1.0);
+    //   D.add_game_state({0, 0.333, 0.333, 0.333}, BG.show_current_state(),
+    // actions);
+
+    //   BG.make_action(1);
+    //   actions = BG.get_available_sample_cells(1.0);
+    //   D.add_game_state({0, 0, 0.5, 0.5}, BG.show_current_state(), actions);
+
+    //   D.set_reward(BG.reward('B'));
+
+    //   BG.make_action(15);
+    //   actions = BG.get_available_sample_cells(1.0);
+    //   D.add_game_state({0,0,0,0} , BG.show_current_state(),actions);
+
+    //   auto vector_torch_planes = encoder.Encode_episode<game>(D);
+
+    //   // std::cout<<vector_torch_planes.size()<<std::endl;
+    //   // std::cout<<vector_torch_planes[3].data<<std::endl;
+    //   // std::cout<<vector_torch_planes[3].target<<std::endl;
+
+    //   //Probando la arquitectura de la red...
+    //   auto Dataset = GameDataSet(vector_torch_planes).map(
+    //           torch::data::transforms::Stack<>()); // Transform the dataset
+    //           in
+    //                                                // understable form for
+    //                                                torch.
+
+    //   torch::data::samplers::RandomSampler
+    //   sampler(vector_torch_planes.size()); // This say
+    //                                                               // how will
+    //                                                               // be
+    //                                                               getting
+    //                                                               // the data.
+
+    //   auto DataLoader =
+    //     torch::data::make_data_loader(Dataset, sampler, 2);
+
+    //   nn_utils::neural_options options_({{3,5,3} , {5,5,3},
+    //   {5,5,2}},{{180,90},{90,45},{45,1}}); GridNetwork NN(options_); auto
+    //   device = nn_utils::get_device(); NN.to(device); NN.eval();
+
+    //   for(auto& batch : *DataLoader )
+    //   {
+    //     auto data = batch.data.to(device);
+    //     std::cout<<"Tamanio de datos: "<<data.sizes()<<std::endl;
+    //     auto output  = NN.forward(data);
+    //     //std::cout<<output<<std::endl;
+    //   }

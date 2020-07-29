@@ -1,30 +1,28 @@
 #pragma once
-// #include "UCT_Net.hpp"
-// #include "Net_Class.hpp"
-// #include "encoders.hpp"
-//#include "RAVE_Net.hpp" //No he implementado nada de RAVE! D:
-#include <torch/torch.h>
-#include "Data_manage.hpp"
-#include "torch_utils.hpp"
 #include "../../Include/Extra/Utilities.hpp"
-#include <filesystem>
-#include <string>
+#include "Include/Data_manage.hpp"
+#include "Include/torch_utils.hpp"
+#include <torch/torch.h>
 #include <ctime>
-#include <fstream> 
-
-size_t dataset_size;
-
+#include <filesystem>
+#include <fstream>
+#include <string>
 
 
 template <typename loss>
 loss calculate_loss(torch::Tensor& data, torch::Tensor target)
 {
-    //It only works in policy and value network.
+    /*
+    Description:
+        Customize this function if you want change the measure.
+    */
+
+    // It only works in policy and value network.
     // int policy_vector_leght = target.sizes()[1];
     // torch::Tensor policy_target = target.index(
     //   {Slice(), Slice(None, policy_vector_leght - 1)});
-    // torch::Tensor value_target = target.index({Slice(), policy_vector_leght - 1});
-    // torch::Tensor policy_data = data.index(
+    // torch::Tensor value_target = target.index({Slice(), policy_vector_leght -
+    // 1}); torch::Tensor policy_data = data.index(
     //   {Slice(), Slice(None, policy_vector_leght - 1)});
     // torch::Tensor value_data = data.index({Slice(), policy_vector_leght - 1});
 
@@ -39,9 +37,10 @@ loss calculate_loss(torch::Tensor& data, torch::Tensor target)
 template <typename DataLoader, class NN>
 void train_one_epoch(NN& model,
                      DataLoader& loader,
-                     torch::optim::Optimizer& optimizer)
+                     torch::optim::Optimizer& optimizer,
+                     int data_size)
 {
-    std::cout<<"Training one epoch."<<std::endl;
+    std::cout << "Training one epoch." << std::endl;
     auto device = nn_utils::get_device();
 
     model.train();
@@ -59,12 +58,13 @@ void train_one_epoch(NN& model,
 
         test_loss += loss.item<double>();
     }
-    test_loss /= dataset_size;
-    std::cout<<"Average loss= "<< test_loss <<std::endl;
+
+    test_loss /= data_size;
+    std::cout << "Average loss= " << test_loss << std::endl;
 }
 
 // Parcialmente completo.
-template <class search_type, class Encoder,class NN>
+template <class search_type, class Encoder, class NN>
 void train_model(std::string ModelPath,
                  std::string DataPath,
                  BoardGame& G,
@@ -86,29 +86,28 @@ void train_model(std::string ModelPath,
     Model_tmp.to(device);
     Model_tmp.eval();
 
+    //Seleccionar el mejor optimizador....
     // torch::optim::SGD optimizer(Model.parameters(),
     //                             torch::optim::SGDOptions(0.01).momentum(0.5));
-    torch::optim::Adam optimizer(Model.parameters(), torch::optim::AdamOptions(0.001));
+    torch::optim::Adam optimizer(Model.parameters(),
+                                 torch::optim::AdamOptions(0.001));
+
     // Condición de paro. (Falta por hacer!)
+    //Actualmente se detiene cuando mejora el modelo 2 veces.
     int valor_ini = 2;
     while (valor_ini)
     {
         std::cout << "Generando juegos." << std::endl;
-        generate_games<search_type, Encoder, NN>(/*Path_to_save = */ DataPath,
-                                             /*total_records = */ games,
-                                             /*Model = */ Model_tmp,
-                                             /*BoardGame = */ G,
-                                             /*Encoder*/ Encoder_);
+        game_utils::generate_games<search_type, Encoder, NN>(/*Path_to_save = */ DataPath,
+                                                 /*total_records = */ games,
+                                                 /*Model = */ Model_tmp,
+                                                 /*BoardGame = */ G,
+                                                 /*Encoder*/ Encoder_);
 
         std::cout << "Creando conjunto de datos." << std::endl;
-        auto data = get_data_games<Encoder>(/*Path_to_load=*/DataPath,
-                                            /*Encoder= */ Encoder_); // This
-                                                                     // return a
-                                                                     // torch
-                                                                     // example
-                                                                     // vector.
-        dataset_size = data.size();                                                          
-        std::cout<< "Total de datos: "<<dataset_size<<std::endl;  
+        auto data = game_utils::get_data_games<Encoder>(/*Path_to_load=*/DataPath,
+                                            /*Encoder= */ Encoder_); 
+        std::cout << "Total de datos: " << data.size() << std::endl;
         auto Dataset = GameDataSet(data).map(
           torch::data::transforms::Stack<>()); // Transform the dataset in
                                                // understable form for torch.
@@ -121,32 +120,36 @@ void train_model(std::string ModelPath,
         auto DataLoader =
           torch::data::make_data_loader(Dataset, sampler, Batch_size);
 
-
         std::cout << "Training net by " << Num_epoch << " epochs." << std::endl;
         for (int epoch_ = 1; epoch_ <= Num_epoch; ++epoch_)
-            train_one_epoch(Model, *DataLoader, optimizer);
+            train_one_epoch(Model, *DataLoader, optimizer, data.size());
 
+        std::cout << "Compare progress." << std::endl;
         search_type current(G, Model, Encoder_, 60, 'B');
         search_type last(G, Model_tmp, Encoder_, 60, 'W');
-        std::cout << "Compare progress." << std::endl;
+        current.eval(); //Evaluation mode.
+        last.eval(); //Evaluation mode.
+        
+        //If the model win more than 55%, it means that model has improved.
         if (evaluate_accuracy<search_type, search_type>(current, last, G, 30) >=
-            .6)
+            .55)
         {
             std::cout << "Obtuvo exito, ha mejorado el modelo" << std::endl;
             nn_utils::save_net<NN>(ModelPath, Model);
             nn_utils::load_net<NN>(ModelPath, Model_tmp, options_);
             Model_tmp.to(device);
             Model_tmp.eval();
-            valor_ini--; //If the model improve twice, we stop...
+            valor_ini--; // If the model improve twice, we stop...
 
-            //Save when model improve.
+            // Save when model improve.
+            //Archivo que escribe en que momento mejoró el modelo.
             std::ofstream changelog;
             std::string dir_path = std::filesystem::current_path();
             std::string file_path = "/../Search_Algorithms/C_49/changelog.txt";
-            changelog.open (dir_path + file_path,  std::ios::app ); 
+            changelog.open(dir_path + file_path, std::ios::app);
             time_t now = std::time(0);
             char* dt = std::ctime(&now);
-            changelog<<"Model improved: "<<dt<<std::endl;
+            changelog << "Model improved: " << dt;
             changelog.close();
         }
     }

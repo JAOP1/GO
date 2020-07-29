@@ -174,8 +174,8 @@ public:
 
     std::vector<double> get_probabilities_current_state() const;
 
-    void eval(){is_training = false;}
-    void train(){is_training = true;}
+    void eval() { is_training = false; }
+    void train() { is_training = true; }
 
 private:
     // Parametros
@@ -195,7 +195,7 @@ private:
     std::shared_ptr<Node> root;
     Net_architect Net_;
     encoder encoder_;
-    bool is_training=true;
+    bool is_training = true;
     // torch::Device device;
 
     std::shared_ptr<Node> child_highest_confidence(std::shared_ptr<Node>& node,
@@ -234,7 +234,7 @@ Action MCTS_Net<Net_architect, encoder>::search(const BoardGame& current_board)
     // std::cout << std::endl;
 
     tqdm bar;
-    bar.set_label(player_ == 'B'? "Black.":"White.");
+    bar.set_label(player_ == 'B' ? "Black" : "White");
 
     for (int i = 0; i < times_to_repeat; ++i)
     {
@@ -283,14 +283,13 @@ Action MCTS_Net<Net_architect, encoder>::search(const BoardGame& current_board)
         Backpropagation(leaf, average_reward, total_children);
     }
 
-   
     bar.finish();
 
-    // if(!is_training)
-    // {
-    //     auto node = child_highest_confidence(root, 1);
-    //     return node->action();
-    // }
+    if(!is_training)
+    {
+        auto node = child_highest_confidence(root, 1);
+        return node->action();
+    }
 
     auto prob_actions = get_probabilities_current_state();
     return get_random_action(prob_actions,
@@ -424,7 +423,7 @@ double MCTS_Net<Net_architect, encoder>::get_reward_from_one_simulation(
 {
 
     int player = (state.player_status() == 'B' ? 0 : 1);
-    //int size = state.Board.num_vertices() + 1;
+    // int size = state.Board.num_vertices() + 1;
     auto encoded_state =
       encoder_.Encode_data(state.show_current_state(),
                            state.get_available_sample_cells(1.0),
@@ -433,8 +432,9 @@ double MCTS_Net<Net_architect, encoder>::get_reward_from_one_simulation(
 
     auto input = encoded_state.to(nn_utils::get_device());
     torch::Tensor net_output = Net_.forward(input);
-    
-    //double result = net_output[0][size].item<double>(); //It works when NN is a policy and value network.
+
+    // double result = net_output[0][size].item<double>(); //It works when NN is
+    // a policy and value network.
     double result = net_output[0][0].item<double>(); // This say you who wins.
 
     // perspectiva del otro jugador.

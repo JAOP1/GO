@@ -1,0 +1,51 @@
+Introducción 
+- Motivación. 
+- Objetivo.
+- Descripción general.
+
+Teoría de grafos.
+- Qué es un grafo. 
+- Qué es un árbol.
+- Relación con los juegos.
+
+Juegos combinatorios. (no sé si incluir este apartado...)
+- Qué es un juego.
+- conceptos básicos de teoría de juegos.
+
+Juego de Go
+- Qué es Go.
+- Reglas del juego.
+- Go generalizado (explicando más sobre la representación con grafos).
+
+Algoritmos de búsqueda de uso general
+- MinMax.
+- MCTS
+    - UCB1
+    - RAVE
+
+Enfoques para grafos en malla.
+- MoGo (primer algoritmo que usó MCTS)
+- Pachi (Mejor algoritmo heúristico, sin redes neuronales)
+- AlphaGo (Algoritmo que ganó a Lee Sedol)
+- Darkforest (Algoritmo de facebook, ellos solo trabajaron en la arquitectura de red neuronal...)
+- AlphaZero (Sin ningún dato hecho por el humano)
+
+Metodología
+- Implementación de las reglas de Go.
+- GUI  en SFML.
+- MCTS-UCB.
+- MCTS con MCTS-RAVE.
+- Redes neuronales.
+    - Arquitectura.
+    - ¿cuál sería la entrada? (hablar sobre los encoders)
+    - ¿Qué regresa? (explicar un poco sobre los experimentos realizados)
+- Generar el conjunto de entrenamiento.
+- Mostrar la adaptación de Self-Play.
+
+Resultados.
+- Mostrar resultados en comparación a MCTS-UCB y MCTS-RAVE.
+- Tiempo de ejecución.
+
+Conclusiones.
+- Trabajo a futuro.
+

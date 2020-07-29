@@ -185,7 +185,7 @@ void GUI::ClientOnKeyPress(sf::Keyboard::Key key)
         else if (key == sf::Keyboard::Num0)
         {
             auto graph_ = Go.get_graph_GUI();
-            save_graph_to_json(FileName_, graph_);
+            json_utils::save_graph_to_json(FileName_, graph_);
         }
     }
 

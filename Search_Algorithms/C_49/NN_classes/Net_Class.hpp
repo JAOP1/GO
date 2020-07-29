@@ -1,5 +1,5 @@
 #pragma once
-#include "../torch_utils.hpp"
+#include "../Include/torch_utils.hpp"
 #include <string>
 #include <torch/torch.h>
 #include <vector>
@@ -8,7 +8,6 @@ Esta es una red neuronal convolucional 1d.
 Nota: tienes que especifiar el número de capas. (mira neural_options)
 */
 using namespace torch::indexing;
-
 
 struct Network_evaluator : torch::nn::Module
 {

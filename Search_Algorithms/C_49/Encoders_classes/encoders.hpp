@@ -1,5 +1,5 @@
 #pragma once
-#include "../../Include/Extra/Graph.hpp"
+#include "../../../Include/Extra/Graph.hpp"
 #include <iostream>
 #include <torch/torch.h>
 #include <tuple>
@@ -25,7 +25,9 @@ class GridEncoder2d
 public:
     GridEncoder2d() {}
 
-    GridEncoder2d(const Graph& BG, int rows, int cols) : G(BG), rows_(rows),cols_(cols) {}
+    GridEncoder2d(const Graph& BG, int rows, int cols)
+        : G(BG), rows_(rows), cols_(cols)
+    {}
 
     // Solo funciona si le mandas todos los estados del juego. (Mira la
     // estrucutra en game_structure.hpp)
@@ -41,11 +43,11 @@ public:
             auto data =
               Encode_data(G.states[i], G.valid_actions[i], current_player);
 
-            auto target = Encode_label(reward, G.probabilities[i]);
+            auto target = Encode_label(reward/*, G.probabilities[i]*/);
 
             game_recodings.emplace_back(data, target);
 
-            reward *= -1;
+            reward *= -1; 
             current_player ^= 1;
         }
 
@@ -63,8 +65,7 @@ public:
 
         torch::Tensor data = torch::zeros({3, rows_, cols_});
 
-        std::vector<double> valid_actions_plane(rows_*cols_,
-                                                0);
+        std::vector<double> valid_actions_plane(rows_*cols_, 0);
 
         for (auto v : valid_actions)
         {
@@ -75,15 +76,14 @@ public:
         torch::Tensor plane_white =
           torch::tensor(GridBoard_White).view({rows_, cols_});
         torch::Tensor plane_black =
-          torch::tensor(GridBoard_Black).view({rows_,cols_});
-        torch::Tensor plane_valid_actions = torch::tensor(valid_actions_plane)
-                                              .view({rows_,
-                                                     cols_});
+          torch::tensor(GridBoard_Black).view({rows_, cols_});
+        torch::Tensor plane_valid_actions =
+          torch::tensor(valid_actions_plane).view({rows_, cols_});
 
         int ind_white_ = 1;
         int ind_black_ = 0;
         // When player is 1 then first plane is white.
-        if (player)
+        if (player == 1)
         {
             ind_white_ = 0;
             ind_black_ = 1;
@@ -93,15 +93,15 @@ public:
         data[ind_black_] = plane_black;
         data[2] = plane_valid_actions;
 
-        if(is_one_sample)
+        if (is_one_sample)
         {
-            data = data.view({1,3,rows_,cols_});
+            data = data.view({1, 3, rows_, cols_});
         }
 
         return data;
     }
 
-    torch::Tensor Encode_label(int reward, std::vector<double> prob)
+    torch::Tensor Encode_label(int reward /*, std::vector<double> prob*/)
     {
         double reward_ = (double)reward;
         std::vector<double> R = {reward_};
@@ -122,7 +122,7 @@ private:
         GridBoard_Black.clear();
         GridBoard_White.clear();
 
-        GridBoard_White.resize(rows_ * cols_, 0);
+        GridBoard_White.resize(rows_*cols_, 0);
         GridBoard_Black.resize(rows_*cols_, 0);
     }
 
@@ -137,8 +137,6 @@ private:
                 GridBoard_White[v] = 1;
         }
     }
-
-
 };
 
 /*
@@ -168,7 +166,7 @@ public:
             auto data =
               Encode_data(G.states[i], G.valid_actions[i], current_player);
 
-            auto target = Encode_label(reward, G.probabilities[i]);
+            auto target = Encode_label(reward , G.probabilities[i]);
 
             game_recodings.emplace_back(data, target);
 
@@ -226,7 +224,7 @@ public:
         return data;
     }
 
-    torch::Tensor Encode_label(int reward, std::vector<double> prob)
+    torch::Tensor Encode_label(int reward , std::vector<double> prob)
     {
         double reward_ = (double)reward;
         prob.push_back(reward_);
