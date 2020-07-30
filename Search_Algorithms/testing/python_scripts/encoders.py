@@ -59,3 +59,12 @@ class GridEncoder:
             current_player^= 1
 
         return recordings
+
+class GraphEncoder:
+    def __init__(self):
+
+    def encode_data(self):
+
+    def encode_label(self):
+    
+    def encode_episode(self):

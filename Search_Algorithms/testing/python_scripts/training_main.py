@@ -1,7 +1,8 @@
 #User imports.
-from  encoders import GridEncoder
-from data_utils import LoadDataset, make_dataloader
+from  encoders import GridEncoder, GraphEncoder
+from data_utils import *
 from GridNet import NNGrid
+from GraphNet import NNGraph
 #Community imports.
 import torch
 import torch.optim as optim
@@ -53,17 +54,24 @@ if __name__ == "__main__":
     #Data path
     Current_dir = os.path.abspath(os.getcwd())
     Data_path = Current_dir+"/../Data_grid5.json" 
+    Graph_path = Current_dir+"/../../../Graphs/grid5.json"
     #Load dataset.
     print("-----------------")
     print("Loading dataset.")
-    encoder_ = GridEncoder(5,5)
-    data = LoadDataset(Data_path, encoder_)
+    #Esto funciona unicamente en una grid.
+    #encoder_ = GridEncoder(5,5)
+    #data = LoadDataset(Data_path, encoder_)
+    #DataLoader = make_dataloader(data, 110)
+    encoder_ = GraphEncoder()
+    data = loadGeometricDataset(Data_path, Graph_path, encoder_)
+    DataLoader = make_GeometricDataloader(data, 110)
     data_size = len(data)
-    DataLoader = make_dataloader(data, 110)
     #Create grid net.
     print("-----------------")
     print("Initializing network.")
-    RewardNet = NNGrid()
+    #Esta red es para un grafo en malla.
+    #RewardNet = NNGrid()
+    RewardNet = NNGraph()
     #Loss function and optimizer.
     print("-----------------")
     print("Initializing optimizer and loss measure.")
