@@ -135,12 +135,17 @@ namespace game_utils
 
     template <class search_type, class Encoder, class NN>
     void generate_games(
-    std::string path, int games, NN& Model, const BoardGame& BG, Encoder& encoder_)
+    std::string path, int games, NN& Model, const BoardGame& BG, Encoder& encoder_,
+    double split = 1.0)
     {
         /*
         Description:
-            Create a game sample using our current model which 
-            is saved in the path.
+            Path: ubication allocate all records.
+            games: total records.
+            Model: Neural network.
+            BG: the rule set.
+            Encoder: how encode input to model.
+            Split: training percent. 
         */
         std::vector<game> episodes;
         for (int i = 0; i < games; ++i)
@@ -151,13 +156,13 @@ namespace game_utils
             std::cout << "-------------------------------" << std::endl;
         }
 
-        json_utils::save_games_recordings_to_json(path, episodes);
+        json_utils::save_games_recordings_to_json(path, episodes, split);
     }
 
 
      template <class search_type>
     void generate_games(std::string path, int games,  const BoardGame& BG, 
-         search_type& BlackEngine,  search_type& WhiteEngine)
+         search_type& BlackEngine,  search_type& WhiteEngine, double split = 1.0)
     {
         /*
         Description:
@@ -165,6 +170,7 @@ namespace game_utils
             games: total records.
             BG: the rule set.
             Engines: search algorithm.
+            Split: training percent. 
         */
 
         std::vector<game> episodes;
@@ -176,7 +182,7 @@ namespace game_utils
             std::cout << "-------------------------------" << std::endl;
         }
 
-        json_utils::save_games_recordings_to_json(path, episodes);
+        json_utils::save_games_recordings_to_json(path, episodes, split);
     }
 
     template <class encoder>

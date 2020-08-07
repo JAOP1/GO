@@ -2,7 +2,8 @@
 from  encoders import GridEncoder, GraphEncoder
 from data_utils import *
 from GridNet import NNGrid
-from GraphNet import NNGraph
+import GraphNet as models
+from utils import *
 #Community imports.
 import torch
 import torch.optim as optim
@@ -18,24 +19,30 @@ def train_net(net, trainloader, num_epoch, criterion, optimizer, device,Path):
         #running_loss = 0.0
         total_loss=0.0
         for i, data in enumerate(trainloader, 0):
+            #dataloader de torch geometric.
+            data = data.to(device)
+
+            #Esto funciona cuando hablamos de un dataloader normal
             # get the inputs; data is a list of [inputs, labels]
-            inputs = data[0].to(device)
-            labels = data[1].to(device)
+            #inputs = data[0].to(device)
+            #labels = data[1].to(device)
 
             # zero the parameter gradients
             optimizer.zero_grad()
 
             # forward + backward + optimize
-            outputs = net(inputs)
- 
-            loss = criterion(outputs, labels)
+            outputs = net(data)
+            #Dataloader torch geometric
+            loss = criterion(outputs, data.y)
 
+            #Dataloader torch.
+            #loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
 
             # print statistics
             total_loss+=loss.item()
-
+        
         print('Average loss by epoch = {}'.format(total_loss/data_size))
         
     if Path != "":
@@ -58,20 +65,30 @@ if __name__ == "__main__":
     #Load dataset.
     print("-----------------")
     print("Loading dataset.")
-    #Esto funciona unicamente en una grid.
+    #-------------------------------------
+    #Esto funciona unicamente en una grid de 5 x 5 (ajustar los valores de GridEncoder para otro tipo).
     #encoder_ = GridEncoder(5,5)
     #data = LoadDataset(Data_path, encoder_)
     #DataLoader = make_dataloader(data, 110)
-    encoder_ = GraphEncoder()
+    #-------------------------------------
+    #Esto funciona pa todo grafo (se supone Gg)
+    #Num nodos: 25, Num features: 3
+    encoder_ = GraphEncoder(25,3) 
     data = loadGeometricDataset(Data_path, Graph_path, encoder_)
     DataLoader = make_GeometricDataloader(data, 110)
+    #-------------------------------------
+
     data_size = len(data)
     #Create grid net.
     print("-----------------")
     print("Initializing network.")
     #Esta red es para un grafo en malla.
     #RewardNet = NNGrid()
-    RewardNet = NNGraph()
+    #Esta red usa capas Gin.
+    RewardNet =models.NNGinConv(3, 1)
+    #Esta red usa capas GCN.
+    #RewardNet = models.NNGcnConv(3, 1)
+    RewardNet.train()
     #Loss function and optimizer.
     print("-----------------")
     print("Initializing optimizer and loss measure.")

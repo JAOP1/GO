@@ -16,6 +16,6 @@ void generate_random_samples(int num_games,Graph G, std::string data_path)
     Random_agent Black(G.num_vertices(), 'B');
     Random_agent White(G.num_vertices(), 'W');
 
-    game_utils::generate_games<Random_agent>(data_path , num_games, BG, Black, White);
+    game_utils::generate_games<Random_agent>(data_path , num_games, BG, Black, White, 0.7);
     
 }

@@ -1,8 +1,7 @@
 from torch.utils.data import Dataset,DataLoader
 import torch 
 import torch_geometric.data as geodata
-from utils import get_json_game
-import networkx as nx
+from utils import get_json
 from encoders import GridEncoder
 
 class DataStruct(Dataset):
@@ -38,7 +37,7 @@ def LoadDataset(path, encoder, construct_torchDataset = True):
 def loadGeometricDataset(datapath, graphpath, encoder):
     json_graph = get_json(graphpath)
     #Getting data.
-    data = LoadDataset(datapath, encoder)
+    data = LoadDataset(datapath, encoder, False)
     inputs, labels = [element[0] for element in data] , [element[1] for element in data]
 
     #Getting edges.
