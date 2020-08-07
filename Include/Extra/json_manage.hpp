@@ -69,7 +69,7 @@ void save_graph_to_json(const std::string FileName, T graph_inf)
 }
 
 template <class game>
-std::vector<game> get_json_to_game_data(const std::string FileName)
+std::vector<game> get_json_to_game_data(const std::string FileName, bool is_training = true)
 {
     std::vector<game> games_played;
     json J;
@@ -77,15 +77,22 @@ std::vector<game> get_json_to_game_data(const std::string FileName)
     std::ifstream input_file;
     input_file.open(FileName, std::ifstream::in);
     input_file >> J;
-    int total_recordings = J["Num_Games"];
+    std::string mode = "Test";
+    std::string Num_games = "Test_Games";
+    if(is_training)
+    {
+        mode = "Train";
+        Num_games = "Train_Games";
+    }
+    int total_recordings = J[Num_games];
 
     for (int i = 0; i < total_recordings; ++i)
     {
         games_played.emplace_back(
-          J["Game " + std::to_string(i)]["state"],
+          J[mode]["Game " + std::to_string(i)]["state"],
         //  J["Game " + std::to_string(i)]["probabilities_by_action"],
-          J["Game " + std::to_string(i)]["valid_actions"],
-          J["Game " + std::to_string(i)]["black_reward"]);
+          J[mode]["Game " + std::to_string(i)]["valid_actions"],
+          J[mode]["Game " + std::to_string(i)]["black_reward"]);
     }
 
     input_file.close();
@@ -101,21 +108,32 @@ vector of probabilities vectors.
 
 template <class episode>
 void save_games_recordings_to_json(const std::string FileName,
-                                   std::vector<episode> games_played)
+                                   std::vector<episode> games_played,
+                                   double training_percent = 1.0)
 {
     json JsonFile;
     int total_games = games_played.size();
+    int train_games = total_games * training_percent;
     int game_id = 0;
-    JsonFile["Num_Games"] = total_games;
+
+    JsonFile["Train_Games"] = train_games;
+    JsonFile["Test_Games"] = total_games - train_games;
+    std::string mode = "Train";
 
     for (auto G : games_played)
     {
-        JsonFile["Game " + std::to_string(game_id)]["state"] = G.states;
-        JsonFile["Game " + std::to_string(game_id)]["valid_actions"] =
+        if(game_id == train_games && mode == "Train")
+        {
+            mode = "Test";
+            game_id = 0;
+        }
+        
+        JsonFile[mode]["Game " + std::to_string(game_id)]["state"] = G.states;
+        JsonFile[mode]["Game " + std::to_string(game_id)]["valid_actions"] =
           G.valid_actions;
         //JsonFile["Game " + std::to_string(game_id)]["probabilities_by_action"] =
         //  G.probabilities;
-        JsonFile["Game " + std::to_string(game_id)]["black_reward"] =
+        JsonFile[mode]["Game " + std::to_string(game_id)]["black_reward"] =
           G.black_reward;
         game_id++;
     }

@@ -40,7 +40,6 @@ void train_one_epoch(NN& model,
                      torch::optim::Optimizer& optimizer,
                      int data_size)
 {
-    std::cout << "Training one epoch." << std::endl;
     auto device = nn_utils::get_device();
 
     model.train();
@@ -60,7 +59,7 @@ void train_one_epoch(NN& model,
     }
 
     test_loss /= data_size;
-    std::cout << "Average loss= " << test_loss << std::endl;
+    std::cout << "Average loss by epoch = " << test_loss << std::endl;
 }
 
 // Parcialmente completo.
