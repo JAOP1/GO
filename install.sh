@@ -6,7 +6,7 @@ pwd1=`pwd`
 #Check the OS.
 is_ubuntu=$(cat /etc/os-release | grep -c Ubuntu)
 is_manjaro=$(cat /etc/os-release | grep -c Manjaro)
-is_valid_OS=true
+
 
 if [ $is_manjaro -gt 0 ]
 then
@@ -44,19 +44,3 @@ else
     is_valid_OS=false
 fi
 
-if [ is_valid_OS ]
-then 
-    #You can replace the link by the suitable if you have GPU.
-    #wget https://download.pytorch.org/libtorch/nightly/cpu/libtorch-shared-with-deps-latest.zip
-    #unzip libtorch-shared-with-deps-latest.zip
-
-    cd GO-master/
-    rm -r  build/
-    
-    mkdir build
-    cd build
-
-    cmake ..
-    make
-    ./visualizer -v true -p true
-fi

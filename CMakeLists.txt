@@ -4,21 +4,13 @@ enable_language(C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_PREFIX_PATH "/home/dell/libtorch/") #Change to real path of libtorch.
 
-#Esto es para instalar la versión de libtorch en el proyecto.
-#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-#find_package(Torch QUIET PATHS "${CMAKE_SOURCE_DIR}/libtorch") #Si lo encuentra...
-#if(NOT Torch_FOUND)
-#    unset(Torch_FOUND)
-#    include(download_libtorch)
-#endif()
 
 find_package(SFML 2 REQUIRED network audio graphics window system)
 find_package(Torch REQUIRED)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 option(BUILD_VISUALIZER "Build visualizer (requires SFML and libtorch)" OFF)
 option(BUILD_TESTS "Build unit tests (requires gtest)" OFF)
@@ -129,5 +121,5 @@ if(${BUILD_TESTING})
     add_executable(tester testing_main.cpp)
     add_dependencies(tester graph)
 
-    target_link_libraries(tester graph ${TORCH_LIBRARIES})
+    target_link_libraries(tester graph ${TORCH_LIBRARIES} )
 endif()

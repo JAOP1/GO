@@ -11,6 +11,15 @@ import torch.nn as nn
 import os
 
 def train_net(net, trainloader, num_epoch, criterion, optimizer, device,Path):
+    """
+    Net: Pytorch geometric model.
+    Trainloader:  Data Manager (it is in pytorch)
+    num_epoch: the times to operate all dataset.
+    criterion: The loss function.
+    optimizer: Adam, SGD, etc.
+    device: CPU or GPU.
+    Path: where allocate network results.
+    """
     global data_size
     net.to(device)
 
@@ -47,6 +56,18 @@ def train_net(net, trainloader, num_epoch, criterion, optimizer, device,Path):
         
     if Path != "":
         torch.save(RewardNet.state_dict(), Path)    
+
+@torch.no_grad()
+def test(net, testloader):
+    net.eval()
+    total_correct = 0
+    for data in testloader:
+        data = data.to(device)
+        out = net(data)
+        pred = out.max(dim=1)[1]
+        total_correct += pred.eq(data.y).sum().item()
+    return total_correct / len(testloader.dataset)
+
 
 if __name__ == "__main__":
 
