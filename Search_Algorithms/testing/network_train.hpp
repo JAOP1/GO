@@ -1,10 +1,10 @@
 #pragma once 
 #include "../../Include/Extra/Graph.hpp"
-#include "../C_49/Net_trainer.hpp"
-#include "../C_49/Include/Data_manage.hpp"
-#include "../C_49/Include/torch_utils.hpp"
-#include "../C_49/NN_classes/Net_ClassGrid.hpp"
-#include "../C_49/Encoders_classes/encoders.hpp"
+#include "../C_49/Grid/Net_trainer.hpp"
+#include "../C_49/Grid/Include/Data_manage.hpp"
+#include "../C_49/Grid/Include/torch_utils.hpp"
+#include "../C_49/Grid/NN_classes/Net_ClassGrid.hpp"
+#include "../C_49/Grid/Encoders_classes/encoders.hpp"
 #include <torch/torch.h>
 
 
@@ -20,12 +20,12 @@ void for_train(  std::string DataPath,  std::string ModelPath, const Graph& G, i
     GridNetwork Model(options_); 
     nn_utils::load_net<GridNetwork>(ModelPath, Model, options_);
     Model.to(nn_utils::get_device());
-    GridEncoder2d Encoder_(G, 5, 5);
+    GridEncoder Encoder_(G, 5, 5);
 
     torch::optim::Adam optimizer(Model.parameters(),
                                  torch::optim::AdamOptions(0.001));
 
-    auto data = game_utils::get_data_games<GridEncoder2d>(/*Path_to_load=*/DataPath,
+    auto data = game_utils::get_data_games<GridEncoder>(/*Path_to_load=*/DataPath,
                                             /*Encoder= */ Encoder_); 
 
     auto Dataset = GameDataSet(data).map(

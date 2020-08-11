@@ -2,14 +2,14 @@
 #include "../../Include/BoardGame.hpp"
 #include "../../Include/Extra/External/tqdm.h"
 #include "../../Include/Extra/hash_utilities.hpp"
-#include "torch_utils.hpp"
+#include "Grid/Include/torch_utils.hpp"
+#include <torch/torch.h>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <limits>
 #include <memory>
 #include <stack>
-#include <torch/torch.h>
 #include <unordered_map>
 #include <utility>
 #include <vector>

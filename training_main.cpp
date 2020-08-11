@@ -3,18 +3,17 @@
 #include "Include/Extra/Graph.hpp"
 #include "Include/Extra/Utilities.hpp"
 #include "Include/Extra/json_manage.hpp"
-#include "Search_Algorithms/C_49/NN_classes/Net_Class.hpp"
-#include "Search_Algorithms/C_49/NN_classes/Net_ClassGrid.hpp"
-#include "Search_Algorithms/C_49/Net_trainer.hpp"
+#include "Search_Algorithms/C_49/Grid/NN_classes/Net_ClassGrid.hpp"
+#include "Search_Algorithms/C_49/Grid/Net_trainer.hpp"
+#include "Search_Algorithms/C_49/Grid/Include/torch_utils.hpp"
 #include "Search_Algorithms/C_49/UCT_Net.hpp"
-#include "Search_Algorithms/C_49/Include/torch_utils.hpp"
+#include <torch/torch.h>
 #include <exception>
 #include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-#include <torch/torch.h>
 
 template <class T>
 std::ostream& operator<<(std::ostream& os, std::vector<T>& array)
@@ -50,6 +49,14 @@ int main(int argc, char** argv)
     app.add_option("-N", Num_games, "Game records.");
     CLI11_PARSE(app, argc, argv);
 
+  /*
+  ----------------------------------------------------------
+  ¡Warning!
+  This only works in grids....
+  ----------------------------------------------------------
+
+  */
+
     try
     {
         std::vector<std::string> v;
@@ -74,9 +81,9 @@ int main(int argc, char** argv)
         // TODO: Crear un archivo para todas las configuraciones de arquitectura.
         nn_utils::neural_options options_({{3, 5, 3}, {5, 5, 3}, {5, 5, 2}},
                                           {{180, 90}, {90, 45}, {45, 1}});
-        GridEncoder2d encoder_(BG.Board, 5, 5); //Esto es caso especifico, corregir!
+        GridEncoder encoder_(BG.Board, 5, 5); //Esto es caso especifico, corregir!
 
-        train_model<MCTS_Net<GridNetwork, GridEncoder2d>, GridEncoder2d, GridNetwork>(
+        train_model<MCTS_Net<GridNetwork, GridEncoder>, GridEncoder, GridNetwork>(
           /*Model_Path=*/ModelPath,
           /*Data_path=*/DataPath,
           /*GameRuleSet=*/BG,
