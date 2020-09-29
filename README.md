@@ -46,6 +46,7 @@ Currently the project only works in grid graphs, but the intention is develop fo
 **Notes:**
 * Currently working it.
 * forgive me, but some comments are in spanish.
+* It is not completed.
 
 **Future**
 * Create and train a net model using pytorch geometric.
